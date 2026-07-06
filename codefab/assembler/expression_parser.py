@@ -15,7 +15,51 @@ class ExpressionParser:
         self.current = 0
 
     def parse(self):
-        return self._factor()
+        return self._equality()
+
+    def _equality(self):
+        left = self._comparison()
+        if self._match(TokenType.EQUAL_EQUAL):
+            operator = self._previous()
+            right = self._comparison()
+            return Binary(left, operator, right)
+        if self._match(TokenType.BANG_EQUAL):
+            operator = self._previous()
+            right = self._comparison()
+            return Binary(left, operator, right)
+        return left
+
+    def _comparison(self):
+        left = self._term()
+        if self._match(TokenType.GREATER):
+            operator = self._previous()
+            right = self._term()
+            return Binary(left, operator, right)
+        if self._match(TokenType.GREATER_EQUAL):
+            operator = self._previous()
+            right = self._term()
+            return Binary(left, operator, right)
+        if self._match(TokenType.LESS):
+            operator = self._previous()
+            right = self._term()
+            return Binary(left, operator, right)
+        if self._match(TokenType.LESS_EQUAL):
+            operator = self._previous()
+            right = self._term()
+            return Binary(left, operator, right)
+        return left
+
+    def _term(self):
+        left = self._factor()
+        if self._match(TokenType.PLUS):
+            operator = self._previous()
+            right = self._factor()
+            return Binary(left, operator, right)
+        if self._match(TokenType.MINUS):
+            operator = self._previous()
+            right = self._factor()
+            return Binary(left, operator, right)
+        return left
 
     def _factor(self):
         expression = self._unary()
