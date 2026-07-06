@@ -18,54 +18,34 @@ class ExpressionParser:
         return self._equality()
 
     def _equality(self):
-        left = self._comparison()
-        if self._match(TokenType.EQUAL_EQUAL):
-            operator = self._previous()
-            right = self._comparison()
-            return Binary(left, operator, right)
-        if self._match(TokenType.BANG_EQUAL):
-            operator = self._previous()
-            right = self._comparison()
-            return Binary(left, operator, right)
-        return left
+        return self._left_assoc_binary(
+            self._comparison, TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL
+        )
 
     def _comparison(self):
-        left = self._term()
-        if self._match(TokenType.GREATER):
-            operator = self._previous()
-            right = self._term()
-            return Binary(left, operator, right)
-        if self._match(TokenType.GREATER_EQUAL):
-            operator = self._previous()
-            right = self._term()
-            return Binary(left, operator, right)
-        if self._match(TokenType.LESS):
-            operator = self._previous()
-            right = self._term()
-            return Binary(left, operator, right)
-        if self._match(TokenType.LESS_EQUAL):
-            operator = self._previous()
-            right = self._term()
-            return Binary(left, operator, right)
-        return left
+        return self._left_assoc_binary(
+            self._term,
+            TokenType.GREATER,
+            TokenType.GREATER_EQUAL,
+            TokenType.LESS,
+            TokenType.LESS_EQUAL,
+        )
 
     def _term(self):
-        left = self._factor()
-        if self._match(TokenType.PLUS):
-            operator = self._previous()
-            right = self._factor()
-            return Binary(left, operator, right)
-        if self._match(TokenType.MINUS):
-            operator = self._previous()
-            right = self._factor()
-            return Binary(left, operator, right)
-        return left
+        return self._left_assoc_binary(self._factor, TokenType.PLUS, TokenType.MINUS)
 
     def _factor(self):
-        expression = self._unary()
-        while self._match(TokenType.STAR, TokenType.SLASH):
+        return self._left_assoc_binary(self._unary, TokenType.STAR, TokenType.SLASH)
+
+    def _left_assoc_binary(self, operand_rule, *operator_types):
+        """left (op right)* 형태의 좌결합 이항연산 문법 규칙 공통 처리.
+
+        operand_rule: 한 단계 더 높은 우선순위의 파싱 메서드 (예: _term -> _factor)
+        """
+        expression = operand_rule()
+        while self._match(*operator_types):
             operator = self._previous()
-            right = self._unary()
+            right = operand_rule()
             expression = Binary(expression, operator, right)
         return expression
 
@@ -97,7 +77,7 @@ class ExpressionParser:
         raise ParseError(message, self._peek().line)
 
     # ---------------- helpers ----------------
-    # (다음 단계에서 _term/_factor 등 나머지 우선순위 체인이 추가될 자리)
+    # (다음 단계에서 _logic_and/_logic_or, _assignment 가 추가될 자리)
 
     def _match(self, *types):
         for token_type in types:
