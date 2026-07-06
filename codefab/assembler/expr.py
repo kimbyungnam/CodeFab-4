@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from codefab.assembler.tokens import Token
+from codefab.tokens import Token
 
 
 class Expr: ...

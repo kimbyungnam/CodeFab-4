@@ -8,7 +8,7 @@ from codefab.assembler.expr import (
     Variable,
 )
 from codefab.assembler.expression_parser import ExpressionParser
-from codefab.assembler.tokens import Token, TokenType
+from codefab.tokens import Token, TokenType
 
 
 def test_single_number_literal_is_parsed_as_literal_expr():

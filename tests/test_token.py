@@ -1,6 +1,6 @@
 import pytest
 
-from codefab.token import Token, TokenType
+from codefab.tokens import Token, TokenType
 
 
 def test_token_simple_exaple():

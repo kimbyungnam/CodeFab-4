@@ -8,7 +8,7 @@ from codefab.assembler.expr import (
     Unary,
     Variable,
 )
-from codefab.assembler.tokens import TokenType
+from codefab.tokens import TokenType
 
 
 class ExpressionParser:
