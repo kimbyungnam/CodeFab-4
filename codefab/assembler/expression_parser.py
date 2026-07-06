@@ -28,9 +28,7 @@ class ExpressionParser:
         return self._left_assoc(Logical, self._equality, TokenType.AND)
 
     def _equality(self):
-        return self._left_assoc(
-            Binary, self._comparison, TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL
-        )
+        return self._left_assoc(Binary, self._comparison, TokenType.EQUAL_EQUAL)
 
     def _comparison(self):
         return self._left_assoc(
@@ -57,7 +55,7 @@ class ExpressionParser:
         return expression
 
     def _unary(self):
-        if self._match(TokenType.MINUS, TokenType.BANG):
+        if self._match(TokenType.MINUS):
             operator = self._previous()
             right = self._unary()
             return Unary(operator, right)
@@ -77,6 +75,8 @@ class ExpressionParser:
             self._consume(TokenType.RIGHT_PAREN, "표현식 뒤에는 ')'가 필요합니다.")
             return Grouping(expression)
         raise NotImplementedError("아직 처리하지 않는 표현식 종류입니다.")
+
+    # ---------------- helpers ----------------
 
     def _consume(self, token_type, message):
         if self._check(token_type):
