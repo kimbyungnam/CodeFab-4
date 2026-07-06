@@ -1,5 +1,5 @@
 from assembler.errors import ParseError
-from assembler.expr import Grouping, Literal, Unary, Variable
+from assembler.expr import Binary, Grouping, Literal, Unary, Variable
 from assembler.tokens import TokenType
 
 
@@ -15,7 +15,19 @@ class ExpressionParser:
         self.current = 0
 
     def parse(self):
-        return self._unary()
+        return self._factor()
+
+    def _factor(self):
+        left = self._unary()
+        if self._match(TokenType.STAR):
+            operator = self._previous()
+            right = self._unary()
+            return Binary(left, operator, right)
+        if self._match(TokenType.SLASH):
+            operator = self._previous()
+            right = self._unary()
+            return Binary(left, operator, right)
+        return left
 
     def _unary(self):
         if self._match(TokenType.MINUS, TokenType.BANG):
