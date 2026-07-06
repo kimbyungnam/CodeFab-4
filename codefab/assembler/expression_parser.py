@@ -15,17 +15,16 @@ class ExpressionParser:
         self.current = 0
 
     def parse(self):
+        return self._unary()
+
+    def _unary(self):
+        if self._match(TokenType.MINUS, TokenType.BANG):
+            operator = self._previous()
+            right = self._unary()
+            return Unary(operator, right)
         return self._primary()
 
     def _primary(self):
-        if self._match(TokenType.MINUS):
-            operator = self._previous()
-            right = self._primary()
-            return Unary(operator, right)
-        if self._match(TokenType.BANG):
-            operator = self._previous()
-            right = self._primary()
-            return Unary(operator, right)
         if self._match(TokenType.NUMBER, TokenType.STRING):
             return Literal(self._previous().literal)
         if self._match(TokenType.TRUE):
@@ -46,7 +45,7 @@ class ExpressionParser:
         raise ParseError(message, self._peek().line)
 
     # ---------------- helpers ----------------
-    # (다음 단계에서 _unary/_term/_factor 등 우선순위 체인이 추가될 자리)
+    # (다음 단계에서 _term/_factor 등 나머지 우선순위 체인이 추가될 자리)
 
     def _match(self, *types):
         for token_type in types:
