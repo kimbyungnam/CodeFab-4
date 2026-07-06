@@ -18,16 +18,12 @@ class ExpressionParser:
         return self._factor()
 
     def _factor(self):
-        left = self._unary()
-        if self._match(TokenType.STAR):
+        expression = self._unary()
+        while self._match(TokenType.STAR, TokenType.SLASH):
             operator = self._previous()
             right = self._unary()
-            return Binary(left, operator, right)
-        if self._match(TokenType.SLASH):
-            operator = self._previous()
-            right = self._unary()
-            return Binary(left, operator, right)
-        return left
+            expression = Binary(expression, operator, right)
+        return expression
 
     def _unary(self):
         if self._match(TokenType.MINUS, TokenType.BANG):
