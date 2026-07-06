@@ -69,3 +69,19 @@ def test_token_stores_fixed_symbol_lexeme(token_type, lexeme):
     assert token.type == token_type
     assert token.lexeme == lexeme
     assert token.literal is None
+
+
+@pytest.mark.parametrize(
+    "token_type,lexeme",
+    [
+        (TokenType.PRINT, "출력"),
+        (TokenType.VAR, "변수"),
+        (TokenType.IF, "만약"),
+    ],
+)
+def test_token_stores_korean_keyword_lexeme(token_type, lexeme):
+    token = Token(type=token_type, lexeme=lexeme, literal=None, line=1)
+
+    assert token.type == token_type
+    assert token.lexeme == lexeme
+    assert token.literal is None
