@@ -4,12 +4,6 @@ from assembler.tokens import TokenType
 
 
 class ExpressionParser:
-    """Token List 를 Expr 트리로 조립하는 파서.
-
-    [1단계] 지금은 숫자 리터럴 하나만 처리한다.
-    다음 단계에서 문자열/불리언/변수/괄호/단항/이항/논리/대입을 순서대로 추가한다.
-    """
-
     def __init__(self, tokens):
         self.tokens = tokens
         self.current = 0
@@ -55,11 +49,6 @@ class ExpressionParser:
         return self._left_assoc(Binary, self._unary, TokenType.STAR, TokenType.SLASH)
 
     def _left_assoc(self, node_class, operand_rule, *operator_types):
-        """left (op right)* 형태의 좌결합 이항/논리 연산 문법 규칙 공통 처리.
-
-        node_class: 만들어낼 노드 (Binary 또는 Logical)
-        operand_rule: 한 단계 더 높은 우선순위의 파싱 메서드 (예: _term -> _factor)
-        """
         expression = operand_rule()
         while self._match(*operator_types):
             operator = self._previous()
@@ -93,9 +82,6 @@ class ExpressionParser:
         if self._check(token_type):
             return self._advance()
         raise ParseError(message, self._peek().line)
-
-    # ---------------- helpers ----------------
-    # (다음 단계에서 _logic_and/_logic_or, _assignment 가 추가될 자리)
 
     def _match(self, *types):
         for token_type in types:
