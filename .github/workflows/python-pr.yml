@@ -52,6 +52,10 @@ jobs:
       if: steps.changed-files.outputs.any_changed == 'true'
       run: |
         ruff check --select I ${{ steps.changed-files.outputs.all_changed_files }}
+        
+    - name: Unittest
+      run: |
+        pytest tests
 
     - name: Check commit messages
       run: |
