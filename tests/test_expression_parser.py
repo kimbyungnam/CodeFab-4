@@ -6,7 +6,7 @@
 으로 이어서 작성하면 된다.
 """
 
-from assembler.expr import Grouping, Literal, Variable
+from assembler.expr import Grouping, Literal, Unary, Variable
 from assembler.expression_parser import ExpressionParser
 from assembler.tokens import Token, TokenType
 
@@ -90,3 +90,33 @@ def test_missing_closing_paren_raises_parse_error():
 
     with __import__("pytest").raises(ParseError):
         ExpressionParser(tokens).parse()
+
+
+def test_unary_minus_is_parsed_as_unary_expr():
+    # "-a"
+    tokens = [
+        Token(TokenType.MINUS, "-", line=1),
+        Token(TokenType.IDENTIFIER, "a", line=1),
+        Token(TokenType.EOF, "", line=1),
+    ]
+
+    expression = ExpressionParser(tokens).parse()
+
+    assert isinstance(expression, Unary)
+    assert expression.operator.origin == "-"
+    assert isinstance(expression.right, Variable)
+
+
+def test_unary_bang_is_parsed_as_unary_expr():
+    # "!a"
+    tokens = [
+        Token(TokenType.BANG, "!", line=1),
+        Token(TokenType.IDENTIFIER, "a", line=1),
+        Token(TokenType.EOF, "", line=1),
+    ]
+
+    expression = ExpressionParser(tokens).parse()
+
+    assert isinstance(expression, Unary)
+    assert expression.operator.origin == "!"
+    assert isinstance(expression.right, Variable)
