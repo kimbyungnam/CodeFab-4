@@ -1,5 +1,5 @@
 from assembler.errors import ParseError
-from assembler.expr import Binary, Grouping, Literal, Logical, Unary, Variable
+from assembler.expr import Assign, Binary, Grouping, Literal, Logical, Unary, Variable
 from assembler.tokens import TokenType
 
 
@@ -15,7 +15,17 @@ class ExpressionParser:
         self.current = 0
 
     def parse(self):
-        return self._logic_or()
+        return self._assignment()
+
+    def _assignment(self):
+        expression = self._logic_or()
+        if self._match(TokenType.EQUAL):
+            equals = self._previous()
+            value = self._assignment()
+            if isinstance(expression, Variable):
+                return Assign(expression.name, value)
+            raise ParseError("잘못된 대입 대상입니다.", equals.line)
+        return expression
 
     def _logic_or(self):
         return self._left_assoc(Logical, self._logic_and, TokenType.OR)
