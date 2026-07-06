@@ -1,7 +1,7 @@
 import pytest
 
-from codefab.token import Token, TokenType
 from codefab.tokenizer import Tokenizer
+from codefab.tokens import Token, TokenType
 
 
 def test_empty_source_returns_only_eof_token():
