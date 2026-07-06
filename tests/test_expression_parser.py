@@ -6,7 +6,7 @@
 으로 이어서 작성하면 된다.
 """
 
-from assembler.expr import Binary, Grouping, Literal, Unary, Variable
+from assembler.expr import Binary, Grouping, Literal, Logical, Unary, Variable
 from assembler.expression_parser import ExpressionParser
 from assembler.tokens import Token, TokenType
 
@@ -293,4 +293,58 @@ def test_comparison_binds_tighter_than_equality():
     assert expression.operator.origin == "=="
     assert isinstance(expression.left, Binary)
     assert expression.left.operator.origin == ">"
+    assert isinstance(expression.right, Variable)
+
+
+def test_and_expression_is_parsed_as_logical_expr():
+    tokens = _binary_two_identifiers(TokenType.AND, "and")
+    expression = ExpressionParser(tokens).parse()
+    assert isinstance(expression, Logical)
+    assert expression.operator.origin == "and"
+
+
+def test_or_expression_is_parsed_as_logical_expr():
+    tokens = _binary_two_identifiers(TokenType.OR, "or")
+    expression = ExpressionParser(tokens).parse()
+    assert isinstance(expression, Logical)
+    assert expression.operator.origin == "or"
+
+
+def test_and_binds_tighter_than_or():
+    # "a and b or c"  ==>  Logical(or, Logical(and, a, b), c)
+    tokens = [
+        Token(TokenType.IDENTIFIER, "a", line=1),
+        Token(TokenType.AND, "and", line=1),
+        Token(TokenType.IDENTIFIER, "b", line=1),
+        Token(TokenType.OR, "or", line=1),
+        Token(TokenType.IDENTIFIER, "c", line=1),
+        Token(TokenType.EOF, "", line=1),
+    ]
+
+    expression = ExpressionParser(tokens).parse()
+
+    assert isinstance(expression, Logical)
+    assert expression.operator.origin == "or"
+    assert isinstance(expression.left, Logical)
+    assert expression.left.operator.origin == "and"
+    assert isinstance(expression.right, Variable)
+
+
+def test_equality_binds_tighter_than_and():
+    # "a == b and c"  ==>  Logical(and, Binary(==, a, b), c)
+    tokens = [
+        Token(TokenType.IDENTIFIER, "a", line=1),
+        Token(TokenType.EQUAL_EQUAL, "==", line=1),
+        Token(TokenType.IDENTIFIER, "b", line=1),
+        Token(TokenType.AND, "and", line=1),
+        Token(TokenType.IDENTIFIER, "c", line=1),
+        Token(TokenType.EOF, "", line=1),
+    ]
+
+    expression = ExpressionParser(tokens).parse()
+
+    assert isinstance(expression, Logical)
+    assert expression.operator.origin == "and"
+    assert isinstance(expression.left, Binary)
+    assert expression.left.operator.origin == "=="
     assert isinstance(expression.right, Variable)
