@@ -1,9 +1,15 @@
 from assembler.errors import ParseError
-from assembler.expr import Grouping, Literal, Variable
+from assembler.expr import Grouping, Literal, Unary, Variable
 from assembler.tokens import TokenType
 
 
 class ExpressionParser:
+    """Token List 를 Expr 트리로 조립하는 파서.
+
+    [1단계] 지금은 숫자 리터럴 하나만 처리한다.
+    다음 단계에서 문자열/불리언/변수/괄호/단항/이항/논리/대입을 순서대로 추가한다.
+    """
+
     def __init__(self, tokens):
         self.tokens = tokens
         self.current = 0
@@ -12,6 +18,14 @@ class ExpressionParser:
         return self._primary()
 
     def _primary(self):
+        if self._match(TokenType.MINUS):
+            operator = self._previous()
+            right = self._primary()
+            return Unary(operator, right)
+        if self._match(TokenType.BANG):
+            operator = self._previous()
+            right = self._primary()
+            return Unary(operator, right)
         if self._match(TokenType.NUMBER, TokenType.STRING):
             return Literal(self._previous().literal)
         if self._match(TokenType.TRUE):
@@ -30,6 +44,9 @@ class ExpressionParser:
         if self._check(token_type):
             return self._advance()
         raise ParseError(message, self._peek().line)
+
+    # ---------------- helpers ----------------
+    # (다음 단계에서 _unary/_term/_factor 등 우선순위 체인이 추가될 자리)
 
     def _match(self, *types):
         for token_type in types:
