@@ -6,7 +6,7 @@
 으로 이어서 작성하면 된다.
 """
 
-from assembler.expr import Binary, Grouping, Literal, Logical, Unary, Variable
+from assembler.expr import Assign, Binary, Grouping, Literal, Logical, Unary, Variable
 from assembler.expression_parser import ExpressionParser
 from assembler.tokens import Token, TokenType
 
@@ -348,3 +348,72 @@ def test_equality_binds_tighter_than_and():
     assert isinstance(expression.left, Binary)
     assert expression.left.operator.origin == "=="
     assert isinstance(expression.right, Variable)
+
+
+def test_assign_expression_is_parsed_as_assign_expr():
+    # "a = 10"
+    tokens = [
+        Token(TokenType.IDENTIFIER, "a", line=1),
+        Token(TokenType.EQUAL, "=", line=1),
+        Token(TokenType.NUMBER, "10", line=1, literal=10.0),
+        Token(TokenType.EOF, "", line=1),
+    ]
+
+    expression = ExpressionParser(tokens).parse()
+
+    assert isinstance(expression, Assign)
+    assert expression.name.origin == "a"
+    assert expression.value == Literal(10.0)
+
+
+def test_assign_value_can_be_any_expression():
+    # "x = a + b"
+    tokens = [
+        Token(TokenType.IDENTIFIER, "x", line=1),
+        Token(TokenType.EQUAL, "=", line=1),
+        Token(TokenType.IDENTIFIER, "a", line=1),
+        Token(TokenType.PLUS, "+", line=1),
+        Token(TokenType.IDENTIFIER, "b", line=1),
+        Token(TokenType.EOF, "", line=1),
+    ]
+
+    expression = ExpressionParser(tokens).parse()
+
+    assert isinstance(expression, Assign)
+    assert expression.name.origin == "x"
+    assert isinstance(expression.value, Binary)
+
+
+def test_assign_is_right_associative():
+    # "a = b = 3"  ==>  Assign(a, Assign(b, 3))
+    tokens = [
+        Token(TokenType.IDENTIFIER, "a", line=1),
+        Token(TokenType.EQUAL, "=", line=1),
+        Token(TokenType.IDENTIFIER, "b", line=1),
+        Token(TokenType.EQUAL, "=", line=1),
+        Token(TokenType.NUMBER, "3", line=1, literal=3.0),
+        Token(TokenType.EOF, "", line=1),
+    ]
+
+    expression = ExpressionParser(tokens).parse()
+
+    assert isinstance(expression, Assign)
+    assert expression.name.origin == "a"
+    assert isinstance(expression.value, Assign)
+    assert expression.value.name.origin == "b"
+    assert expression.value.value == Literal(3.0)
+
+
+def test_invalid_assignment_target_raises_parse_error():
+    from assembler.errors import ParseError
+
+    # "3 = 4"
+    tokens = [
+        Token(TokenType.NUMBER, "3", line=1, literal=3.0),
+        Token(TokenType.EQUAL, "=", line=1),
+        Token(TokenType.NUMBER, "4", line=1, literal=4.0),
+        Token(TokenType.EOF, "", line=1),
+    ]
+
+    with __import__("pytest").raises(ParseError):
+        ExpressionParser(tokens).parse()
