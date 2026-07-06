@@ -6,7 +6,7 @@
 으로 이어서 작성하면 된다.
 """
 
-from assembler.expr import Grouping, Literal, Unary, Variable
+from assembler.expr import Binary, Grouping, Literal, Unary, Variable
 from assembler.expression_parser import ExpressionParser
 from assembler.tokens import Token, TokenType
 
@@ -120,3 +120,35 @@ def test_unary_bang_is_parsed_as_unary_expr():
     assert isinstance(expression, Unary)
     assert expression.operator.origin == "!"
     assert isinstance(expression.right, Variable)
+
+
+def test_star_expression_is_parsed_as_binary_expr():
+    # "a * b"
+    tokens = [
+        Token(TokenType.IDENTIFIER, "a", line=1),
+        Token(TokenType.STAR, "*", line=1),
+        Token(TokenType.IDENTIFIER, "b", line=1),
+        Token(TokenType.EOF, "", line=1),
+    ]
+
+    expression = ExpressionParser(tokens).parse()
+
+    assert isinstance(expression, Binary)
+    assert expression.operator.origin == "*"
+    assert isinstance(expression.left, Variable)
+    assert isinstance(expression.right, Variable)
+
+
+def test_slash_expression_is_parsed_as_binary_expr():
+    # "a / b"
+    tokens = [
+        Token(TokenType.IDENTIFIER, "a", line=1),
+        Token(TokenType.SLASH, "/", line=1),
+        Token(TokenType.IDENTIFIER, "b", line=1),
+        Token(TokenType.EOF, "", line=1),
+    ]
+
+    expression = ExpressionParser(tokens).parse()
+
+    assert isinstance(expression, Binary)
+    assert expression.operator.origin == "/"
