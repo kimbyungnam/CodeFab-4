@@ -1,6 +1,14 @@
-from assembler.errors import ParseError
-from assembler.expr import Assign, Binary, Grouping, Literal, Logical, Unary, Variable
-from assembler.tokens import TokenType
+from codefab.assembler.errors import ParseError
+from codefab.assembler.expr import (
+    Assign,
+    Binary,
+    Grouping,
+    Literal,
+    Logical,
+    Unary,
+    Variable,
+)
+from codefab.assembler.tokens import TokenType
 
 
 class ExpressionParser:

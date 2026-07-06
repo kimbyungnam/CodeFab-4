@@ -1,6 +1,14 @@
-from assembler.expr import Assign, Binary, Grouping, Literal, Logical, Unary, Variable
-from assembler.expression_parser import ExpressionParser
-from assembler.tokens import Token, TokenType
+from codefab.assembler.expr import (
+    Assign,
+    Binary,
+    Grouping,
+    Literal,
+    Logical,
+    Unary,
+    Variable,
+)
+from codefab.assembler.expression_parser import ExpressionParser
+from codefab.assembler.tokens import Token, TokenType
 
 
 def test_single_number_literal_is_parsed_as_literal_expr():
@@ -72,7 +80,7 @@ def test_parenthesized_expression_is_parsed_as_grouping_expr():
 
 
 def test_missing_closing_paren_raises_parse_error():
-    from assembler.errors import ParseError
+    from codefab.assembler.errors import ParseError
 
     tokens = [
         Token(TokenType.LEFT_PAREN, "(", literal=None, line=1),
@@ -374,7 +382,7 @@ def test_assign_is_right_associative():
 
 
 def test_invalid_assignment_target_raises_parse_error():
-    from assembler.errors import ParseError
+    from codefab.assembler.errors import ParseError
 
     # "3 = 4"
     tokens = [
