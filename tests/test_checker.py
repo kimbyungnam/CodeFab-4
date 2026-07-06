@@ -60,5 +60,23 @@ def test_변수_중복_선언_에러_검출(mocker):
         sut.resolve(ast)
 
 
-def test_지역_변수_초기화_시_자기_참조_에러_검출():
-    pass
+def test_지역_변수_초기화_시_자기_참조_에러_검출(mocker):
+    # arrange
+    variable_a = mocker.Mock()
+    variable_a.name = Token(type=TokenType.IDENTIFIER, lexeme="a", literal=None, line=1)
+    variable_a.accept.side_effect = lambda visitor: visitor.visit_variable(variable_a)
+
+    var_stmt_a = mocker.Mock(initializer=variable_a)
+    var_stmt_a.name = Token(type=TokenType.IDENTIFIER, lexeme="a", literal=None, line=1)
+    var_stmt_a.accept.side_effect = lambda visitor: visitor.visit_var_stmt(var_stmt_a)
+
+    block_stmt = mocker.Mock(statements=[var_stmt_a])
+    block_stmt.accept.side_effect = lambda visitor: visitor.visit_block_stmt(block_stmt)
+
+    ast = [block_stmt]
+    sut = Checker()
+
+    # act
+    # assert
+    with pytest.raises(ValueError, match="지역 변수 자기 참조 에러입니다."):
+        sut.resolve(ast)
