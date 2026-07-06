@@ -1,3 +1,4 @@
+from codefab.assembler.errors import ParseError
 from codefab.assembler.expr import (
     Assign,
     Binary,
@@ -80,7 +81,6 @@ def test_parenthesized_expression_is_parsed_as_grouping_expr():
 
 
 def test_missing_closing_paren_raises_parse_error():
-    from codefab.assembler.errors import ParseError
 
     tokens = [
         Token(TokenType.LEFT_PAREN, "(", literal=None, line=1),
@@ -382,7 +382,6 @@ def test_assign_is_right_associative():
 
 
 def test_invalid_assignment_target_raises_parse_error():
-    from codefab.assembler.errors import ParseError
 
     # "3 = 4"
     tokens = [
