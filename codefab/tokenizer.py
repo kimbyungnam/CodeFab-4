@@ -1,0 +1,81 @@
+from codefab.token import Token, TokenType
+
+SINGLE_CHAR_TOKENS = {
+    "(": TokenType.LEFT_PAREN,
+    ")": TokenType.RIGHT_PAREN,
+    "{": TokenType.LEFT_BRACE,
+    "}": TokenType.RIGHT_BRACE,
+    ";": TokenType.SEMICOLON,
+    "+": TokenType.PLUS,
+    "-": TokenType.MINUS,
+    "*": TokenType.STAR,
+    "/": TokenType.SLASH,
+    "=": TokenType.EQUAL,
+    ">": TokenType.GREATER,
+    "<": TokenType.LESS,
+}
+
+KEYWORDS = {
+    "if": TokenType.IF,
+    "만약": TokenType.IF,
+    "var": TokenType.VAR,
+    "변수": TokenType.VAR,
+    "print": TokenType.PRINT,
+    "출력": TokenType.PRINT,
+}
+
+
+class Tokenizer:
+    def __init__(self, source: str):
+        self.source = source
+        self.tokens: list[Token] = []
+        self.start = 0
+        self.current = 0
+        self.line = 1
+
+    def scan_tokens(self) -> list[Token]:
+        while not self._is_at_end():
+            self.start = self.current
+            current_token = self.source[self.current]
+            self.current += 1
+            if current_token in (" ", "\t"):
+                continue
+            if current_token == "\n":
+                self.line += 1
+                continue
+            if current_token in SINGLE_CHAR_TOKENS:
+                self._add(SINGLE_CHAR_TOKENS[current_token])
+                continue
+            if current_token.isdigit():
+                self._number()
+                continue
+            if current_token.isalpha() or current_token == "_":
+                self._identifier()
+                continue
+        self.tokens.append(
+            Token(type=TokenType.EOF, lexeme="", literal=None, line=self.line)
+        )
+        return self.tokens
+
+    def _add(self, token_type: TokenType, literal=None) -> None:
+        lexeme = self.source[self.start : self.current]
+        self.tokens.append(
+            Token(type=token_type, lexeme=lexeme, literal=literal, line=self.line)
+        )
+
+    def _number(self) -> None:
+        while not self._is_at_end() and self.source[self.current].isdigit():
+            self.current += 1
+        lexeme = self.source[self.start : self.current]
+        self._add(TokenType.NUMBER, literal=float(lexeme))
+
+    def _identifier(self) -> None:
+        while not self._is_at_end() and (
+            self.source[self.current].isalnum() or self.source[self.current] == "_"
+        ):
+            self.current += 1
+        lexeme = self.source[self.start : self.current]
+        self._add(KEYWORDS.get(lexeme, TokenType.IDENTIFIER))
+
+    def _is_at_end(self) -> bool:
+        return self.current >= len(self.source)
