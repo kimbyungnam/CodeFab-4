@@ -18,28 +18,19 @@ class ExpressionParser:
         return self._logic_or()
 
     def _logic_or(self):
-        expression = self._logic_and()
-        while self._match(TokenType.OR):
-            operator = self._previous()
-            right = self._logic_and()
-            expression = Logical(expression, operator, right)
-        return expression
+        return self._left_assoc(Logical, self._logic_and, TokenType.OR)
 
     def _logic_and(self):
-        expression = self._equality()
-        while self._match(TokenType.AND):
-            operator = self._previous()
-            right = self._equality()
-            expression = Logical(expression, operator, right)
-        return expression
+        return self._left_assoc(Logical, self._equality, TokenType.AND)
 
     def _equality(self):
-        return self._left_assoc_binary(
-            self._comparison, TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL
+        return self._left_assoc(
+            Binary, self._comparison, TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL
         )
 
     def _comparison(self):
-        return self._left_assoc_binary(
+        return self._left_assoc(
+            Binary,
             self._term,
             TokenType.GREATER,
             TokenType.GREATER_EQUAL,
@@ -48,21 +39,22 @@ class ExpressionParser:
         )
 
     def _term(self):
-        return self._left_assoc_binary(self._factor, TokenType.PLUS, TokenType.MINUS)
+        return self._left_assoc(Binary, self._factor, TokenType.PLUS, TokenType.MINUS)
 
     def _factor(self):
-        return self._left_assoc_binary(self._unary, TokenType.STAR, TokenType.SLASH)
+        return self._left_assoc(Binary, self._unary, TokenType.STAR, TokenType.SLASH)
 
-    def _left_assoc_binary(self, operand_rule, *operator_types):
-        """left (op right)* 형태의 좌결합 이항연산 문법 규칙 공통 처리.
+    def _left_assoc(self, node_class, operand_rule, *operator_types):
+        """left (op right)* 형태의 좌결합 이항/논리 연산 문법 규칙 공통 처리.
 
+        node_class: 만들어낼 노드 (Binary 또는 Logical)
         operand_rule: 한 단계 더 높은 우선순위의 파싱 메서드 (예: _term -> _factor)
         """
         expression = operand_rule()
         while self._match(*operator_types):
             operator = self._previous()
             right = operand_rule()
-            expression = Binary(expression, operator, right)
+            expression = node_class(expression, operator, right)
         return expression
 
     def _unary(self):
