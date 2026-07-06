@@ -152,3 +152,145 @@ def test_slash_expression_is_parsed_as_binary_expr():
 
     assert isinstance(expression, Binary)
     assert expression.operator.origin == "/"
+
+
+def test_plus_expression_is_parsed_as_binary_expr():
+    # "a + b"
+    tokens = [
+        Token(TokenType.IDENTIFIER, "a", line=1),
+        Token(TokenType.PLUS, "+", line=1),
+        Token(TokenType.IDENTIFIER, "b", line=1),
+        Token(TokenType.EOF, "", line=1),
+    ]
+
+    expression = ExpressionParser(tokens).parse()
+
+    assert isinstance(expression, Binary)
+    assert expression.operator.origin == "+"
+
+
+def test_minus_expression_is_parsed_as_binary_expr():
+    # "a - b"
+    tokens = [
+        Token(TokenType.IDENTIFIER, "a", line=1),
+        Token(TokenType.MINUS, "-", line=1),
+        Token(TokenType.IDENTIFIER, "b", line=1),
+        Token(TokenType.EOF, "", line=1),
+    ]
+
+    expression = ExpressionParser(tokens).parse()
+
+    assert isinstance(expression, Binary)
+    assert expression.operator.origin == "-"
+
+
+def test_star_binds_tighter_than_plus():
+    # "a + b * c"  ==>  Binary(+, a, Binary(*, b, c))
+    tokens = [
+        Token(TokenType.IDENTIFIER, "a", line=1),
+        Token(TokenType.PLUS, "+", line=1),
+        Token(TokenType.IDENTIFIER, "b", line=1),
+        Token(TokenType.STAR, "*", line=1),
+        Token(TokenType.IDENTIFIER, "c", line=1),
+        Token(TokenType.EOF, "", line=1),
+    ]
+
+    expression = ExpressionParser(tokens).parse()
+
+    assert isinstance(expression, Binary)
+    assert expression.operator.origin == "+"
+    assert isinstance(expression.left, Variable)
+    assert isinstance(expression.right, Binary)
+    assert expression.right.operator.origin == "*"
+
+
+def _binary_two_identifiers(op_type, op_origin):
+    """ "a <op> b" 형태의 토큰 리스트를 만드는 헬퍼."""
+    return [
+        Token(TokenType.IDENTIFIER, "a", line=1),
+        Token(op_type, op_origin, line=1),
+        Token(TokenType.IDENTIFIER, "b", line=1),
+        Token(TokenType.EOF, "", line=1),
+    ]
+
+
+def test_greater_expression_is_parsed_as_binary_expr():
+    expression = ExpressionParser(
+        _binary_two_identifiers(TokenType.GREATER, ">")
+    ).parse()
+    assert isinstance(expression, Binary)
+    assert expression.operator.origin == ">"
+
+
+def test_greater_equal_expression_is_parsed_as_binary_expr():
+    tokens = _binary_two_identifiers(TokenType.GREATER_EQUAL, ">=")
+    expression = ExpressionParser(tokens).parse()
+    assert isinstance(expression, Binary)
+    assert expression.operator.origin == ">="
+
+
+def test_less_expression_is_parsed_as_binary_expr():
+    expression = ExpressionParser(_binary_two_identifiers(TokenType.LESS, "<")).parse()
+    assert isinstance(expression, Binary)
+    assert expression.operator.origin == "<"
+
+
+def test_less_equal_expression_is_parsed_as_binary_expr():
+    tokens = _binary_two_identifiers(TokenType.LESS_EQUAL, "<=")
+    expression = ExpressionParser(tokens).parse()
+    assert isinstance(expression, Binary)
+    assert expression.operator.origin == "<="
+
+
+def test_term_binds_tighter_than_comparison():
+    # "a + b > c"  ==>  Binary(>, Binary(+, a, b), c)
+    tokens = [
+        Token(TokenType.IDENTIFIER, "a", line=1),
+        Token(TokenType.PLUS, "+", line=1),
+        Token(TokenType.IDENTIFIER, "b", line=1),
+        Token(TokenType.GREATER, ">", line=1),
+        Token(TokenType.IDENTIFIER, "c", line=1),
+        Token(TokenType.EOF, "", line=1),
+    ]
+
+    expression = ExpressionParser(tokens).parse()
+
+    assert isinstance(expression, Binary)
+    assert expression.operator.origin == ">"
+    assert isinstance(expression.left, Binary)
+    assert expression.left.operator.origin == "+"
+    assert isinstance(expression.right, Variable)
+
+
+def test_equal_equal_expression_is_parsed_as_binary_expr():
+    tokens = _binary_two_identifiers(TokenType.EQUAL_EQUAL, "==")
+    expression = ExpressionParser(tokens).parse()
+    assert isinstance(expression, Binary)
+    assert expression.operator.origin == "=="
+
+
+def test_bang_equal_expression_is_parsed_as_binary_expr():
+    tokens = _binary_two_identifiers(TokenType.BANG_EQUAL, "!=")
+    expression = ExpressionParser(tokens).parse()
+    assert isinstance(expression, Binary)
+    assert expression.operator.origin == "!="
+
+
+def test_comparison_binds_tighter_than_equality():
+    # "a > b == c"  ==>  Binary(==, Binary(>, a, b), c)
+    tokens = [
+        Token(TokenType.IDENTIFIER, "a", line=1),
+        Token(TokenType.GREATER, ">", line=1),
+        Token(TokenType.IDENTIFIER, "b", line=1),
+        Token(TokenType.EQUAL_EQUAL, "==", line=1),
+        Token(TokenType.IDENTIFIER, "c", line=1),
+        Token(TokenType.EOF, "", line=1),
+    ]
+
+    expression = ExpressionParser(tokens).parse()
+
+    assert isinstance(expression, Binary)
+    assert expression.operator.origin == "=="
+    assert isinstance(expression.left, Binary)
+    assert expression.left.operator.origin == ">"
+    assert isinstance(expression.right, Variable)
