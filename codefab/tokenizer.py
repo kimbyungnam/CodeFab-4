@@ -1,4 +1,4 @@
-from codefab.token import Token, TokenType
+from codefab.tokens import Token, TokenType
 
 SINGLE_CHAR_TOKENS = {
     "(": TokenType.LEFT_PAREN,
