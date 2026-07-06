@@ -1,14 +1,9 @@
-from assembler.expr import Literal
+from assembler.errors import ParseError
+from assembler.expr import Grouping, Literal, Variable
 from assembler.tokens import TokenType
 
 
 class ExpressionParser:
-    """Token List 를 Expr 트리로 조립하는 파서.
-
-    [1단계] 지금은 숫자 리터럴 하나만 처리한다.
-    다음 단계에서 문자열/불리언/변수/괄호/단항/이항/논리/대입을 순서대로 추가한다.
-    """
-
     def __init__(self, tokens):
         self.tokens = tokens
         self.current = 0
@@ -17,14 +12,24 @@ class ExpressionParser:
         return self._primary()
 
     def _primary(self):
-        if self._match(TokenType.NUMBER):
+        if self._match(TokenType.NUMBER, TokenType.STRING):
             return Literal(self._previous().literal)
-        raise NotImplementedError(
-            "아직 NUMBER 리터럴 이외의 표현식은 처리하지 않습니다."
-        )
+        if self._match(TokenType.TRUE):
+            return Literal(True)
+        if self._match(TokenType.FALSE):
+            return Literal(False)
+        if self._match(TokenType.IDENTIFIER):
+            return Variable(self._previous())
+        if self._match(TokenType.LEFT_PAREN):
+            expression = self.parse()
+            self._consume(TokenType.RIGHT_PAREN, "표현식 뒤에는 ')'가 필요합니다.")
+            return Grouping(expression)
+        raise NotImplementedError("아직 처리하지 않는 표현식 종류입니다.")
 
-    # ---------------- helpers ----------------
-    # (다음 단계에서 _unary/_term/_factor 등 우선순위 체인이 추가될 자리)
+    def _consume(self, token_type, message):
+        if self._check(token_type):
+            return self._advance()
+        raise ParseError(message, self._peek().line)
 
     def _match(self, *types):
         for token_type in types:
