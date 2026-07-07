@@ -15,6 +15,18 @@ from codefab.ast_nodes import (
     Variable,
     VarStmt,
 )
+from codefab.tokens import Token, TokenType
+
+from codefab.error import (
+    DivisionByZeroError,
+    InvalidOperandTypeError,
+    MismatchedPlusOperandTypeError,
+    UndefinedVariableError,
+    UnsupportedBinaryOperatorError,
+    UnsupportedExpressionError,
+    UnsupportedStatementError,
+    UnsupportedUnaryOperatorError,
+)
 from codefab.tokens import TokenType
 
 
