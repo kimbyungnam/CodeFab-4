@@ -18,10 +18,22 @@ SINGLE_CHAR_TOKENS = {
 KEYWORDS = {
     "if": TokenType.IF,
     "만약": TokenType.IF,
+    "else": TokenType.ELSE,
+    "아니면": TokenType.ELSE,
     "var": TokenType.VAR,
     "변수": TokenType.VAR,
+    "for": TokenType.FOR,
+    "반복": TokenType.FOR,
     "print": TokenType.PRINT,
     "출력": TokenType.PRINT,
+    "true": TokenType.TRUE,
+    "참": TokenType.TRUE,
+    "false": TokenType.FALSE,
+    "거짓": TokenType.FALSE,
+    "and": TokenType.AND,
+    "그리고": TokenType.AND,
+    "or": TokenType.OR,
+    "또는": TokenType.OR,
 }
 
 
