@@ -108,6 +108,7 @@ def test_korean_keyword_tokens(source, expected_type):
         ("==", TokenType.EQUAL_EQUAL),
         (">=", TokenType.GREATER_EQUAL),
         ("<=", TokenType.LESS_EQUAL),
+        ("!=", TokenType.BANG_EQUAL),
     ],
 )
 def test_double_char_operator_tokens(source, expected_type):
@@ -115,6 +116,15 @@ def test_double_char_operator_tokens(source, expected_type):
 
     assert tokens == [
         Token(type=expected_type, lexeme=source, literal=None, line=1),
+        Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
+    ]
+
+
+def test_bang_token():
+    tokens = Tokenizer("!").scan_tokens()
+
+    assert tokens == [
+        Token(type=TokenType.BANG, lexeme="!", literal=None, line=1),
         Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
     ]
 

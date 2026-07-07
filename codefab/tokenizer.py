@@ -14,12 +14,14 @@ SINGLE_CHAR_TOKENS = {
     "=": TokenType.EQUAL,
     ">": TokenType.GREATER,
     "<": TokenType.LESS,
+    "!": TokenType.BANG,
 }
 
 DOUBLE_CHAR_TOKENS = {
     "=": TokenType.EQUAL_EQUAL,
     ">": TokenType.GREATER_EQUAL,
     "<": TokenType.LESS_EQUAL,
+    "!": TokenType.BANG_EQUAL,
 }
 
 KEYWORDS = {
