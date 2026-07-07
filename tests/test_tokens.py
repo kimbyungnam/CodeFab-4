@@ -3,7 +3,7 @@ import pytest
 from codefab.tokens import Token, TokenType
 
 
-def test_token_simple_exaple():
+def test_토큰_필드가_정확히_저장된다():
     token = Token(type=TokenType.NUMBER, lexeme="3.14", literal=3.14, line=1)
 
     assert token.type == TokenType.NUMBER
@@ -42,7 +42,7 @@ def test_token_simple_exaple():
         "EOF",
     ],
 )
-def test_token_type_exists(name):
+def test_토큰타입이_존재한다(name):
     assert hasattr(TokenType, name)
 
 
@@ -63,7 +63,7 @@ def test_token_type_exists(name):
         (TokenType.LESS, "<"),
     ],
 )
-def test_token_stores_fixed_symbol_lexeme(token_type, lexeme):
+def test_토큰이_고정_기호_렉심을_저장한다(token_type, lexeme):
     token = Token(type=token_type, lexeme=lexeme, literal=None, line=1)
 
     assert token.type == token_type
@@ -79,7 +79,7 @@ def test_token_stores_fixed_symbol_lexeme(token_type, lexeme):
         (TokenType.IF, "만약"),
     ],
 )
-def test_token_stores_korean_keyword_lexeme(token_type, lexeme):
+def test_토큰이_한글_키워드_렉심을_저장한다(token_type, lexeme):
     token = Token(type=token_type, lexeme=lexeme, literal=None, line=1)
 
     assert token.type == token_type

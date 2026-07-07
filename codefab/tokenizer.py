@@ -93,10 +93,24 @@ class Tokenizer:
     def _number(self):
         while not self._is_at_end() and self.source[self.current].isdigit():
             self.current += 1
+
+        if self._peek_is_decimal_point():
+            self.current += 1  # 소수점 '.' 소비
+            while not self._is_at_end() and self.source[self.current].isdigit():
+                self.current += 1
+
         lexeme = self.source[self.start : self.current]
         self._add(TokenType.NUMBER, literal=float(lexeme))
 
-    def _string(self):
+    def _peek_is_decimal_point(self) -> bool:
+        return (
+            not self._is_at_end()
+            and self.source[self.current] == "."
+            and self.current + 1 < len(self.source)
+            and self.source[self.current + 1].isdigit()
+        )
+
+    def _string(self) -> None:
         while not self._is_at_end() and self.source[self.current] != '"':
             if self.source[self.current] == "\n":
                 self.line += 1
