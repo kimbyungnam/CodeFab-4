@@ -1,3 +1,4 @@
+from codefab.assembler.errors import ParseError
 from codefab.tokens import Token, TokenType
 
 SINGLE_CHAR_TOKENS = {
@@ -64,6 +65,9 @@ class Tokenizer:
             if current_token in DOUBLE_CHAR_TOKENS and self._match_next("="):
                 self._add(DOUBLE_CHAR_TOKENS[current_token])
                 continue
+            if current_token == '"':
+                self._string()
+                continue
             if current_token in SINGLE_CHAR_TOKENS:
                 self._add(SINGLE_CHAR_TOKENS[current_token])
                 continue
@@ -89,6 +93,19 @@ class Tokenizer:
             self.current += 1
         lexeme = self.source[self.start : self.current]
         self._add(TokenType.NUMBER, literal=float(lexeme))
+
+    def _string(self) -> None:
+        while not self._is_at_end() and self.source[self.current] != '"':
+            if self.source[self.current] == "\n":
+                self.line += 1
+            self.current += 1
+
+        if self._is_at_end():
+            raise ParseError("문자열이 닫히지 않았습니다.", self.line)
+
+        self.current += 1  # 닫는 '"' 소비
+        value = self.source[self.start + 1 : self.current - 1]
+        self._add(TokenType.STRING, literal=value)
 
     def _identifier(self) -> None:
         while not self._is_at_end() and (
