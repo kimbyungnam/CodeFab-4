@@ -169,10 +169,53 @@ def test_0으로_나누면_에러를_발생시킨다():
     assert exc_info.value.line == 1
 
 
-def test_피연산자가_숫자가_아니면_에러를_발생시킨다():
+def test_불리언_타입에_곱셈_연산을_하면_에러를_발생시킨다():
+    # 출력 참 * 거짓;
     statement = PrintStmt(
-        make_binary(left=Literal(3.0), operator_lexeme="+", right=Literal("hello"))
+        make_binary(left=Literal(True), operator_lexeme="*", right=Literal(False))
     )
+
+    executor = ExecutorUnit()
+
+    with pytest.raises(ExecutorRuntimeError) as exc_info:
+        executor.execute([statement])
+
+    assert exc_info.value.message == "피연산자는 반드시 숫자여야 합니다."
+
+
+def test_덧셈에_숫자와_문자열이_혼용되면_에러를_발생시킨다():
+    # 출력 1 + "HI";
+    statement = PrintStmt(
+        make_binary(left=Literal(1.0), operator_lexeme="+", right=Literal("HI"))
+    )
+
+    executor = ExecutorUnit()
+
+    with pytest.raises(ExecutorRuntimeError) as exc_info:
+        executor.execute([statement])
+
+    assert (
+        exc_info.value.message
+        == "피연산자는 둘 다 숫자이거나 둘 다 문자열이어야 합니다."
+    )
+
+
+def test_뺄셈_피연산자가_숫자가_아니면_에러를_발생시킨다():
+    statement = PrintStmt(
+        make_binary(left=Literal(3.0), operator_lexeme="-", right=Literal("hello"))
+    )
+
+    executor = ExecutorUnit()
+
+    with pytest.raises(ExecutorRuntimeError) as exc_info:
+        executor.execute([statement])
+
+    assert exc_info.value.message == "피연산자는 반드시 숫자여야 합니다."
+
+
+def test_단항_마이너스_피연산자가_숫자가_아니면_에러를_발생시킨다():
+    # 출력 -"말랑";
+    statement = PrintStmt(make_unary(Literal("말랑")))
 
     executor = ExecutorUnit()
 

@@ -193,8 +193,12 @@ class ExecutorUnit:
         if operator_type == TokenType.PLUS:
             if isinstance(left, str) and isinstance(right, str):
                 return left + right
-            self._check_number_operands(left, right, line)
-            return left + right
+            if isinstance(left, float) and isinstance(right, float):
+                return left + right
+            raise ExecutorRuntimeError(
+                "피연산자는 둘 다 숫자이거나 둘 다 문자열이어야 합니다.",
+                line=line,
+            )
 
         if operator_type == TokenType.MINUS:
             self._check_number_operands(left, right, line)
