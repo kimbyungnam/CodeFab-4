@@ -44,11 +44,6 @@ class SelfReferenceInInitializerError(CheckerError):
         super().__init__("지역 변수 자기 참조 에러입니다.", line)
 
 
-class UndeclaredVariableError(CheckerError):
-    def __init__(self, line: int | None = None):
-        super().__init__("선언되지 않은 변수를 사용했습니다.", line)
-
-
 # ---------------- Executor Unit ----------------
 
 

@@ -39,7 +39,9 @@ class ExpressionParser:
         return self._left_assoc(Logical, self._equality, TokenType.AND)
 
     def _equality(self) -> Expr:
-        return self._left_assoc(Binary, self._comparison, TokenType.EQUAL_EQUAL)
+        return self._left_assoc(
+            Binary, self._comparison, TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL
+        )
 
     def _comparison(self) -> Expr:
         return self._left_assoc(
@@ -71,7 +73,7 @@ class ExpressionParser:
         return expression
 
     def _unary(self) -> Expr:
-        if self._match(TokenType.MINUS):
+        if self._match(TokenType.MINUS, TokenType.BANG):
             operator = self._previous()
             right = self._unary()
             return Unary(operator, right)
