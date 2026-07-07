@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/kimbyungnam/CodeFab-4/graph/badge.svg?token=SJ40GY81IP)](https://codecov.io/gh/kimbyungnam/CodeFab-4)
+
 # CodeFab-4
 CodeFab Interpreter 프로젝트
 
