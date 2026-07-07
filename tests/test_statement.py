@@ -12,9 +12,9 @@ from codefab.tokens import Token, TokenType
 
 
 def test_if_stmt_without_else_is_parsed_as_if_stmt():
-    # if (x > 0) y = 1;
+    # 만약 (x > 0) y = 1;
     tokens = [
-        Token(TokenType.IF, "if", literal=None, line=1),
+        Token(TokenType.IF, "만약", literal=None, line=1),
         Token(TokenType.LEFT_PAREN, "(", literal=None, line=1),
         Token(TokenType.IDENTIFIER, "x", literal=None, line=1),
         Token(TokenType.GREATER, ">", literal=None, line=1),
@@ -48,9 +48,9 @@ def test_if_stmt_without_else_is_parsed_as_if_stmt():
 
 
 def test_if_stmt_with_else_is_parsed_as_if_stmt():
-    # if (x > 0) y = 1; else y = 2;
+    # 만약 (x > 0) y = 1; 아니면 y = 2;
     tokens = [
-        Token(TokenType.IF, "if", literal=None, line=1),
+        Token(TokenType.IF, "만약", literal=None, line=1),
         Token(TokenType.LEFT_PAREN, "(", literal=None, line=1),
         Token(TokenType.IDENTIFIER, "x", literal=None, line=1),
         Token(TokenType.GREATER, ">", literal=None, line=1),
@@ -60,7 +60,7 @@ def test_if_stmt_with_else_is_parsed_as_if_stmt():
         Token(TokenType.EQUAL, "=", literal=None, line=1),
         Token(TokenType.NUMBER, "1", literal=1.0, line=1),
         Token(TokenType.SEMICOLON, ";", literal=None, line=1),
-        Token(TokenType.ELSE, "else", literal=None, line=1),
+        Token(TokenType.ELSE, "아니면", literal=None, line=1),
         Token(TokenType.IDENTIFIER, "y", literal=None, line=1),
         Token(TokenType.EQUAL, "=", literal=None, line=1),
         Token(TokenType.NUMBER, "2", literal=2.0, line=1),
@@ -140,9 +140,9 @@ def test_block_stmt_groups_multiple_statements():
 
 
 def test_print_stmt_is_parsed_as_print_stmt():
-    # print a;
+    # 출력 a;
     tokens = [
-        Token(TokenType.PRINT, "print", literal=None, line=1),
+        Token(TokenType.PRINT, "출력", literal=None, line=1),
         Token(TokenType.IDENTIFIER, "a", literal=None, line=1),
         Token(TokenType.SEMICOLON, ";", literal=None, line=1),
         Token(TokenType.EOF, "", literal=None, line=1),
@@ -156,11 +156,11 @@ def test_print_stmt_is_parsed_as_print_stmt():
 
 
 def test_for_stmt_is_parsed_as_for_stmt():
-    # for (var i = 0; i < 3; i = i + 1) { print i; }
+    # 반복 (변수 i = 0; i < 3; i = i + 1) { 출력 i; }
     tokens = [
-        Token(TokenType.FOR, "for", literal=None, line=1),
+        Token(TokenType.FOR, "반복", literal=None, line=1),
         Token(TokenType.LEFT_PAREN, "(", literal=None, line=1),
-        Token(TokenType.VAR, "var", literal=None, line=1),
+        Token(TokenType.VAR, "변수", literal=None, line=1),
         Token(TokenType.IDENTIFIER, "i", literal=None, line=1),
         Token(TokenType.EQUAL, "=", literal=None, line=1),
         Token(TokenType.NUMBER, "0", literal=0.0, line=1),
@@ -176,7 +176,7 @@ def test_for_stmt_is_parsed_as_for_stmt():
         Token(TokenType.NUMBER, "1", literal=1.0, line=1),
         Token(TokenType.RIGHT_PAREN, ")", literal=None, line=1),
         Token(TokenType.LEFT_BRACE, "{", literal=None, line=1),
-        Token(TokenType.PRINT, "print", literal=None, line=1),
+        Token(TokenType.PRINT, "출력", literal=None, line=1),
         Token(TokenType.IDENTIFIER, "i", literal=None, line=1),
         Token(TokenType.SEMICOLON, ";", literal=None, line=1),
         Token(TokenType.RIGHT_BRACE, "}", literal=None, line=1),
@@ -193,9 +193,9 @@ def test_for_stmt_is_parsed_as_for_stmt():
 
 
 def test_var_declaration_with_initializer_is_parsed_as_var_stmt():
-    # var x = 10;
+    # 변수 x = 10;
     tokens = [
-        Token(TokenType.VAR, "var", literal=None, line=1),
+        Token(TokenType.VAR, "변수", literal=None, line=1),
         Token(TokenType.IDENTIFIER, "x", literal=None, line=1),
         Token(TokenType.EQUAL, "=", literal=None, line=1),
         Token(TokenType.NUMBER, "10", literal=10.0, line=1),
