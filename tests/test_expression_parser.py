@@ -109,6 +109,21 @@ def test_unary_minus_is_parsed_as_unary_expr():
     assert isinstance(expression.right, Variable)
 
 
+def test_unary_bang_is_parsed_as_unary_expr():
+    # "!a"
+    tokens = [
+        Token(TokenType.BANG, "!", literal=None, line=1),
+        Token(TokenType.IDENTIFIER, "a", literal=None, line=1),
+        Token(TokenType.EOF, "", literal=None, line=1),
+    ]
+
+    expression = ExpressionParser(tokens).parse()
+
+    assert isinstance(expression, Unary)
+    assert expression.operator.lexeme == "!"
+    assert isinstance(expression.right, Variable)
+
+
 def test_star_expression_is_parsed_as_binary_expr():
     # "a * b"
     tokens = [
@@ -253,6 +268,13 @@ def test_equal_equal_expression_is_parsed_as_binary_expr():
     expression = ExpressionParser(tokens).parse()
     assert isinstance(expression, Binary)
     assert expression.operator.lexeme == "=="
+
+
+def test_bang_equal_expression_is_parsed_as_binary_expr():
+    tokens = _binary_two_identifiers(TokenType.BANG_EQUAL, "!=")
+    expression = ExpressionParser(tokens).parse()
+    assert isinstance(expression, Binary)
+    assert expression.operator.lexeme == "!="
 
 
 def test_comparison_binds_tighter_than_equality():
