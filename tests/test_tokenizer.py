@@ -5,13 +5,13 @@ from codefab.tokenizer import Tokenizer
 from codefab.tokens import Token, TokenType
 
 
-def test_empty_source_returns_only_eof_token():
+def test_빈_소스는_EOF_토큰만_반환한다():
     tokens = Tokenizer("").scan_tokens()
 
     assert tokens == [Token(type=TokenType.EOF, lexeme="", literal=None, line=1)]
 
 
-def test_left_paren_token():
+def test_왼쪽_괄호_토큰을_인식한다():
     tokens = Tokenizer("(").scan_tokens()
 
     assert tokens == [
@@ -20,7 +20,7 @@ def test_left_paren_token():
     ]
 
 
-def test_right_paren_token():
+def test_오른쪽_괄호_토큰을_인식한다():
     tokens = Tokenizer(")").scan_tokens()
 
     assert tokens == [
@@ -29,7 +29,7 @@ def test_right_paren_token():
     ]
 
 
-def test_plus_token():
+def test_플러스_토큰을_인식한다():
     tokens = Tokenizer("+").scan_tokens()
 
     assert tokens == [
@@ -38,7 +38,7 @@ def test_plus_token():
     ]
 
 
-def test_semicolon_token():
+def test_세미콜론_토큰을_인식한다():
     tokens = Tokenizer(";").scan_tokens()
 
     assert tokens == [
@@ -54,7 +54,7 @@ def test_semicolon_token():
         ("5.0", 5.0),
     ],
 )
-def test_decimal_number_token(source, expected_literal):
+def test_소수_숫자_토큰을_인식한다(source, expected_literal):
     tokens = Tokenizer(source).scan_tokens()
 
     assert tokens == [
@@ -63,13 +63,13 @@ def test_decimal_number_token(source, expected_literal):
     ]
 
 
-def test_trailing_dot_without_digit_is_not_consumed_by_number():
+def test_점_뒤에_숫자가_없으면_소수로_인식하지_않는다():
     tokens = Tokenizer("3.").scan_tokens()
 
     assert tokens[0] == Token(type=TokenType.NUMBER, lexeme="3", literal=3.0, line=1)
 
 
-def test_example_one_page_24():
+def test_대입식_예제_토큰화():
     tokens = Tokenizer("age = 37").scan_tokens()
 
     assert tokens == [
@@ -80,7 +80,7 @@ def test_example_one_page_24():
     ]
 
 
-def test_example_two_page_25():
+def test_조건식_예제_토큰화():
     tokens = Tokenizer("if ( x > 10 )").scan_tokens()
 
     assert tokens == [
@@ -94,7 +94,7 @@ def test_example_two_page_25():
     ]
 
 
-def test_example_three_page_26():
+def test_산술식_예제_토큰화():
     tokens = Tokenizer("a + b * 3").scan_tokens()
 
     assert tokens == [
@@ -111,11 +111,17 @@ def test_example_three_page_26():
     "source,expected_type",
     [
         ("만약", TokenType.IF),
+        ("아니면", TokenType.ELSE),
         ("변수", TokenType.VAR),
+        ("반복", TokenType.FOR),
         ("출력", TokenType.PRINT),
+        ("참", TokenType.TRUE),
+        ("거짓", TokenType.FALSE),
+        ("그리고", TokenType.AND),
+        ("또는", TokenType.OR),
     ],
 )
-def test_korean_keyword_tokens(source, expected_type):
+def test_한글_키워드_토큰을_인식한다(source, expected_type):
     tokens = Tokenizer(source).scan_tokens()
 
     assert tokens == [
@@ -133,7 +139,7 @@ def test_korean_keyword_tokens(source, expected_type):
         ("!=", TokenType.BANG_EQUAL),
     ],
 )
-def test_double_char_operator_tokens(source, expected_type):
+def test_두글자_연산자_토큰을_인식한다(source, expected_type):
     tokens = Tokenizer(source).scan_tokens()
 
     assert tokens == [
@@ -142,7 +148,7 @@ def test_double_char_operator_tokens(source, expected_type):
     ]
 
 
-def test_bang_token():
+def test_느낌표_토큰을_인식한다():
     tokens = Tokenizer("!").scan_tokens()
 
     assert tokens == [
@@ -151,7 +157,7 @@ def test_bang_token():
     ]
 
 
-def test_string_token():
+def test_문자열_토큰을_인식한다():
     tokens = Tokenizer('"hello"').scan_tokens()
 
     assert tokens == [
@@ -160,7 +166,7 @@ def test_string_token():
     ]
 
 
-def test_korean_string_concat_token():
+def test_한글_문자열_연결을_토큰화한다():
     tokens = Tokenizer('출력 "안녕, " + "말랑!";').scan_tokens()
 
     assert tokens == [
@@ -173,12 +179,12 @@ def test_korean_string_concat_token():
     ]
 
 
-def test_unterminated_string_raises_parse_error():
+def test_닫히지_않은_문자열은_ParseError를_발생시킨다():
     with pytest.raises(ParseError):
         Tokenizer('"unterminated').scan_tokens()
 
 
-def test_example_two_page_25_korean():
+def test_한글_조건식_예제_토큰화():
     tokens = Tokenizer("만약 ( x > 10 )").scan_tokens()
 
     assert tokens == [
