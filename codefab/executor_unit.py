@@ -15,8 +15,6 @@ from codefab.ast_nodes import (
     Variable,
     VarStmt,
 )
-from codefab.tokens import Token, TokenType
-
 from codefab.error import (
     DivisionByZeroError,
     InvalidOperandTypeError,
@@ -27,6 +25,7 @@ from codefab.error import (
     UnsupportedStatementError,
     UnsupportedUnaryOperatorError,
 )
+from codefab.tokens import Token, TokenType
 
 
 class ExecutorRuntimeError(Exception):
