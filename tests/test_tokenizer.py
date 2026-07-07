@@ -1,5 +1,6 @@
 import pytest
 
+from codefab.assembler.errors import ParseError
 from codefab.tokenizer import Tokenizer
 from codefab.tokens import Token, TokenType
 
@@ -99,6 +100,60 @@ def test_korean_keyword_tokens(source, expected_type):
         Token(type=expected_type, lexeme=source, literal=None, line=1),
         Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
     ]
+
+
+@pytest.mark.parametrize(
+    "source,expected_type",
+    [
+        ("==", TokenType.EQUAL_EQUAL),
+        (">=", TokenType.GREATER_EQUAL),
+        ("<=", TokenType.LESS_EQUAL),
+        ("!=", TokenType.BANG_EQUAL),
+    ],
+)
+def test_double_char_operator_tokens(source, expected_type):
+    tokens = Tokenizer(source).scan_tokens()
+
+    assert tokens == [
+        Token(type=expected_type, lexeme=source, literal=None, line=1),
+        Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
+    ]
+
+
+def test_bang_token():
+    tokens = Tokenizer("!").scan_tokens()
+
+    assert tokens == [
+        Token(type=TokenType.BANG, lexeme="!", literal=None, line=1),
+        Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
+    ]
+
+
+def test_string_token():
+    tokens = Tokenizer('"hello"').scan_tokens()
+
+    assert tokens == [
+        Token(type=TokenType.STRING, lexeme='"hello"', literal="hello", line=1),
+        Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
+    ]
+
+
+def test_korean_string_concat_token():
+    tokens = Tokenizer('출력 "안녕, " + "말랑!";').scan_tokens()
+
+    assert tokens == [
+        Token(type=TokenType.PRINT, lexeme="출력", literal=None, line=1),
+        Token(type=TokenType.STRING, lexeme='"안녕, "', literal="안녕, ", line=1),
+        Token(type=TokenType.PLUS, lexeme="+", literal=None, line=1),
+        Token(type=TokenType.STRING, lexeme='"말랑!"', literal="말랑!", line=1),
+        Token(type=TokenType.SEMICOLON, lexeme=";", literal=None, line=1),
+        Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
+    ]
+
+
+def test_unterminated_string_raises_parse_error():
+    with pytest.raises(ParseError):
+        Tokenizer('"unterminated').scan_tokens()
 
 
 def test_example_two_page_25_korean():

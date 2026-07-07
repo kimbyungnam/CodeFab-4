@@ -9,6 +9,7 @@ from codefab.ast_nodes import (
     Grouping,
     IfStmt,
     Literal,
+    Logical,
     PrintStmt,
     Unary,
     Variable,
@@ -28,6 +29,9 @@ OPERATOR_TOKEN_TYPES = {
     "<=": TokenType.LESS_EQUAL,
     "==": TokenType.EQUAL_EQUAL,
     "!=": TokenType.BANG_EQUAL,
+    "!": TokenType.BANG,
+    "그리고": TokenType.AND,
+    "또는": TokenType.OR,
 }
 
 
@@ -47,6 +51,12 @@ def make_binary(left, operator_lexeme: str, right) -> Binary:
 
 def make_unary(right, operator_lexeme: str = "-") -> Unary:
     return Unary(operator=make_operator_token(operator_lexeme), right=right)
+
+
+def make_logical(left, operator_lexeme: str, right) -> Logical:
+    return Logical(
+        left=left, operator=make_operator_token(operator_lexeme), right=right
+    )
 
 
 def make_variable(name_lexeme: str) -> Variable:
@@ -169,9 +179,10 @@ def test_0으로_나누면_에러를_발생시킨다():
     assert exc_info.value.line == 1
 
 
-def test_피연산자가_숫자가_아니면_에러를_발생시킨다():
+def test_불리언_타입에_곱셈_연산을_하면_에러를_발생시킨다():
+    # 출력 참 * 거짓;
     statement = PrintStmt(
-        make_binary(left=Literal(3.0), operator_lexeme="+", right=Literal("hello"))
+        make_binary(left=Literal(True), operator_lexeme="*", right=Literal(False))
     )
 
     executor = ExecutorUnit()
@@ -180,6 +191,116 @@ def test_피연산자가_숫자가_아니면_에러를_발생시킨다():
         executor.execute([statement])
 
     assert exc_info.value.message == "피연산자는 반드시 숫자여야 합니다."
+
+
+def test_덧셈에_숫자와_문자열이_혼용되면_에러를_발생시킨다():
+    # 출력 1 + "HI";
+    statement = PrintStmt(
+        make_binary(left=Literal(1.0), operator_lexeme="+", right=Literal("HI"))
+    )
+
+    executor = ExecutorUnit()
+
+    with pytest.raises(ExecutorRuntimeError) as exc_info:
+        executor.execute([statement])
+
+    assert (
+        exc_info.value.message
+        == "피연산자는 둘 다 숫자이거나 둘 다 문자열이어야 합니다."
+    )
+
+
+def test_뺄셈_피연산자가_숫자가_아니면_에러를_발생시킨다():
+    statement = PrintStmt(
+        make_binary(left=Literal(3.0), operator_lexeme="-", right=Literal("hello"))
+    )
+
+    executor = ExecutorUnit()
+
+    with pytest.raises(ExecutorRuntimeError) as exc_info:
+        executor.execute([statement])
+
+    assert exc_info.value.message == "피연산자는 반드시 숫자여야 합니다."
+
+
+def test_단항_마이너스_피연산자가_숫자가_아니면_에러를_발생시킨다():
+    # 출력 -"말랑";
+    statement = PrintStmt(make_unary(Literal("말랑")))
+
+    executor = ExecutorUnit()
+
+    with pytest.raises(ExecutorRuntimeError) as exc_info:
+        executor.execute([statement])
+
+    assert exc_info.value.message == "피연산자는 반드시 숫자여야 합니다."
+
+
+@pytest.mark.parametrize(
+    "value, expected",
+    [
+        (True, "거짓"),
+        (False, "참"),
+    ],
+)
+def test_느낌표_단항연산자는_피연산자의_참거짓을_반전한다(capsys, value, expected):
+    # 출력 !value;
+    statement = PrintStmt(make_unary(Literal(value), operator_lexeme="!"))
+
+    assert run_and_capture_prints(capsys, [statement]) == [expected]
+
+
+@pytest.mark.parametrize(
+    "left, right, expected",
+    [
+        (True, True, "참"),
+        (True, False, "거짓"),
+    ],
+)
+def test_그리고는_왼쪽이_참이면_오른쪽_값을_반환한다(capsys, left, right, expected):
+    # 출력 left 그리고 right;
+    statement = PrintStmt(make_logical(Literal(left), "그리고", Literal(right)))
+
+    assert run_and_capture_prints(capsys, [statement]) == [expected]
+
+
+def test_그리고는_왼쪽이_거짓이면_오른쪽을_평가하지_않고_왼쪽_값을_반환한다(capsys):
+    # 출력 거짓 그리고 (1 / 0);
+    statement = PrintStmt(
+        make_logical(
+            Literal(False),
+            "그리고",
+            make_binary(left=Literal(1.0), operator_lexeme="/", right=Literal(0.0)),
+        )
+    )
+
+    assert run_and_capture_prints(capsys, [statement]) == ["거짓"]
+
+
+@pytest.mark.parametrize(
+    "left, right, expected",
+    [
+        (False, True, "참"),
+        (False, False, "거짓"),
+    ],
+)
+def test_또는은_왼쪽이_거짓이면_오른쪽_값을_반환한다(capsys, left, right, expected):
+    # 출력 left 또는 right;
+    statement = PrintStmt(make_logical(Literal(left), "또는", Literal(right)))
+
+    assert run_and_capture_prints(capsys, [statement]) == [expected]
+
+
+def test_또는은_왼쪽이_참이면_오른쪽을_평가하지_않고_왼쪽_값을_반환한다(capsys):
+    # 출력 참 또는 (1 / 0);
+    statement = PrintStmt(
+        make_logical(
+            Literal(True),
+            "또는",
+            make_binary(left=Literal(1.0), operator_lexeme="/", right=Literal(0.0)),
+        )
+    )
+
+    assert run_and_capture_prints(capsys, [statement]) == ["참"]
 
 
 def test_변수를_선언하고_재할당하면_최신_값을_사용한다(capsys):

@@ -1,3 +1,4 @@
+from codefab.assembler.errors import ParseError
 from codefab.tokens import Token, TokenType
 
 SINGLE_CHAR_TOKENS: dict[str, TokenType] = {
@@ -13,6 +14,14 @@ SINGLE_CHAR_TOKENS: dict[str, TokenType] = {
     "=": TokenType.EQUAL,
     ">": TokenType.GREATER,
     "<": TokenType.LESS,
+    "!": TokenType.BANG,
+}
+
+DOUBLE_CHAR_TOKENS = {
+    "=": TokenType.EQUAL_EQUAL,
+    ">": TokenType.GREATER_EQUAL,
+    "<": TokenType.LESS_EQUAL,
+    "!": TokenType.BANG_EQUAL,
 }
 
 KEYWORDS: dict[str, TokenType] = {
@@ -55,6 +64,12 @@ class Tokenizer:
             if current_token == "\n":
                 self.line += 1
                 continue
+            if current_token in DOUBLE_CHAR_TOKENS and self._match_next("="):
+                self._add(DOUBLE_CHAR_TOKENS[current_token])
+                continue
+            if current_token == '"':
+                self._string()
+                continue
             if current_token in SINGLE_CHAR_TOKENS:
                 self._add(SINGLE_CHAR_TOKENS[current_token])
                 continue
@@ -81,6 +96,19 @@ class Tokenizer:
         lexeme = self.source[self.start : self.current]
         self._add(TokenType.NUMBER, literal=float(lexeme))
 
+    def _string(self) -> None:
+        while not self._is_at_end() and self.source[self.current] != '"':
+            if self.source[self.current] == "\n":
+                self.line += 1
+            self.current += 1
+
+        if self._is_at_end():
+            raise ParseError("문자열이 닫히지 않았습니다.", self.line)
+
+        self.current += 1  # 닫는 '"' 소비
+        value = self.source[self.start + 1 : self.current - 1]
+        self._add(TokenType.STRING, literal=value)
+
     def _identifier(self) -> None:
         while not self._is_at_end() and (
             self.source[self.current].isalnum() or self.source[self.current] == "_"
@@ -88,6 +116,12 @@ class Tokenizer:
             self.current += 1
         lexeme = self.source[self.start : self.current]
         self._add(KEYWORDS.get(lexeme, TokenType.IDENTIFIER))
+
+    def _match_next(self, expected: str) -> bool:
+        if self._is_at_end() or self.source[self.current] != expected:
+            return False
+        self.current += 1
+        return True
 
     def _is_at_end(self) -> bool:
         return self.current >= len(self.source)
