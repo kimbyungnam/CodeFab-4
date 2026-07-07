@@ -101,6 +101,23 @@ def test_korean_keyword_tokens(source, expected_type):
     ]
 
 
+@pytest.mark.parametrize(
+    "source,expected_type",
+    [
+        ("==", TokenType.EQUAL_EQUAL),
+        (">=", TokenType.GREATER_EQUAL),
+        ("<=", TokenType.LESS_EQUAL),
+    ],
+)
+def test_double_char_operator_tokens(source, expected_type):
+    tokens = Tokenizer(source).scan_tokens()
+
+    assert tokens == [
+        Token(type=expected_type, lexeme=source, literal=None, line=1),
+        Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
+    ]
+
+
 def test_example_two_page_25_korean():
     tokens = Tokenizer("만약 ( x > 10 )").scan_tokens()
 

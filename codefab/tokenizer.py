@@ -15,6 +15,12 @@ SINGLE_CHAR_TOKENS = {
     "<": TokenType.LESS,
 }
 
+DOUBLE_CHAR_TOKENS = {
+    "=": TokenType.EQUAL_EQUAL,
+    ">": TokenType.GREATER_EQUAL,
+    "<": TokenType.LESS_EQUAL,
+}
+
 KEYWORDS = {
     "if": TokenType.IF,
     "만약": TokenType.IF,
@@ -55,6 +61,9 @@ class Tokenizer:
             if current_token == "\n":
                 self.line += 1
                 continue
+            if current_token in DOUBLE_CHAR_TOKENS and self._match_next("="):
+                self._add(DOUBLE_CHAR_TOKENS[current_token])
+                continue
             if current_token in SINGLE_CHAR_TOKENS:
                 self._add(SINGLE_CHAR_TOKENS[current_token])
                 continue
@@ -88,6 +97,12 @@ class Tokenizer:
             self.current += 1
         lexeme = self.source[self.start : self.current]
         self._add(KEYWORDS.get(lexeme, TokenType.IDENTIFIER))
+
+    def _match_next(self, expected: str) -> bool:
+        if self._is_at_end() or self.source[self.current] != expected:
+            return False
+        self.current += 1
+        return True
 
     def _is_at_end(self) -> bool:
         return self.current >= len(self.source)
