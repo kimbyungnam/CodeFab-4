@@ -29,6 +29,7 @@ build = [
 
 [project.scripts]
 codefab-repl = "codefab.app.repl:main"
+codefab = "codefab.cli:main"
 
 [project.urls]
 Home = "https://github.com/kimbyungnam/CodeFab-4"
