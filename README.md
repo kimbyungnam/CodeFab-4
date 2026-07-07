@@ -9,6 +9,22 @@ python -m pip install flit
 flit install -s
 ```
 
+## How to use
+
+### REPL
+
+```bash
+codefab-repl
+```
+
+### Interpreter
+
+```bash
+> codefab        
+usage: codefab [-h] path
+codefab: error: the following arguments are required: path
+```
+
 ## Development
 
 ### Test
