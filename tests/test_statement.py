@@ -1,11 +1,14 @@
-from codefab.assembler.expr import Assign, Binary, Literal, Variable
 from codefab.assembler.statement_parser import StatementParser
 from codefab.ast_nodes import (
+    Assign,
+    Binary,
     BlockStmt,
     ExpressionStmt,
     ForStmt,
     IfStmt,
+    Literal,
     PrintStmt,
+    Variable,
     VarStmt,
 )
 from codefab.tokens import Token, TokenType
