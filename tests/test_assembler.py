@@ -2,54 +2,57 @@ import pytest
 
 from codefab.assembler.assembler import Assembler
 from codefab.assembler.errors import ParseError
+from codefab.ast_nodes import IfStmt, Literal, PrintStmt, VarStmt
+
+# Assembler 는 stateless 하므로 테스트 전체에서 인스턴스 하나를 재사용한다.
+assembler = Assembler()
 
 
-class _FakeStatementParser:
-    """StatementParser 완성 전까지 Assembler 를 검증하기 위한 테스트 더블."""
-
-    def __init__(self, statements):
-        self._statements = list(statements)
-
-    def is_at_end(self):
-        return len(self._statements) == 0
-
-    def parse_statement(self):
-        return self._statements.pop(0)
+def test_assemble_empty_source_returns_empty_list():
+    assert assembler.assemble("") == []
 
 
-class _FailingStatementParser:
-    """일부 statement 성공 후 ParseError 를 던지는 테스트 더블."""
+def test_assemble_single_var_declaration():
+    statements = assembler.assemble("var a = 3;")
 
-    def __init__(self, statements_then_error):
-        self._statements = list(statements_then_error)
-
-    def is_at_end(self):
-        return False
-
-    def parse_statement(self):
-        if not self._statements:
-            raise ParseError("의도적으로 발생시킨 오류", line=1)
-        return self._statements.pop(0)
+    assert len(statements) == 1
+    stmt = statements[0]
+    assert isinstance(stmt, VarStmt)
+    assert stmt.name.lexeme == "a"
+    assert stmt.initializer == Literal(3.0)
 
 
-@pytest.mark.parametrize(
-    "statements",
-    [
-        [],
-        ["stmt-1"],
-        ["stmt-1", "stmt-2", "stmt-3"],
-    ],
-)
-def test_assemble_returns_statements_in_order(statements):
-    statement_parser = _FakeStatementParser(statements)
+def test_assemble_multiple_statements_in_order():
+    statements = assembler.assemble("var a = 1; print a;")
 
-    program = Assembler(statement_parser).assemble()
+    assert len(statements) == 2
+    assert isinstance(statements[0], VarStmt)
+    assert isinstance(statements[1], PrintStmt)
 
-    assert program == statements
+
+def test_assemble_if_statement_without_else():
+    statements = assembler.assemble("if (a > 0) print a;")
+
+    assert len(statements) == 1
+    stmt = statements[0]
+    assert isinstance(stmt, IfStmt)
+    assert isinstance(stmt.then_branch, PrintStmt)
+    assert stmt.else_branch is None
+
+
+def test_assemble_korean_var_and_print_declaration():
+    # docs/language.md 문법 정의: VAR/PRINT 의 표면 lexeme 은 "변수"/"출력"
+    statements = assembler.assemble("변수 a = 3; 출력 a;")
+
+    assert len(statements) == 2
+    var_stmt, print_stmt = statements
+    assert isinstance(var_stmt, VarStmt)
+    assert var_stmt.name.lexeme == "a"
+    assert var_stmt.initializer == Literal(3.0)
+    assert isinstance(print_stmt, PrintStmt)
 
 
 def test_assemble_propagates_parse_error_without_swallowing():
-    statement_parser = _FailingStatementParser(["stmt-1"])
-
+    # var 뒤에 식별자가 없어 StatementParser 가 ParseError 를 던진다.
     with pytest.raises(ParseError):
-        Assembler(statement_parser).assemble()
+        assembler.assemble("var = 3;")
