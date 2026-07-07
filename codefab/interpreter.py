@@ -43,8 +43,12 @@ class Interpreter:
     def _format_error(self, exc: Exception) -> str:
         if isinstance(exc, ParseError):
             return f"구문 오류: {exc}"
+        # TODO: ExecutorRuntimeError도 다른 예외들처럼 str(exc)만으로 처리하고 싶지만,
+        # 줄 번호(exc.line)가 메시지 문자열에 포함되어 있지 않아 별도 분기가 필요하다.
+        # 예외가 스스로 줄 번호까지 포함한 문자열을 반환하게 되면 이 isinstance 분기 자체를
+        # 없애고 else 분기(`return str(exc)`)로 통합할 수 있다.
         if isinstance(exc, ExecutorRuntimeError):
-            return f"실행 오류 (줄 {exc.line}): {exc.message}"
+            return f"실행 오류 (줄 {exc.line}): {exc}"
         if isinstance(exc, ValueError):
             return f"검사 오류: {exc}"
         return str(exc)
