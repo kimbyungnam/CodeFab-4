@@ -99,17 +99,33 @@ def test_선언_전_사용_에러_검출(sut, make_variable, make_binary, make_e
         sut.resolve(ast)
 
 
-def test_변수_중복_선언_에러_검출(sut, make_var_stmt):
+def test_변수_중복_선언_에러_검출(sut, make_var_stmt, make_block_stmt):
     # arrange
     var_stmt_a1 = make_var_stmt("a", line=1)
     var_stmt_a2 = make_var_stmt("a", line=2)
+    block_stmt = make_block_stmt([var_stmt_a1, var_stmt_a2])
 
-    ast = [var_stmt_a1, var_stmt_a2]
+    ast = [block_stmt]
 
     # act
     # assert
     with pytest.raises(ValueError, match="이미 선언된 변수입니다."):
         sut.resolve(ast)
+
+
+def test_다른_스코프에서는_변수_재선언_허용(sut, make_var_stmt, make_block_stmt):
+    # arrange
+    var_stmt_outer = make_var_stmt("a", line=1)
+    var_stmt_inner = make_var_stmt("a", line=2)
+    block_stmt = make_block_stmt([var_stmt_inner])
+
+    ast = [var_stmt_outer, block_stmt]
+
+    # act
+    sut.resolve(ast)
+
+    # assert
+    assert sut.declared == {"a"}
 
 
 def test_지역_변수_초기화_시_자기_참조_에러_검출(
