@@ -1,5 +1,5 @@
-from codefab.assembler.expr import Binary, Literal, Variable
-from codefab.ast_nodes import BlockStmt, IfStmt, PrintStmt, VarStmt
+from codefab.assembler.expr import Assign, Binary, Literal, Variable
+from codefab.ast_nodes import BlockStmt, ForStmt, IfStmt, PrintStmt, VarStmt
 from codefab.tokens import TokenType
 
 
@@ -43,6 +43,18 @@ class ExecutorUnit:
                 self._execute_stmt(statement.else_branch)
             return
 
+        if isinstance(statement, ForStmt):
+            if statement.initializer is not None:
+                self._execute_stmt(statement.initializer)
+
+            while statement.condition is None or self._is_truthy(
+                self._evaluate_expr(statement.condition)
+            ):
+                self._execute_stmt(statement.body)
+                if statement.increment is not None:
+                    self._evaluate_expr(statement.increment)
+            return
+
         raise ExecutorRuntimeError(
             f"지원하지 않는 Statement 입니다: {type(statement).__name__}",
             line=1,
@@ -54,6 +66,9 @@ class ExecutorUnit:
 
         if isinstance(expression, Variable):
             return self._look_up_variable(expression.name)
+
+        if isinstance(expression, Assign):
+            return self._evaluate_assign(expression)
 
         if isinstance(expression, Binary):
             return self._evaluate_binary(expression)
@@ -74,6 +89,20 @@ class ExecutorUnit:
             )
 
         return self.environment[lexeme]
+
+    def _evaluate_assign(self, expression):
+        value = self._evaluate_expr(expression.value)
+        lexeme = expression.name.lexeme
+        line = expression.name.line
+
+        if lexeme not in self.environment:
+            raise ExecutorRuntimeError(
+                f"정의되지 않은 변수 '{lexeme}'입니다.",
+                line=line,
+            )
+
+        self.environment[lexeme] = value
+        return value
 
     def _is_truthy(self, value) -> bool:
         if value is None:

@@ -1,7 +1,7 @@
 import pytest
 
-from codefab.assembler.expr import Binary, Literal, Variable
-from codefab.ast_nodes import BlockStmt, IfStmt, PrintStmt, VarStmt
+from codefab.assembler.expr import Assign, Binary, Literal, Variable
+from codefab.ast_nodes import BlockStmt, ForStmt, IfStmt, PrintStmt, VarStmt
 from codefab.executor_unit import ExecutorRuntimeError, ExecutorUnit
 from codefab.tokens import Token, TokenType
 
@@ -38,6 +38,10 @@ def make_variable(name_lexeme: str) -> Variable:
 
 def make_var_stmt(name_lexeme: str, initializer) -> VarStmt:
     return VarStmt(name=make_identifier_token(name_lexeme), initializer=initializer)
+
+
+def make_assign(name_lexeme: str, value) -> Assign:
+    return Assign(name=make_identifier_token(name_lexeme), value=value)
 
 
 def test_이항_덧셈_결과를_출력한다(mocker):
@@ -217,3 +221,55 @@ def test_정의되지_않은_변수를_참조하면_에러를_발생시킨다(mo
         executor.execute([statement])
 
     assert exc_info.value.message == "정의되지 않은 변수 'notDefined'입니다."
+
+
+def test_반복문이_조건을_만족하는_동안_반복해서_출력한다(mocker):
+    # 반복 (변수 j = 0; j < 3; j = j + 1) { 출력 j; }
+    for_stmt = ForStmt(
+        initializer=make_var_stmt("j", Literal(0.0)),
+        condition=make_binary(
+            left=make_variable("j"), operator_lexeme="<", right=Literal(3.0)
+        ),
+        increment=make_assign(
+            "j",
+            make_binary(
+                left=make_variable("j"), operator_lexeme="+", right=Literal(1.0)
+            ),
+        ),
+        body=BlockStmt([PrintStmt(make_variable("j"))]),
+    )
+
+    print_mock = mocker.patch("builtins.print")
+    executor = ExecutorUnit()
+
+    executor.execute([for_stmt])
+
+    assert print_mock.call_args_list == [
+        mocker.call("0"),
+        mocker.call("1"),
+        mocker.call("2"),
+    ]
+
+
+def test_반복문_조건이_처음부터_거짓이면_한번도_실행되지_않는다(mocker):
+    # 반복 (변수 j = 0; j < 0; j = j + 1) { 출력 j; }
+    for_stmt = ForStmt(
+        initializer=make_var_stmt("j", Literal(0.0)),
+        condition=make_binary(
+            left=make_variable("j"), operator_lexeme="<", right=Literal(0.0)
+        ),
+        increment=make_assign(
+            "j",
+            make_binary(
+                left=make_variable("j"), operator_lexeme="+", right=Literal(1.0)
+            ),
+        ),
+        body=BlockStmt([PrintStmt(make_variable("j"))]),
+    )
+
+    print_mock = mocker.patch("builtins.print")
+    executor = ExecutorUnit()
+
+    executor.execute([for_stmt])
+
+    print_mock.assert_not_called()
