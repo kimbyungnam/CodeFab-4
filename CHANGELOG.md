@@ -1,3 +1,10 @@
+## 0.10.0 (2026-07-07)
+
+### Feat
+
+- **repl**: stdin을 읽어 실행하는 콘솔 스크립트 진입점 추가
+- **repl**: add Repl orchestration layer using Interpreter
+
 ## 0.9.0 (2026-07-07)
 
 ### Feat
