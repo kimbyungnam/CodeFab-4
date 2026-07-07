@@ -1,7 +1,7 @@
 import pytest
 
 from codefab.checker import Checker
-from codefab.token import Token, TokenType
+from codefab.tokens import Token, TokenType
 
 
 def test_정상_입력_확인():
