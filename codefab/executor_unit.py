@@ -2,35 +2,39 @@ from codefab.ast_nodes import (
     Assign,
     Binary,
     BlockStmt,
+    Expr,
     ExpressionStmt,
     ForStmt,
     Grouping,
     IfStmt,
     Literal,
     PrintStmt,
+    Stmt,
     Unary,
     Variable,
     VarStmt,
 )
-from codefab.tokens import TokenType
+from codefab.tokens import Token, TokenType
+
+Value = float | str | bool | None
 
 
 class ExecutorRuntimeError(Exception):
-    def __init__(self, message: str, line: int = 1):
+    def __init__(self, message: str, line: int = 1) -> None:
         super().__init__(message)
         self.message = message
         self.line = line
 
 
 class Environment:
-    def __init__(self, enclosing=None):
-        self.values = {}
+    def __init__(self, enclosing: "Environment | None" = None) -> None:
+        self.values: dict[str, Value] = {}
         self.enclosing = enclosing
 
-    def define(self, lexeme: str, value) -> None:
+    def define(self, lexeme: str, value: Value) -> None:
         self.values[lexeme] = value
 
-    def get(self, name_token):
+    def get(self, name_token: Token) -> Value:
         lexeme = name_token.lexeme
 
         if lexeme in self.values:
@@ -44,7 +48,7 @@ class Environment:
             line=name_token.line,
         )
 
-    def assign(self, name_token, value) -> None:
+    def assign(self, name_token: Token, value: Value) -> None:
         lexeme = name_token.lexeme
 
         if lexeme in self.values:
@@ -62,14 +66,14 @@ class Environment:
 
 
 class ExecutorUnit:
-    def __init__(self):
+    def __init__(self) -> None:
         self.environment = Environment()
 
-    def execute(self, statements) -> None:
+    def execute(self, statements: list[Stmt]) -> None:
         for statement in statements:
             self._execute_stmt(statement)
 
-    def _execute_stmt(self, statement) -> None:
+    def _execute_stmt(self, statement: Stmt) -> None:
         if isinstance(statement, PrintStmt):
             value = self._evaluate_expr(statement.expression)
             print(self._stringify(value))
@@ -114,7 +118,7 @@ class ExecutorUnit:
             line=1,
         )
 
-    def _execute_block(self, statements, environment: Environment) -> None:
+    def _execute_block(self, statements: list[Stmt], environment: Environment) -> None:
         previous = self.environment
         try:
             self.environment = environment
@@ -123,7 +127,7 @@ class ExecutorUnit:
         finally:
             self.environment = previous
 
-    def _evaluate_expr(self, expression):
+    def _evaluate_expr(self, expression: Expr) -> Value:
         if isinstance(expression, Literal):
             return expression.value
 
@@ -147,15 +151,15 @@ class ExecutorUnit:
             line=1,
         )
 
-    def _look_up_variable(self, name_token):
+    def _look_up_variable(self, name_token: Token) -> Value:
         return self.environment.get(name_token)
 
-    def _evaluate_assign(self, expression):
+    def _evaluate_assign(self, expression: Assign) -> Value:
         value = self._evaluate_expr(expression.value)
         self.environment.assign(expression.name, value)
         return value
 
-    def _is_truthy(self, value) -> bool:
+    def _is_truthy(self, value: Value) -> bool:
         if value is None:
             return False
 
@@ -164,7 +168,7 @@ class ExecutorUnit:
 
         return True
 
-    def _evaluate_unary(self, expression):
+    def _evaluate_unary(self, expression: Unary) -> Value:
         right = self._evaluate_expr(expression.right)
 
         operator_type = expression.operator.type
@@ -183,7 +187,7 @@ class ExecutorUnit:
             line=line,
         )
 
-    def _evaluate_binary(self, expression):
+    def _evaluate_binary(self, expression: Binary) -> Value:
         left = self._evaluate_expr(expression.left)
         right = self._evaluate_expr(expression.right)
 
@@ -239,14 +243,14 @@ class ExecutorUnit:
             line=line,
         )
 
-    def _check_number_operands(self, left, right, line: int) -> None:
+    def _check_number_operands(self, left: Value, right: Value, line: int) -> None:
         if not isinstance(left, float) or not isinstance(right, float):
             raise ExecutorRuntimeError(
                 "피연산자는 반드시 숫자여야 합니다.",
                 line=line,
             )
 
-    def _stringify(self, value) -> str:
+    def _stringify(self, value: Value) -> str:
         if isinstance(value, bool):
             return "참" if value else "거짓"
 

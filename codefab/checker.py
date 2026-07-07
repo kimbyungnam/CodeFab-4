@@ -2,7 +2,7 @@ from codefab.ast_nodes import Binary, BlockStmt, ExpressionStmt, Stmt, Variable,
 
 
 class Checker:
-    def __init__(self):
+    def __init__(self) -> None:
         self.scopes: list[set[str]] = [set()]
         self.initializing: str | None = None
 
@@ -10,20 +10,20 @@ class Checker:
     def declared(self) -> set[str]:
         return self.scopes[-1]
 
-    def resolve(self, statements: list[Stmt]):
+    def resolve(self, statements: list[Stmt]) -> None:
         for stmt in statements:
             stmt.accept(self)
 
-    def visit_expression_stmt(self, stmt: ExpressionStmt):
+    def visit_expression_stmt(self, stmt: ExpressionStmt) -> None:
         stmt.expression.accept(self)
 
-    def visit_block_stmt(self, stmt: BlockStmt):
+    def visit_block_stmt(self, stmt: BlockStmt) -> None:
         self.scopes.append(set())
         for statement in stmt.statements:
             statement.accept(self)
         self.scopes.pop()
 
-    def visit_var_stmt(self, stmt: VarStmt):
+    def visit_var_stmt(self, stmt: VarStmt) -> None:
         if stmt.name.lexeme in self.scopes[-1]:
             raise ValueError("이미 선언된 변수입니다.")
         if stmt.initializer is not None:
@@ -32,12 +32,12 @@ class Checker:
             self.initializing = None
         self.scopes[-1].add(stmt.name.lexeme)
 
-    def visit_variable(self, expr: Variable):
+    def visit_variable(self, expr: Variable) -> None:
         if expr.name.lexeme == self.initializing:
             raise ValueError("지역 변수 자기 참조 에러입니다.")
         if not any(expr.name.lexeme in scope for scope in self.scopes):
             raise ValueError("선언되지 않은 변수를 사용했습니다.")
 
-    def visit_binary(self, expr: Binary):
+    def visit_binary(self, expr: Binary) -> None:
         expr.left.accept(self)
         expr.right.accept(self)
