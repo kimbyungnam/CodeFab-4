@@ -1,3 +1,8 @@
+from codefab.assembler.expr import Binary, Literal, Variable
+from codefab.ast_nodes import BlockStmt, IfStmt, PrintStmt, VarStmt
+from codefab.tokens import TokenType
+
+
 class ExecutorRuntimeError(Exception):
     def __init__(self, message: str, line: int = 1):
         super().__init__(message)
@@ -14,26 +19,24 @@ class ExecutorUnit:
             self._execute_stmt(statement)
 
     def _execute_stmt(self, statement) -> None:
-        node_type = statement.__class__.__name__
-
-        if node_type == "PrintStmt":
+        if isinstance(statement, PrintStmt):
             value = self._evaluate_expr(statement.expression)
             print(self._stringify(value))
             return
 
-        if node_type == "VarDeclareStmt":
+        if isinstance(statement, VarStmt):
             value = None
             if statement.initializer is not None:
                 value = self._evaluate_expr(statement.initializer)
             self.environment[statement.name.lexeme] = value
             return
 
-        if node_type == "BlockStmt":
+        if isinstance(statement, BlockStmt):
             for inner_statement in statement.statements:
                 self._execute_stmt(inner_statement)
             return
 
-        if node_type == "IfStmt":
+        if isinstance(statement, IfStmt):
             if self._is_truthy(self._evaluate_expr(statement.condition)):
                 self._execute_stmt(statement.then_branch)
             elif statement.else_branch is not None:
@@ -41,30 +44,28 @@ class ExecutorUnit:
             return
 
         raise ExecutorRuntimeError(
-            f"지원하지 않는 Statement 입니다: {node_type}",
+            f"지원하지 않는 Statement 입니다: {type(statement).__name__}",
             line=1,
         )
 
     def _evaluate_expr(self, expression):
-        node_type = expression.__class__.__name__
-
-        if node_type == "Literal":
+        if isinstance(expression, Literal):
             return expression.value
 
-        if node_type == "Variable":
+        if isinstance(expression, Variable):
             return self._look_up_variable(expression.name)
 
-        if node_type == "Binary":
+        if isinstance(expression, Binary):
             return self._evaluate_binary(expression)
 
         raise ExecutorRuntimeError(
-            f"지원하지 않는 Expression 입니다: {node_type}",
+            f"지원하지 않는 Expression 입니다: {type(expression).__name__}",
             line=1,
         )
 
     def _look_up_variable(self, name_token):
         lexeme = name_token.lexeme
-        line = getattr(name_token, "line", 1)
+        line = name_token.line
 
         if lexeme not in self.environment:
             raise ExecutorRuntimeError(
@@ -87,22 +88,22 @@ class ExecutorUnit:
         left = self._evaluate_expr(expression.left)
         right = self._evaluate_expr(expression.right)
 
-        operator = expression.operator.lexeme
-        line = getattr(expression.operator, "line", 1)
+        operator_type = expression.operator.type
+        line = expression.operator.line
 
-        if operator == "+":
+        if operator_type == TokenType.PLUS:
             self._check_number_operands(left, right, line)
             return left + right
 
-        if operator == "-":
+        if operator_type == TokenType.MINUS:
             self._check_number_operands(left, right, line)
             return left - right
 
-        if operator == "*":
+        if operator_type == TokenType.STAR:
             self._check_number_operands(left, right, line)
             return left * right
 
-        if operator == "/":
+        if operator_type == TokenType.SLASH:
             self._check_number_operands(left, right, line)
 
             if right == 0:
@@ -110,27 +111,27 @@ class ExecutorUnit:
 
             return left / right
 
-        if operator == ">":
+        if operator_type == TokenType.GREATER:
             self._check_number_operands(left, right, line)
             return left > right
 
-        if operator == ">=":
+        if operator_type == TokenType.GREATER_EQUAL:
             self._check_number_operands(left, right, line)
             return left >= right
 
-        if operator == "<":
+        if operator_type == TokenType.LESS:
             self._check_number_operands(left, right, line)
             return left < right
 
-        if operator == "<=":
+        if operator_type == TokenType.LESS_EQUAL:
             self._check_number_operands(left, right, line)
             return left <= right
 
-        if operator == "==":
+        if operator_type == TokenType.EQUAL_EQUAL:
             return left == right
 
         raise ExecutorRuntimeError(
-            f"지원하지 않는 이항 연산자입니다: {operator}",
+            f"지원하지 않는 이항 연산자입니다: {expression.operator.lexeme}",
             line=line,
         )
 
