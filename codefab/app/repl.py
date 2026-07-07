@@ -25,17 +25,23 @@ class _OutputWriter:
 class Repl:
     def __init__(
         self,
-        statement_parser_factory: Callable[[list[Token]], StatementParser],
+        create_statement_parser: Callable[[list[Token]], StatementParser],
+        tokenize: Callable[[str], list[Token]] | None = None,
         checker: Checker | None = None,
         executor: ExecutorUnit | None = None,
         output: Callable[[str], None] | None = None,
         prompt: str = "> ",
     ):
-        self._statement_parser_factory = statement_parser_factory
+        self._create_statement_parser = create_statement_parser
+        self._tokenize = tokenize if tokenize is not None else self._default_tokenize
         self._checker = checker if checker is not None else Checker()
         self._executor = executor if executor is not None else ExecutorUnit()
         self._output = output if output is not None else print
         self._prompt = prompt
+
+    @staticmethod
+    def _default_tokenize(source: str) -> list[Token]:
+        return Tokenizer(source).scan_tokens()
 
     def run(self, input_lines: Iterable[str]) -> None:
         for line in input_lines:
@@ -44,8 +50,8 @@ class Repl:
 
     def run_source(self, source: str) -> None:
         try:
-            tokens = Tokenizer(source).scan_tokens()
-            statement_parser = self._statement_parser_factory(tokens)
+            tokens = self._tokenize(source)
+            statement_parser = self._create_statement_parser(tokens)
             statements = Assembler(statement_parser).assemble()
             self._checker.resolve(statements)
             with contextlib.redirect_stdout(_OutputWriter(self._output)):
