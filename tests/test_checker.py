@@ -1,6 +1,11 @@
 import pytest
 
 from codefab.checker import Checker
+from codefab.error import (
+    DuplicateVariableError,
+    SelfReferenceInInitializerError,
+    UndeclaredVariableError,
+)
 from codefab.tokens import Token, TokenType
 
 
@@ -95,7 +100,9 @@ def test_선언_전_사용_에러_검출(sut, make_variable, make_binary, make_e
 
     # act
     # assert
-    with pytest.raises(ValueError, match="선언되지 않은 변수를 사용했습니다."):
+    with pytest.raises(
+        UndeclaredVariableError, match="선언되지 않은 변수를 사용했습니다."
+    ):
         sut.resolve(ast)
 
 
@@ -109,7 +116,7 @@ def test_변수_중복_선언_에러_검출(sut, make_var_stmt, make_block_stmt)
 
     # act
     # assert
-    with pytest.raises(ValueError, match="이미 선언된 변수입니다."):
+    with pytest.raises(DuplicateVariableError, match="이미 선언된 변수입니다."):
         sut.resolve(ast)
 
 
@@ -140,5 +147,7 @@ def test_지역_변수_초기화_시_자기_참조_에러_검출(
 
     # act
     # assert
-    with pytest.raises(ValueError, match="지역 변수 자기 참조 에러입니다."):
+    with pytest.raises(
+        SelfReferenceInInitializerError, match="지역 변수 자기 참조 에러입니다."
+    ):
         sut.resolve(ast)

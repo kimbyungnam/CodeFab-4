@@ -1,4 +1,9 @@
 from codefab.ast_nodes import Binary, BlockStmt, ExpressionStmt, Stmt, Variable, VarStmt
+from codefab.error import (
+    DuplicateVariableError,
+    SelfReferenceInInitializerError,
+    UndeclaredVariableError,
+)
 
 
 class Checker:
@@ -25,7 +30,7 @@ class Checker:
 
     def visit_var_stmt(self, stmt: VarStmt):
         if stmt.name.lexeme in self.scopes[-1]:
-            raise ValueError("이미 선언된 변수입니다.")
+            raise DuplicateVariableError(stmt.name.line)
         if stmt.initializer is not None:
             self.initializing = stmt.name.lexeme
             stmt.initializer.accept(self)
@@ -34,9 +39,9 @@ class Checker:
 
     def visit_variable(self, expr: Variable):
         if expr.name.lexeme == self.initializing:
-            raise ValueError("지역 변수 자기 참조 에러입니다.")
+            raise SelfReferenceInInitializerError(expr.name.line)
         if not any(expr.name.lexeme in scope for scope in self.scopes):
-            raise ValueError("선언되지 않은 변수를 사용했습니다.")
+            raise UndeclaredVariableError(expr.name.line)
 
     def visit_binary(self, expr: Binary):
         expr.left.accept(self)

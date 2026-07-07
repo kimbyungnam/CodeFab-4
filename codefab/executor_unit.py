@@ -13,14 +13,17 @@ from codefab.ast_nodes import (
     Variable,
     VarStmt,
 )
+from codefab.error import (
+    DivisionByZeroError,
+    InvalidOperandTypeError,
+    MismatchedPlusOperandTypeError,
+    UndefinedVariableError,
+    UnsupportedBinaryOperatorError,
+    UnsupportedExpressionError,
+    UnsupportedStatementError,
+    UnsupportedUnaryOperatorError,
+)
 from codefab.tokens import TokenType
-
-
-class ExecutorRuntimeError(Exception):
-    def __init__(self, message: str, line: int = 1):
-        super().__init__(message)
-        self.message = message
-        self.line = line
 
 
 class Environment:
@@ -40,10 +43,7 @@ class Environment:
         if self.enclosing is not None:
             return self.enclosing.get(name_token)
 
-        raise ExecutorRuntimeError(
-            f"정의되지 않은 변수 '{lexeme}'입니다.",
-            line=name_token.line,
-        )
+        raise UndefinedVariableError(lexeme, line=name_token.line)
 
     def assign(self, name_token, value) -> None:
         lexeme = name_token.lexeme
@@ -56,10 +56,7 @@ class Environment:
             self.enclosing.assign(name_token, value)
             return
 
-        raise ExecutorRuntimeError(
-            f"정의되지 않은 변수 '{lexeme}'입니다.",
-            line=name_token.line,
-        )
+        raise UndefinedVariableError(lexeme, line=name_token.line)
 
 
 class ExecutorUnit:
@@ -110,10 +107,7 @@ class ExecutorUnit:
                     self._evaluate_expr(statement.increment)
             return
 
-        raise ExecutorRuntimeError(
-            f"지원하지 않는 Statement 입니다: {type(statement).__name__}",
-            line=1,
-        )
+        raise UnsupportedStatementError(type(statement).__name__)
 
     def _execute_block(self, statements, environment: Environment) -> None:
         previous = self.environment
@@ -146,10 +140,7 @@ class ExecutorUnit:
         if isinstance(expression, Binary):
             return self._evaluate_binary(expression)
 
-        raise ExecutorRuntimeError(
-            f"지원하지 않는 Expression 입니다: {type(expression).__name__}",
-            line=1,
-        )
+        raise UnsupportedExpressionError(type(expression).__name__)
 
     def _look_up_variable(self, name_token):
         return self.environment.get(name_token)
@@ -176,19 +167,13 @@ class ExecutorUnit:
 
         if operator_type == TokenType.MINUS:
             if not isinstance(right, float):
-                raise ExecutorRuntimeError(
-                    "피연산자는 반드시 숫자여야 합니다.",
-                    line=line,
-                )
+                raise InvalidOperandTypeError(line=line)
             return -right
 
         if operator_type == TokenType.BANG:
             return not self._is_truthy(right)
 
-        raise ExecutorRuntimeError(
-            f"지원하지 않는 단항 연산자입니다: {expression.operator.lexeme}",
-            line=line,
-        )
+        raise UnsupportedUnaryOperatorError(expression.operator.lexeme, line=line)
 
     def _evaluate_logical(self, expression):
         left = self._evaluate_expr(expression.left)
@@ -214,10 +199,7 @@ class ExecutorUnit:
                 return left + right
             if isinstance(left, float) and isinstance(right, float):
                 return left + right
-            raise ExecutorRuntimeError(
-                "피연산자는 둘 다 숫자이거나 둘 다 문자열이어야 합니다.",
-                line=line,
-            )
+            raise MismatchedPlusOperandTypeError(line=line)
 
         if operator_type == TokenType.MINUS:
             self._check_number_operands(left, right, line)
@@ -231,7 +213,7 @@ class ExecutorUnit:
             self._check_number_operands(left, right, line)
 
             if right == 0:
-                raise ExecutorRuntimeError("0으로 나눈 오류", line=line)
+                raise DivisionByZeroError(line=line)
 
             return left / right
 
@@ -257,17 +239,11 @@ class ExecutorUnit:
         if operator_type == TokenType.BANG_EQUAL:
             return left != right
 
-        raise ExecutorRuntimeError(
-            f"지원하지 않는 이항 연산자입니다: {expression.operator.lexeme}",
-            line=line,
-        )
+        raise UnsupportedBinaryOperatorError(expression.operator.lexeme, line=line)
 
     def _check_number_operands(self, left, right, line: int) -> None:
         if not isinstance(left, float) or not isinstance(right, float):
-            raise ExecutorRuntimeError(
-                "피연산자는 반드시 숫자여야 합니다.",
-                line=line,
-            )
+            raise InvalidOperandTypeError(line=line)
 
     def _stringify(self, value) -> str:
         if isinstance(value, bool):
