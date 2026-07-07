@@ -1,3 +1,19 @@
+## 0.7.0 (2026-07-07)
+
+### Feat
+
+- add Interpreter orchestration layer
+
+### Fix
+
+- interpreter가 통합된 codefab.error.ParseError를 사용하도록 수정
+- interpreter가 통합된 codefab.error 모듈의 예외 계층을 사용하도록 수정
+- interpreter가 ExecutorRuntimeError의 message 속성 대신 str(exc)를 사용하도록 수정
+
+### Refactor
+
+- interpreter의 _format_error에서 isinstance 분기 제거
+
 ## 0.6.3 (2026-07-07)
 
 ### Refactor
