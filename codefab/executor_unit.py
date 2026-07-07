@@ -28,13 +28,6 @@ from codefab.error import (
 from codefab.tokens import Token, TokenType
 
 
-class ExecutorRuntimeError(Exception):
-    def __init__(self, message: str, line: int = 1):
-        super().__init__(message)
-        self.message = message
-        self.line = line
-
-
 class Environment:
     def __init__(self, enclosing: "Environment | None" = None) -> None:
         self.values: dict[str, object] = {}
