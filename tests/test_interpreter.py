@@ -3,7 +3,8 @@ from codefab.assembler.errors import ParseError
 from codefab.ast_nodes import Literal as ExprLiteral
 from codefab.ast_nodes import PrintStmt
 from codefab.checker import Checker
-from codefab.executor_unit import ExecutorRuntimeError, ExecutorUnit
+from codefab.error import DuplicateVariableError, ExecutorRuntimeError
+from codefab.executor_unit import ExecutorUnit
 from codefab.interpreter import Interpreter
 
 
@@ -69,11 +70,11 @@ def test_ParseError가_발생하면_에러메시지를_반환한다(mocker):
     assert "값 뒤에 ';'가 필요합니다." in result.error
 
 
-def test_Checker_ValueError가_발생하면_에러메시지를_반환한다(mocker):
+def test_Checker_CheckerError가_발생하면_에러메시지를_반환한다(mocker):
     assembler = mocker.Mock(spec=Assembler)
     assembler.assemble.return_value = []
     checker = mocker.Mock(spec=Checker)
-    checker.resolve.side_effect = ValueError("이미 선언된 변수입니다.")
+    checker.resolve.side_effect = DuplicateVariableError()
     interpreter = Interpreter(assembler=assembler, checker=checker)
 
     result = interpreter.interpret("아무거나;")
