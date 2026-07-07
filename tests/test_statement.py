@@ -76,6 +76,46 @@ def test_if_stmt_with_else_is_parsed_as_if_stmt():
     assert stmt.else_branch.expression.value == Literal(2.0)
 
 
+def test_if_stmt_with_else_matches_language_md_example():
+    # 만약 (x > 0) y = 1; 아니면 y = 2;
+    tokens = [
+        Token(TokenType.IF, "만약", literal=None, line=1),
+        Token(TokenType.LEFT_PAREN, "(", literal=None, line=1),
+        Token(TokenType.IDENTIFIER, "x", literal=None, line=1),
+        Token(TokenType.GREATER, ">", literal=None, line=1),
+        Token(TokenType.NUMBER, "0", literal=0.0, line=1),
+        Token(TokenType.RIGHT_PAREN, ")", literal=None, line=1),
+        Token(TokenType.IDENTIFIER, "y", literal=None, line=1),
+        Token(TokenType.EQUAL, "=", literal=None, line=1),
+        Token(TokenType.NUMBER, "1", literal=1.0, line=1),
+        Token(TokenType.SEMICOLON, ";", literal=None, line=1),
+        Token(TokenType.ELSE, "아니면", literal=None, line=1),
+        Token(TokenType.IDENTIFIER, "y", literal=None, line=1),
+        Token(TokenType.EQUAL, "=", literal=None, line=1),
+        Token(TokenType.NUMBER, "2", literal=2.0, line=1),
+        Token(TokenType.SEMICOLON, ";", literal=None, line=1),
+        Token(TokenType.EOF, "", literal=None, line=1),
+    ]
+
+    stmt = StatementParser(tokens).parse()[0]
+
+    expected = IfStmt(
+        condition=Binary(
+            left=Variable(Token(TokenType.IDENTIFIER, "x", None, 1)),
+            operator=Token(TokenType.GREATER, ">", None, 1),
+            right=Literal(0.0),
+        ),
+        then_branch=ExpressionStmt(
+            Assign(Token(TokenType.IDENTIFIER, "y", None, 1), Literal(1.0))
+        ),
+        else_branch=ExpressionStmt(
+            Assign(Token(TokenType.IDENTIFIER, "y", None, 1), Literal(2.0))
+        ),
+    )
+
+    assert stmt == expected
+
+
 def test_block_stmt_groups_multiple_statements():
     # { x = 1; y = 2; }
     tokens = [
