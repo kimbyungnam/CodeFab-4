@@ -7,6 +7,7 @@ from codefab.ast_nodes import (
     Grouping,
     IfStmt,
     Literal,
+    Logical,
     PrintStmt,
     Unary,
     Variable,
@@ -139,6 +140,9 @@ class ExecutorUnit:
         if isinstance(expression, Unary):
             return self._evaluate_unary(expression)
 
+        if isinstance(expression, Logical):
+            return self._evaluate_logical(expression)
+
         if isinstance(expression, Binary):
             return self._evaluate_binary(expression)
 
@@ -178,10 +182,25 @@ class ExecutorUnit:
                 )
             return -right
 
+        if operator_type == TokenType.BANG:
+            return not self._is_truthy(right)
+
         raise ExecutorRuntimeError(
             f"지원하지 않는 단항 연산자입니다: {expression.operator.lexeme}",
             line=line,
         )
+
+    def _evaluate_logical(self, expression):
+        left = self._evaluate_expr(expression.left)
+
+        if expression.operator.type == TokenType.OR:
+            if self._is_truthy(left):
+                return left
+        else:
+            if not self._is_truthy(left):
+                return left
+
+        return self._evaluate_expr(expression.right)
 
     def _evaluate_binary(self, expression):
         left = self._evaluate_expr(expression.left)
@@ -193,8 +212,12 @@ class ExecutorUnit:
         if operator_type == TokenType.PLUS:
             if isinstance(left, str) and isinstance(right, str):
                 return left + right
-            self._check_number_operands(left, right, line)
-            return left + right
+            if isinstance(left, float) and isinstance(right, float):
+                return left + right
+            raise ExecutorRuntimeError(
+                "피연산자는 둘 다 숫자이거나 둘 다 문자열이어야 합니다.",
+                line=line,
+            )
 
         if operator_type == TokenType.MINUS:
             self._check_number_operands(left, right, line)
