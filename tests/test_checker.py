@@ -4,8 +4,30 @@ from codefab.checker import Checker
 from codefab.tokens import Token, TokenType
 
 
-def test_정상_입력_확인():
-    pass
+def test_정상_입력_확인(mocker):
+    # arrange
+    var_stmt_a = mocker.Mock()
+    var_stmt_a.name = Token(type=TokenType.IDENTIFIER, lexeme="a", literal=None, line=1)
+    var_stmt_a.initializer = None
+    var_stmt_a.accept.side_effect = lambda visitor: visitor.visit_var_stmt(var_stmt_a)
+
+    variable_a = mocker.Mock()
+    variable_a.name = Token(type=TokenType.IDENTIFIER, lexeme="a", literal=None, line=2)
+    variable_a.accept.side_effect = lambda visitor: visitor.visit_variable(variable_a)
+
+    exp_statement = mocker.Mock(expression=variable_a)
+    exp_statement.accept.side_effect = lambda visitor: visitor.visit_expression_stmt(
+        exp_statement
+    )
+
+    ast = [var_stmt_a, exp_statement]
+    sut = Checker()
+
+    # act
+    sut.resolve(ast)
+
+    # assert
+    assert sut.declared == {"a"}
 
 
 def test_선언_전_사용_에러_검출(mocker):
@@ -35,9 +57,48 @@ def test_선언_전_사용_에러_검출(mocker):
         sut.resolve(ast)
 
 
-def test_변수_중복_선언_에러_검출():
-    pass
+def test_변수_중복_선언_에러_검출(mocker):
+    # arrange
+    var_stmt_a1 = mocker.Mock()
+    var_stmt_a1.name = Token(
+        type=TokenType.IDENTIFIER, lexeme="a", literal=None, line=1
+    )
+    var_stmt_a1.initializer = None
+    var_stmt_a1.accept.side_effect = lambda visitor: visitor.visit_var_stmt(var_stmt_a1)
+
+    var_stmt_a2 = mocker.Mock()
+    var_stmt_a2.name = Token(
+        type=TokenType.IDENTIFIER, lexeme="a", literal=None, line=2
+    )
+    var_stmt_a2.initializer = None
+    var_stmt_a2.accept.side_effect = lambda visitor: visitor.visit_var_stmt(var_stmt_a2)
+
+    ast = [var_stmt_a1, var_stmt_a2]
+    sut = Checker()
+
+    # act
+    # assert
+    with pytest.raises(ValueError, match="이미 선언된 변수입니다."):
+        sut.resolve(ast)
 
 
-def test_지역_변수_초기화_시_자기_참조_에러_검출():
-    pass
+def test_지역_변수_초기화_시_자기_참조_에러_검출(mocker):
+    # arrange
+    variable_a = mocker.Mock()
+    variable_a.name = Token(type=TokenType.IDENTIFIER, lexeme="a", literal=None, line=1)
+    variable_a.accept.side_effect = lambda visitor: visitor.visit_variable(variable_a)
+
+    var_stmt_a = mocker.Mock(initializer=variable_a)
+    var_stmt_a.name = Token(type=TokenType.IDENTIFIER, lexeme="a", literal=None, line=1)
+    var_stmt_a.accept.side_effect = lambda visitor: visitor.visit_var_stmt(var_stmt_a)
+
+    block_stmt = mocker.Mock(statements=[var_stmt_a])
+    block_stmt.accept.side_effect = lambda visitor: visitor.visit_block_stmt(block_stmt)
+
+    ast = [block_stmt]
+    sut = Checker()
+
+    # act
+    # assert
+    with pytest.raises(ValueError, match="지역 변수 자기 참조 에러입니다."):
+        sut.resolve(ast)
