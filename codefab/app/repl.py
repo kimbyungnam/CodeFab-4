@@ -1,4 +1,5 @@
 import contextlib
+import io
 from collections.abc import Callable, Iterable
 
 from codefab.assembler.assembler import Assembler, StatementParser
@@ -7,19 +8,6 @@ from codefab.checker import Checker
 from codefab.executor_unit import ExecutorRuntimeError, ExecutorUnit
 from codefab.tokenizer import Tokenizer
 from codefab.tokens import Token
-
-
-class _OutputWriter:
-    def __init__(self, output: Callable[[str], None]):
-        self._output = output
-
-    def write(self, text: str) -> None:
-        text = text.rstrip("\n")
-        if text:
-            self._output(text)
-
-    def flush(self) -> None:
-        pass
 
 
 class Repl:
@@ -49,15 +37,22 @@ class Repl:
             self.run_source(line)
 
     def run_source(self, source: str) -> None:
+        buffer = io.StringIO()
+        error_message = None
         try:
             tokens = self._tokenize(source)
             statement_parser = self._create_statement_parser(tokens)
             statements = Assembler(statement_parser).assemble()
             self._checker.resolve(statements)
-            with contextlib.redirect_stdout(_OutputWriter(self._output)):
+            with contextlib.redirect_stdout(buffer):
                 self._executor.execute(statements)
         except Exception as exc:  # noqa: BLE001 — 파이프라인 각 단계의 예외 타입이 제각각이라 루프를 지키기 위해 광범위하게 잡음
-            self._output(self._format_error(exc))
+            error_message = self._format_error(exc)
+
+        for printed_line in buffer.getvalue().splitlines():
+            self._output(printed_line)
+        if error_message is not None:
+            self._output(error_message)
 
     def _format_error(self, exc: Exception) -> str:
         if isinstance(exc, ParseError):
