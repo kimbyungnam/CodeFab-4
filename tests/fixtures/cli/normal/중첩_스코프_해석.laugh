@@ -1,0 +1,7 @@
+변수 outer = "A";
+{
+  변수 inner = "B";
+  {
+    출력 outer + inner;
+  }
+}
