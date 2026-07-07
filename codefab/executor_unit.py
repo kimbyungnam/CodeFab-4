@@ -27,8 +27,6 @@ from codefab.error import (
     UnsupportedStatementError,
     UnsupportedUnaryOperatorError,
 )
-from codefab.tokens import TokenType
-
 
 class ExecutorRuntimeError(Exception):
     def __init__(self, message: str, line: int = 1):
