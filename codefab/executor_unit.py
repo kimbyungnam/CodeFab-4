@@ -28,6 +28,7 @@ from codefab.error import (
     UnsupportedUnaryOperatorError,
 )
 
+
 class ExecutorRuntimeError(Exception):
     def __init__(self, message: str, line: int = 1):
         super().__init__(message)
