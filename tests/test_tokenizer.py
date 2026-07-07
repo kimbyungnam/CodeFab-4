@@ -47,6 +47,28 @@ def test_semicolon_token():
     ]
 
 
+@pytest.mark.parametrize(
+    "source,expected_literal",
+    [
+        ("3.14", 3.14),
+        ("5.0", 5.0),
+    ],
+)
+def test_decimal_number_token(source, expected_literal):
+    tokens = Tokenizer(source).scan_tokens()
+
+    assert tokens == [
+        Token(type=TokenType.NUMBER, lexeme=source, literal=expected_literal, line=1),
+        Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
+    ]
+
+
+def test_trailing_dot_without_digit_is_not_consumed_by_number():
+    tokens = Tokenizer("3.").scan_tokens()
+
+    assert tokens[0] == Token(type=TokenType.NUMBER, lexeme="3", literal=3.0, line=1)
+
+
 def test_example_one_page_24():
     tokens = Tokenizer("age = 37").scan_tokens()
 
