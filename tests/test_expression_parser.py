@@ -1,3 +1,5 @@
+import pytest
+
 from codefab.assembler.errors import ParseError
 from codefab.assembler.expr import (
     Assign,
@@ -9,15 +11,12 @@ from codefab.assembler.expr import (
     Variable,
 )
 from codefab.assembler.expression_parser import ExpressionParser
+from codefab.tokenizer import Tokenizer
 from codefab.tokens import Token, TokenType
 
 
 def test_single_number_literal_is_parsed_as_literal_expr():
-    # "3" 이라는 소스코드가 토큰화되었다고 가정한 Token List (Tokenizer 담당 결과물 대신 직접 구성)
-    tokens = [
-        Token(TokenType.NUMBER, "3", line=1, literal=3.0),
-        Token(TokenType.EOF, "", literal=None, line=1),
-    ]
+    tokens = Tokenizer("3").scan_tokens()
 
     expression = ExpressionParser(tokens).parse()
 
@@ -25,9 +24,10 @@ def test_single_number_literal_is_parsed_as_literal_expr():
 
 
 def test_string_literal_is_parsed_as_literal_expr():
+    # Tokenizer 가 아직 STRING 리터럴을 지원하지 않아 직접 구성한다.
     tokens = [
-        Token(TokenType.STRING, '"hi"', line=1, literal="hi"),
-        Token(TokenType.EOF, "", literal=None, line=1),
+        Token(type=TokenType.STRING, lexeme='"hi"', literal="hi", line=1),
+        Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
     ]
 
     expression = ExpressionParser(tokens).parse()
@@ -36,9 +36,10 @@ def test_string_literal_is_parsed_as_literal_expr():
 
 
 def test_true_literal_is_parsed_as_literal_expr():
+    # Tokenizer 가 아직 true/false 키워드를 지원하지 않아 직접 구성한다.
     tokens = [
-        Token(TokenType.TRUE, "true", literal=None, line=1),
-        Token(TokenType.EOF, "", literal=None, line=1),
+        Token(type=TokenType.TRUE, lexeme="true", literal=None, line=1),
+        Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
     ]
 
     assert ExpressionParser(tokens).parse() == Literal(True)
@@ -46,18 +47,15 @@ def test_true_literal_is_parsed_as_literal_expr():
 
 def test_false_literal_is_parsed_as_literal_expr():
     tokens = [
-        Token(TokenType.FALSE, "false", literal=None, line=1),
-        Token(TokenType.EOF, "", literal=None, line=1),
+        Token(type=TokenType.FALSE, lexeme="false", literal=None, line=1),
+        Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
     ]
 
     assert ExpressionParser(tokens).parse() == Literal(False)
 
 
 def test_identifier_is_parsed_as_variable_expr():
-    tokens = [
-        Token(TokenType.IDENTIFIER, "a", literal=None, line=1),
-        Token(TokenType.EOF, "", literal=None, line=1),
-    ]
+    tokens = Tokenizer("a").scan_tokens()
 
     expression = ExpressionParser(tokens).parse()
 
@@ -66,13 +64,7 @@ def test_identifier_is_parsed_as_variable_expr():
 
 
 def test_parenthesized_expression_is_parsed_as_grouping_expr():
-    # "(3)"
-    tokens = [
-        Token(TokenType.LEFT_PAREN, "(", literal=None, line=1),
-        Token(TokenType.NUMBER, "3", line=1, literal=3.0),
-        Token(TokenType.RIGHT_PAREN, ")", literal=None, line=1),
-        Token(TokenType.EOF, "", literal=None, line=1),
-    ]
+    tokens = Tokenizer("(3)").scan_tokens()
 
     expression = ExpressionParser(tokens).parse()
 
@@ -81,24 +73,14 @@ def test_parenthesized_expression_is_parsed_as_grouping_expr():
 
 
 def test_missing_closing_paren_raises_parse_error():
+    tokens = Tokenizer("(3").scan_tokens()
 
-    tokens = [
-        Token(TokenType.LEFT_PAREN, "(", literal=None, line=1),
-        Token(TokenType.NUMBER, "3", line=1, literal=3.0),
-        Token(TokenType.EOF, "", literal=None, line=1),
-    ]
-
-    with __import__("pytest").raises(ParseError):
+    with pytest.raises(ParseError):
         ExpressionParser(tokens).parse()
 
 
 def test_unary_minus_is_parsed_as_unary_expr():
-    # "-a"
-    tokens = [
-        Token(TokenType.MINUS, "-", literal=None, line=1),
-        Token(TokenType.IDENTIFIER, "a", literal=None, line=1),
-        Token(TokenType.EOF, "", literal=None, line=1),
-    ]
+    tokens = Tokenizer("-a").scan_tokens()
 
     expression = ExpressionParser(tokens).parse()
 
@@ -108,13 +90,7 @@ def test_unary_minus_is_parsed_as_unary_expr():
 
 
 def test_star_expression_is_parsed_as_binary_expr():
-    # "a * b"
-    tokens = [
-        Token(TokenType.IDENTIFIER, "a", literal=None, line=1),
-        Token(TokenType.STAR, "*", literal=None, line=1),
-        Token(TokenType.IDENTIFIER, "b", literal=None, line=1),
-        Token(TokenType.EOF, "", literal=None, line=1),
-    ]
+    tokens = Tokenizer("a * b").scan_tokens()
 
     expression = ExpressionParser(tokens).parse()
 
@@ -125,13 +101,7 @@ def test_star_expression_is_parsed_as_binary_expr():
 
 
 def test_slash_expression_is_parsed_as_binary_expr():
-    # "a / b"
-    tokens = [
-        Token(TokenType.IDENTIFIER, "a", literal=None, line=1),
-        Token(TokenType.SLASH, "/", literal=None, line=1),
-        Token(TokenType.IDENTIFIER, "b", literal=None, line=1),
-        Token(TokenType.EOF, "", literal=None, line=1),
-    ]
+    tokens = Tokenizer("a / b").scan_tokens()
 
     expression = ExpressionParser(tokens).parse()
 
@@ -140,13 +110,7 @@ def test_slash_expression_is_parsed_as_binary_expr():
 
 
 def test_plus_expression_is_parsed_as_binary_expr():
-    # "a + b"
-    tokens = [
-        Token(TokenType.IDENTIFIER, "a", literal=None, line=1),
-        Token(TokenType.PLUS, "+", literal=None, line=1),
-        Token(TokenType.IDENTIFIER, "b", literal=None, line=1),
-        Token(TokenType.EOF, "", literal=None, line=1),
-    ]
+    tokens = Tokenizer("a + b").scan_tokens()
 
     expression = ExpressionParser(tokens).parse()
 
@@ -155,13 +119,7 @@ def test_plus_expression_is_parsed_as_binary_expr():
 
 
 def test_minus_expression_is_parsed_as_binary_expr():
-    # "a - b"
-    tokens = [
-        Token(TokenType.IDENTIFIER, "a", literal=None, line=1),
-        Token(TokenType.MINUS, "-", literal=None, line=1),
-        Token(TokenType.IDENTIFIER, "b", literal=None, line=1),
-        Token(TokenType.EOF, "", literal=None, line=1),
-    ]
+    tokens = Tokenizer("a - b").scan_tokens()
 
     expression = ExpressionParser(tokens).parse()
 
@@ -171,14 +129,7 @@ def test_minus_expression_is_parsed_as_binary_expr():
 
 def test_star_binds_tighter_than_plus():
     # "a + b * c"  ==>  Binary(+, a, Binary(*, b, c))
-    tokens = [
-        Token(TokenType.IDENTIFIER, "a", literal=None, line=1),
-        Token(TokenType.PLUS, "+", literal=None, line=1),
-        Token(TokenType.IDENTIFIER, "b", literal=None, line=1),
-        Token(TokenType.STAR, "*", literal=None, line=1),
-        Token(TokenType.IDENTIFIER, "c", literal=None, line=1),
-        Token(TokenType.EOF, "", literal=None, line=1),
-    ]
+    tokens = Tokenizer("a + b * c").scan_tokens()
 
     expression = ExpressionParser(tokens).parse()
 
@@ -190,18 +141,20 @@ def test_star_binds_tighter_than_plus():
 
 
 def _binary_two_identifiers(op_type, op_origin):
+    # Tokenizer 가 아직 지원하지 않는 연산자(>=, <=, ==, and, or)용 직접 구성 헬퍼.
     return [
-        Token(TokenType.IDENTIFIER, "a", literal=None, line=1),
-        Token(op_type, op_origin, literal=None, line=1),
-        Token(TokenType.IDENTIFIER, "b", literal=None, line=1),
-        Token(TokenType.EOF, "", literal=None, line=1),
+        Token(type=TokenType.IDENTIFIER, lexeme="a", literal=None, line=1),
+        Token(type=op_type, lexeme=op_origin, literal=None, line=1),
+        Token(type=TokenType.IDENTIFIER, lexeme="b", literal=None, line=1),
+        Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
     ]
 
 
 def test_greater_expression_is_parsed_as_binary_expr():
-    expression = ExpressionParser(
-        _binary_two_identifiers(TokenType.GREATER, ">")
-    ).parse()
+    tokens = Tokenizer("a > b").scan_tokens()
+
+    expression = ExpressionParser(tokens).parse()
+
     assert isinstance(expression, Binary)
     assert expression.operator.lexeme == ">"
 
@@ -214,7 +167,10 @@ def test_greater_equal_expression_is_parsed_as_binary_expr():
 
 
 def test_less_expression_is_parsed_as_binary_expr():
-    expression = ExpressionParser(_binary_two_identifiers(TokenType.LESS, "<")).parse()
+    tokens = Tokenizer("a < b").scan_tokens()
+
+    expression = ExpressionParser(tokens).parse()
+
     assert isinstance(expression, Binary)
     assert expression.operator.lexeme == "<"
 
@@ -228,14 +184,7 @@ def test_less_equal_expression_is_parsed_as_binary_expr():
 
 def test_term_binds_tighter_than_comparison():
     # "a + b > c"  ==>  Binary(>, Binary(+, a, b), c)
-    tokens = [
-        Token(TokenType.IDENTIFIER, "a", literal=None, line=1),
-        Token(TokenType.PLUS, "+", literal=None, line=1),
-        Token(TokenType.IDENTIFIER, "b", literal=None, line=1),
-        Token(TokenType.GREATER, ">", literal=None, line=1),
-        Token(TokenType.IDENTIFIER, "c", literal=None, line=1),
-        Token(TokenType.EOF, "", literal=None, line=1),
-    ]
+    tokens = Tokenizer("a + b > c").scan_tokens()
 
     expression = ExpressionParser(tokens).parse()
 
@@ -255,13 +204,14 @@ def test_equal_equal_expression_is_parsed_as_binary_expr():
 
 def test_comparison_binds_tighter_than_equality():
     # "a > b == c"  ==>  Binary(==, Binary(>, a, b), c)
+    # EQUAL_EQUAL 은 Tokenizer 가 아직 지원하지 않아 직접 구성한다.
     tokens = [
-        Token(TokenType.IDENTIFIER, "a", literal=None, line=1),
-        Token(TokenType.GREATER, ">", literal=None, line=1),
-        Token(TokenType.IDENTIFIER, "b", literal=None, line=1),
-        Token(TokenType.EQUAL_EQUAL, "==", literal=None, line=1),
-        Token(TokenType.IDENTIFIER, "c", literal=None, line=1),
-        Token(TokenType.EOF, "", literal=None, line=1),
+        Token(type=TokenType.IDENTIFIER, lexeme="a", literal=None, line=1),
+        Token(type=TokenType.GREATER, lexeme=">", literal=None, line=1),
+        Token(type=TokenType.IDENTIFIER, lexeme="b", literal=None, line=1),
+        Token(type=TokenType.EQUAL_EQUAL, lexeme="==", literal=None, line=1),
+        Token(type=TokenType.IDENTIFIER, lexeme="c", literal=None, line=1),
+        Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
     ]
 
     expression = ExpressionParser(tokens).parse()
@@ -289,13 +239,14 @@ def test_or_expression_is_parsed_as_logical_expr():
 
 def test_and_binds_tighter_than_or():
     # "a and b or c"  ==>  Logical(or, Logical(and, a, b), c)
+    # and/or 는 Tokenizer 가 아직 지원하지 않아 직접 구성한다.
     tokens = [
-        Token(TokenType.IDENTIFIER, "a", literal=None, line=1),
-        Token(TokenType.AND, "and", literal=None, line=1),
-        Token(TokenType.IDENTIFIER, "b", literal=None, line=1),
-        Token(TokenType.OR, "or", literal=None, line=1),
-        Token(TokenType.IDENTIFIER, "c", literal=None, line=1),
-        Token(TokenType.EOF, "", literal=None, line=1),
+        Token(type=TokenType.IDENTIFIER, lexeme="a", literal=None, line=1),
+        Token(type=TokenType.AND, lexeme="and", literal=None, line=1),
+        Token(type=TokenType.IDENTIFIER, lexeme="b", literal=None, line=1),
+        Token(type=TokenType.OR, lexeme="or", literal=None, line=1),
+        Token(type=TokenType.IDENTIFIER, lexeme="c", literal=None, line=1),
+        Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
     ]
 
     expression = ExpressionParser(tokens).parse()
@@ -309,13 +260,14 @@ def test_and_binds_tighter_than_or():
 
 def test_equality_binds_tighter_than_and():
     # "a == b and c"  ==>  Logical(and, Binary(==, a, b), c)
+    # ==, and 는 Tokenizer 가 아직 지원하지 않아 직접 구성한다.
     tokens = [
-        Token(TokenType.IDENTIFIER, "a", literal=None, line=1),
-        Token(TokenType.EQUAL_EQUAL, "==", literal=None, line=1),
-        Token(TokenType.IDENTIFIER, "b", literal=None, line=1),
-        Token(TokenType.AND, "and", literal=None, line=1),
-        Token(TokenType.IDENTIFIER, "c", literal=None, line=1),
-        Token(TokenType.EOF, "", literal=None, line=1),
+        Token(type=TokenType.IDENTIFIER, lexeme="a", literal=None, line=1),
+        Token(type=TokenType.EQUAL_EQUAL, lexeme="==", literal=None, line=1),
+        Token(type=TokenType.IDENTIFIER, lexeme="b", literal=None, line=1),
+        Token(type=TokenType.AND, lexeme="and", literal=None, line=1),
+        Token(type=TokenType.IDENTIFIER, lexeme="c", literal=None, line=1),
+        Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
     ]
 
     expression = ExpressionParser(tokens).parse()
@@ -328,13 +280,7 @@ def test_equality_binds_tighter_than_and():
 
 
 def test_assign_expression_is_parsed_as_assign_expr():
-    # "a = 10"
-    tokens = [
-        Token(TokenType.IDENTIFIER, "a", literal=None, line=1),
-        Token(TokenType.EQUAL, "=", literal=None, line=1),
-        Token(TokenType.NUMBER, "10", line=1, literal=10.0),
-        Token(TokenType.EOF, "", literal=None, line=1),
-    ]
+    tokens = Tokenizer("a = 10").scan_tokens()
 
     expression = ExpressionParser(tokens).parse()
 
@@ -344,15 +290,7 @@ def test_assign_expression_is_parsed_as_assign_expr():
 
 
 def test_assign_value_can_be_any_expression():
-    # "x = a + b"
-    tokens = [
-        Token(TokenType.IDENTIFIER, "x", literal=None, line=1),
-        Token(TokenType.EQUAL, "=", literal=None, line=1),
-        Token(TokenType.IDENTIFIER, "a", literal=None, line=1),
-        Token(TokenType.PLUS, "+", literal=None, line=1),
-        Token(TokenType.IDENTIFIER, "b", literal=None, line=1),
-        Token(TokenType.EOF, "", literal=None, line=1),
-    ]
+    tokens = Tokenizer("x = a + b").scan_tokens()
 
     expression = ExpressionParser(tokens).parse()
 
@@ -363,14 +301,7 @@ def test_assign_value_can_be_any_expression():
 
 def test_assign_is_right_associative():
     # "a = b = 3"  ==>  Assign(a, Assign(b, 3))
-    tokens = [
-        Token(TokenType.IDENTIFIER, "a", literal=None, line=1),
-        Token(TokenType.EQUAL, "=", literal=None, line=1),
-        Token(TokenType.IDENTIFIER, "b", literal=None, line=1),
-        Token(TokenType.EQUAL, "=", literal=None, line=1),
-        Token(TokenType.NUMBER, "3", line=1, literal=3.0),
-        Token(TokenType.EOF, "", literal=None, line=1),
-    ]
+    tokens = Tokenizer("a = b = 3").scan_tokens()
 
     expression = ExpressionParser(tokens).parse()
 
@@ -382,14 +313,7 @@ def test_assign_is_right_associative():
 
 
 def test_invalid_assignment_target_raises_parse_error():
+    tokens = Tokenizer("3 = 4").scan_tokens()
 
-    # "3 = 4"
-    tokens = [
-        Token(TokenType.NUMBER, "3", line=1, literal=3.0),
-        Token(TokenType.EQUAL, "=", literal=None, line=1),
-        Token(TokenType.NUMBER, "4", line=1, literal=4.0),
-        Token(TokenType.EOF, "", literal=None, line=1),
-    ]
-
-    with __import__("pytest").raises(ParseError):
+    with pytest.raises(ParseError):
         ExpressionParser(tokens).parse()
