@@ -1,0 +1,41 @@
+## 0.1.0 (2026-07-07)
+
+### Feat
+
+- failing case 추가
+- first commit
+
+### Refactor
+
+- Mock 대신에 실제 Tokenizer를 import해서 executor_unit.py 구성.
+- 리팩토링 진행
+
+## 0.0.1 (2026-07-07)
+
+### Feat
+
+- 변수_중복_선언_에러_검출, 지역_변수_초기화_시_자기_참조_에러_검출 코드 구현
+- 변수 중복 선언 에러 검출 테스트 통과 코드 구현
+- 정상 입력 확인 테스트 구현
+- 변수_중복_선언_에러_검출, 지역_변수_초기화_시_자기_참조_에러_검출 코드 구현
+- 변수 중복 선언 에러 검출 테스트 통과 코드 구현
+- assembler expression_parser 기능 개발
+- tokenizer 구현 및 테스트
+- if문에 대해서 executor unit 적용 완료
+- executor_unit.py first commit
+- ast_nodes 인터페이스 추가
+- 선언 전 사용 에러 검출 테스트 통과 코드 구현
+- token
+- Add project initial configurations
+
+### Fix
+
+- codefab.token => codefab.tokens 수정
+- 버그 수정 (test_token.py -> test_tokens.py)
+- 버그 수정 (token.py -> tokens.py)
+- 버그수정(token.py->tokens.py)
+
+### Refactor
+
+- pytest fixture 이용 테스트 가독성 향상
+- 선언 전 사용 에러 검출 테스트 Mocker 사용
