@@ -36,8 +36,9 @@ def test_string_literal_is_parsed_as_literal_expr():
 
 
 def test_true_literal_is_parsed_as_literal_expr():
+    # docs/language.md 문법 정의: TRUE 의 표면 lexeme 은 "참"
     tokens = [
-        Token(TokenType.TRUE, "true", literal=None, line=1),
+        Token(TokenType.TRUE, "참", literal=None, line=1),
         Token(TokenType.EOF, "", literal=None, line=1),
     ]
 
@@ -45,8 +46,9 @@ def test_true_literal_is_parsed_as_literal_expr():
 
 
 def test_false_literal_is_parsed_as_literal_expr():
+    # docs/language.md 문법 정의: FALSE 의 표면 lexeme 은 "거짓"
     tokens = [
-        Token(TokenType.FALSE, "false", literal=None, line=1),
+        Token(TokenType.FALSE, "거짓", literal=None, line=1),
         Token(TokenType.EOF, "", literal=None, line=1),
     ]
 
@@ -274,26 +276,28 @@ def test_comparison_binds_tighter_than_equality():
 
 
 def test_and_expression_is_parsed_as_logical_expr():
-    tokens = _binary_two_identifiers(TokenType.AND, "and")
+    # docs/language.md 문법 정의: AND 의 표면 lexeme 은 "그리고"
+    tokens = _binary_two_identifiers(TokenType.AND, "그리고")
     expression = ExpressionParser(tokens).parse()
     assert isinstance(expression, Logical)
-    assert expression.operator.lexeme == "and"
+    assert expression.operator.lexeme == "그리고"
 
 
 def test_or_expression_is_parsed_as_logical_expr():
-    tokens = _binary_two_identifiers(TokenType.OR, "or")
+    # docs/language.md 문법 정의: OR 의 표면 lexeme 은 "또는"
+    tokens = _binary_two_identifiers(TokenType.OR, "또는")
     expression = ExpressionParser(tokens).parse()
     assert isinstance(expression, Logical)
-    assert expression.operator.lexeme == "or"
+    assert expression.operator.lexeme == "또는"
 
 
 def test_and_binds_tighter_than_or():
-    # "a and b or c"  ==>  Logical(or, Logical(and, a, b), c)
+    # "a 그리고 b 또는 c"  ==>  Logical(또는, Logical(그리고, a, b), c)
     tokens = [
         Token(TokenType.IDENTIFIER, "a", literal=None, line=1),
-        Token(TokenType.AND, "and", literal=None, line=1),
+        Token(TokenType.AND, "그리고", literal=None, line=1),
         Token(TokenType.IDENTIFIER, "b", literal=None, line=1),
-        Token(TokenType.OR, "or", literal=None, line=1),
+        Token(TokenType.OR, "또는", literal=None, line=1),
         Token(TokenType.IDENTIFIER, "c", literal=None, line=1),
         Token(TokenType.EOF, "", literal=None, line=1),
     ]
@@ -301,19 +305,19 @@ def test_and_binds_tighter_than_or():
     expression = ExpressionParser(tokens).parse()
 
     assert isinstance(expression, Logical)
-    assert expression.operator.lexeme == "or"
+    assert expression.operator.lexeme == "또는"
     assert isinstance(expression.left, Logical)
-    assert expression.left.operator.lexeme == "and"
+    assert expression.left.operator.lexeme == "그리고"
     assert isinstance(expression.right, Variable)
 
 
 def test_equality_binds_tighter_than_and():
-    # "a == b and c"  ==>  Logical(and, Binary(==, a, b), c)
+    # "a == b 그리고 c"  ==>  Logical(그리고, Binary(==, a, b), c)
     tokens = [
         Token(TokenType.IDENTIFIER, "a", literal=None, line=1),
         Token(TokenType.EQUAL_EQUAL, "==", literal=None, line=1),
         Token(TokenType.IDENTIFIER, "b", literal=None, line=1),
-        Token(TokenType.AND, "and", literal=None, line=1),
+        Token(TokenType.AND, "그리고", literal=None, line=1),
         Token(TokenType.IDENTIFIER, "c", literal=None, line=1),
         Token(TokenType.EOF, "", literal=None, line=1),
     ]
@@ -321,7 +325,7 @@ def test_equality_binds_tighter_than_and():
     expression = ExpressionParser(tokens).parse()
 
     assert isinstance(expression, Logical)
-    assert expression.operator.lexeme == "and"
+    assert expression.operator.lexeme == "그리고"
     assert isinstance(expression.left, Binary)
     assert expression.left.operator.lexeme == "=="
     assert isinstance(expression.right, Variable)
