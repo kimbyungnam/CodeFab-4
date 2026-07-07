@@ -4,8 +4,30 @@ from codefab.checker import Checker
 from codefab.tokens import Token, TokenType
 
 
-def test_정상_입력_확인():
-    pass
+def test_정상_입력_확인(mocker):
+    # arrange
+    var_stmt_a = mocker.Mock()
+    var_stmt_a.name = Token(type=TokenType.IDENTIFIER, lexeme="a", literal=None, line=1)
+    var_stmt_a.initializer = None
+    var_stmt_a.accept.side_effect = lambda visitor: visitor.visit_var_stmt(var_stmt_a)
+
+    variable_a = mocker.Mock()
+    variable_a.name = Token(type=TokenType.IDENTIFIER, lexeme="a", literal=None, line=2)
+    variable_a.accept.side_effect = lambda visitor: visitor.visit_variable(variable_a)
+
+    exp_statement = mocker.Mock(expression=variable_a)
+    exp_statement.accept.side_effect = lambda visitor: visitor.visit_expression_stmt(
+        exp_statement
+    )
+
+    ast = [var_stmt_a, exp_statement]
+    sut = Checker()
+
+    # act
+    sut.resolve(ast)
+
+    # assert
+    assert sut.declared == {"a"}
 
 
 def test_선언_전_사용_에러_검출(mocker):
