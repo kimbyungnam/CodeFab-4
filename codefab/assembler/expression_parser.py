@@ -1,4 +1,3 @@
-from codefab.assembler.errors import ParseError
 from codefab.ast_nodes import (
     Assign,
     Binary,
@@ -8,6 +7,7 @@ from codefab.ast_nodes import (
     Unary,
     Variable,
 )
+from codefab.error import ParseError
 from codefab.tokens import TokenType
 
 

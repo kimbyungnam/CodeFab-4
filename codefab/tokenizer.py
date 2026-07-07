@@ -1,4 +1,4 @@
-from codefab.assembler.errors import ParseError
+from codefab.error import ParseError
 from codefab.tokens import Token, TokenType
 
 SINGLE_CHAR_TOKENS = {

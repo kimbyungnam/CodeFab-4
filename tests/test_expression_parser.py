@@ -1,4 +1,3 @@
-from codefab.assembler.errors import ParseError
 from codefab.assembler.expression_parser import ExpressionParser
 from codefab.ast_nodes import (
     Assign,
@@ -9,6 +8,7 @@ from codefab.ast_nodes import (
     Unary,
     Variable,
 )
+from codefab.error import ParseError
 from codefab.tokens import Token, TokenType
 
 
