@@ -18,11 +18,14 @@ class StatementParser:
 
     def parse(self):
         statements = []
-        while not self._is_at_end():
-            statements.append(self._statement())
+        while not self.is_at_end():
+            statements.append(self.parse_statement())
         return statements
 
-    def _statement(self):
+    def is_at_end(self):
+        return self._peek().type == TokenType.EOF
+
+    def parse_statement(self):
         if self._match(TokenType.PRINT):
             return self._print_statement()
         if self._match(TokenType.LEFT_BRACE):
@@ -42,8 +45,8 @@ class StatementParser:
 
     def _block(self):
         statements = []
-        while not self._check(TokenType.RIGHT_BRACE) and not self._is_at_end():
-            statements.append(self._statement())
+        while not self._check(TokenType.RIGHT_BRACE) and not self.is_at_end():
+            statements.append(self.parse_statement())
         self._consume(TokenType.RIGHT_BRACE, "블록은 '}'로 닫아야 합니다.")
         return statements
 
@@ -67,7 +70,7 @@ class StatementParser:
             increment = self._expression()
         self._consume(TokenType.RIGHT_PAREN, "증감식 뒤에는 ')'가 필요합니다.")
 
-        body = self._statement()
+        body = self.parse_statement()
 
         return ForStmt(initializer, condition, increment, body)
 
@@ -86,10 +89,10 @@ class StatementParser:
         condition = self._expression()
         self._consume(TokenType.RIGHT_PAREN, "조건식 뒤에는 ')'가 필요합니다.")
 
-        then_branch = self._statement()
+        then_branch = self.parse_statement()
         else_branch = None
         if self._match(TokenType.ELSE):
-            else_branch = self._statement()
+            else_branch = self.parse_statement()
 
         return IfStmt(condition, then_branch, else_branch)
 
@@ -119,17 +122,14 @@ class StatementParser:
         return False
 
     def _check(self, token_type):
-        if self._is_at_end():
+        if self.is_at_end():
             return False
         return self._peek().type == token_type
 
     def _advance(self):
-        if not self._is_at_end():
+        if not self.is_at_end():
             self.current += 1
         return self._previous()
-
-    def _is_at_end(self):
-        return self._peek().type == TokenType.EOF
 
     def _peek(self):
         return self.tokens[self.current]
