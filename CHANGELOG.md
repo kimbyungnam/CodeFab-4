@@ -1,3 +1,9 @@
+## 0.6.3 (2026-07-07)
+
+### Refactor
+
+- assembler/errors 모듈 error 모듈로 통합
+
 ## 0.6.2 (2026-07-07)
 
 ### Refactor
