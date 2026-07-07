@@ -1,6 +1,9 @@
+from typing import Callable
+
 from codefab.ast_nodes import (
     Assign,
     Binary,
+    Expr,
     Grouping,
     Literal,
     Logical,
@@ -8,18 +11,18 @@ from codefab.ast_nodes import (
     Variable,
 )
 from codefab.error import ParseError
-from codefab.tokens import TokenType
+from codefab.tokens import Token, TokenType
 
 
 class ExpressionParser:
-    def __init__(self, tokens):
+    def __init__(self, tokens: list[Token]):
         self.tokens = tokens
         self.current = 0
 
-    def parse(self):
+    def parse(self) -> Expr:
         return self._assignment()
 
-    def _assignment(self):
+    def _assignment(self) -> Expr:
         expression = self._logic_or()
         if self._match(TokenType.EQUAL):
             equals = self._previous()
@@ -29,16 +32,16 @@ class ExpressionParser:
             raise ParseError("잘못된 대입 대상입니다.", equals.line)
         return expression
 
-    def _logic_or(self):
+    def _logic_or(self) -> Expr:
         return self._left_assoc(Logical, self._logic_and, TokenType.OR)
 
-    def _logic_and(self):
+    def _logic_and(self) -> Expr:
         return self._left_assoc(Logical, self._equality, TokenType.AND)
 
-    def _equality(self):
+    def _equality(self) -> Expr:
         return self._left_assoc(Binary, self._comparison, TokenType.EQUAL_EQUAL)
 
-    def _comparison(self):
+    def _comparison(self) -> Expr:
         return self._left_assoc(
             Binary,
             self._term,
@@ -48,13 +51,18 @@ class ExpressionParser:
             TokenType.LESS_EQUAL,
         )
 
-    def _term(self):
+    def _term(self) -> Expr:
         return self._left_assoc(Binary, self._factor, TokenType.PLUS, TokenType.MINUS)
 
-    def _factor(self):
+    def _factor(self) -> Expr:
         return self._left_assoc(Binary, self._unary, TokenType.STAR, TokenType.SLASH)
 
-    def _left_assoc(self, node_class, operand_rule, *operator_types):
+    def _left_assoc(
+        self,
+        node_class: type[Binary] | type[Logical],
+        operand_rule: Callable[[], Expr],
+        *operator_types: TokenType,
+    ) -> Expr:
         expression = operand_rule()
         while self._match(*operator_types):
             operator = self._previous()
@@ -62,14 +70,14 @@ class ExpressionParser:
             expression = node_class(expression, operator, right)
         return expression
 
-    def _unary(self):
+    def _unary(self) -> Expr:
         if self._match(TokenType.MINUS):
             operator = self._previous()
             right = self._unary()
             return Unary(operator, right)
         return self._primary()
 
-    def _primary(self):
+    def _primary(self) -> Expr:
         if self._match(TokenType.NUMBER, TokenType.STRING):
             return Literal(self._previous().literal)
         if self._match(TokenType.TRUE):
@@ -86,33 +94,33 @@ class ExpressionParser:
 
     # ---------------- helpers ----------------
 
-    def _consume(self, token_type, message):
+    def _consume(self, token_type: TokenType, message: str) -> Token:
         if self._check(token_type):
             return self._advance()
         raise ParseError(message, self._peek().line)
 
-    def _match(self, *types):
+    def _match(self, *types: TokenType) -> bool:
         for token_type in types:
             if self._check(token_type):
                 self._advance()
                 return True
         return False
 
-    def _check(self, token_type):
+    def _check(self, token_type: TokenType) -> bool:
         if self._is_at_end():
             return False
         return self._peek().type == token_type
 
-    def _advance(self):
+    def _advance(self) -> Token:
         if not self._is_at_end():
             self.current += 1
         return self._previous()
 
-    def _is_at_end(self):
+    def _is_at_end(self) -> bool:
         return self._peek().type == TokenType.EOF
 
-    def _peek(self):
+    def _peek(self) -> Token:
         return self.tokens[self.current]
 
-    def _previous(self):
+    def _previous(self) -> Token:
         return self.tokens[self.current - 1]

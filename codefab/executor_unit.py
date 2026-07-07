@@ -2,6 +2,7 @@ from codefab.ast_nodes import (
     Assign,
     Binary,
     BlockStmt,
+    Expr,
     ExpressionStmt,
     ForStmt,
     Grouping,
@@ -9,6 +10,7 @@ from codefab.ast_nodes import (
     Literal,
     Logical,
     PrintStmt,
+    Stmt,
     Unary,
     Variable,
     VarStmt,
@@ -23,18 +25,18 @@ from codefab.error import (
     UnsupportedStatementError,
     UnsupportedUnaryOperatorError,
 )
-from codefab.tokens import TokenType
+from codefab.tokens import Token, TokenType
 
 
 class Environment:
-    def __init__(self, enclosing=None):
-        self.values = {}
+    def __init__(self, enclosing: "Environment | None" = None):
+        self.values: dict[str, object] = {}
         self.enclosing = enclosing
 
-    def define(self, lexeme: str, value) -> None:
+    def define(self, lexeme: str, value: object):
         self.values[lexeme] = value
 
-    def get(self, name_token):
+    def get(self, name_token: Token) -> object:
         lexeme = name_token.lexeme
 
         if lexeme in self.values:
@@ -45,7 +47,7 @@ class Environment:
 
         raise UndefinedVariableError(lexeme, line=name_token.line)
 
-    def assign(self, name_token, value) -> None:
+    def assign(self, name_token: Token, value: object):
         lexeme = name_token.lexeme
 
         if lexeme in self.values:
@@ -63,11 +65,11 @@ class ExecutorUnit:
     def __init__(self):
         self.environment = Environment()
 
-    def execute(self, statements) -> None:
+    def execute(self, statements: list[Stmt]):
         for statement in statements:
             self._execute_stmt(statement)
 
-    def _execute_stmt(self, statement) -> None:
+    def _execute_stmt(self, statement: Stmt):
         if isinstance(statement, PrintStmt):
             value = self._evaluate_expr(statement.expression)
             print(self._stringify(value))
@@ -109,7 +111,7 @@ class ExecutorUnit:
 
         raise UnsupportedStatementError(type(statement).__name__)
 
-    def _execute_block(self, statements, environment: Environment) -> None:
+    def _execute_block(self, statements: list[Stmt], environment: Environment):
         previous = self.environment
         try:
             self.environment = environment
@@ -118,7 +120,7 @@ class ExecutorUnit:
         finally:
             self.environment = previous
 
-    def _evaluate_expr(self, expression):
+    def _evaluate_expr(self, expression: Expr) -> object:
         if isinstance(expression, Literal):
             return expression.value
 
@@ -142,15 +144,15 @@ class ExecutorUnit:
 
         raise UnsupportedExpressionError(type(expression).__name__)
 
-    def _look_up_variable(self, name_token):
+    def _look_up_variable(self, name_token: Token) -> object:
         return self.environment.get(name_token)
 
-    def _evaluate_assign(self, expression):
+    def _evaluate_assign(self, expression: Assign) -> object:
         value = self._evaluate_expr(expression.value)
         self.environment.assign(expression.name, value)
         return value
 
-    def _is_truthy(self, value) -> bool:
+    def _is_truthy(self, value: object) -> bool:
         if value is None:
             return False
 
@@ -159,7 +161,7 @@ class ExecutorUnit:
 
         return True
 
-    def _evaluate_unary(self, expression):
+    def _evaluate_unary(self, expression: Unary) -> object:
         right = self._evaluate_expr(expression.right)
 
         operator_type = expression.operator.type
@@ -175,7 +177,7 @@ class ExecutorUnit:
 
         raise UnsupportedUnaryOperatorError(expression.operator.lexeme, line=line)
 
-    def _evaluate_logical(self, expression):
+    def _evaluate_logical(self, expression: Logical) -> object:
         left = self._evaluate_expr(expression.left)
 
         if expression.operator.type == TokenType.OR:
@@ -187,7 +189,7 @@ class ExecutorUnit:
 
         return self._evaluate_expr(expression.right)
 
-    def _evaluate_binary(self, expression):
+    def _evaluate_binary(self, expression: Binary) -> object:
         left = self._evaluate_expr(expression.left)
         right = self._evaluate_expr(expression.right)
 
@@ -241,11 +243,11 @@ class ExecutorUnit:
 
         raise UnsupportedBinaryOperatorError(expression.operator.lexeme, line=line)
 
-    def _check_number_operands(self, left, right, line: int) -> None:
+    def _check_number_operands(self, left: object, right: object, line: int):
         if not isinstance(left, float) or not isinstance(right, float):
             raise InvalidOperandTypeError(line=line)
 
-    def _stringify(self, value) -> str:
+    def _stringify(self, value: object) -> str:
         if isinstance(value, bool):
             return "참" if value else "거짓"
 

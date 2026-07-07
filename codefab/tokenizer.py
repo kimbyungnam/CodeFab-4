@@ -1,7 +1,7 @@
 from codefab.error import ParseError
 from codefab.tokens import Token, TokenType
 
-SINGLE_CHAR_TOKENS = {
+SINGLE_CHAR_TOKENS: dict[str, TokenType] = {
     "(": TokenType.LEFT_PAREN,
     ")": TokenType.RIGHT_PAREN,
     "{": TokenType.LEFT_BRACE,
@@ -17,14 +17,14 @@ SINGLE_CHAR_TOKENS = {
     "!": TokenType.BANG,
 }
 
-DOUBLE_CHAR_TOKENS = {
+DOUBLE_CHAR_TOKENS: dict[str, TokenType] = {
     "=": TokenType.EQUAL_EQUAL,
     ">": TokenType.GREATER_EQUAL,
     "<": TokenType.LESS_EQUAL,
     "!": TokenType.BANG_EQUAL,
 }
 
-KEYWORDS = {
+KEYWORDS: dict[str, TokenType] = {
     "if": TokenType.IF,
     "만약": TokenType.IF,
     "else": TokenType.ELSE,
@@ -84,19 +84,19 @@ class Tokenizer:
         )
         return self.tokens
 
-    def _add(self, token_type: TokenType, literal=None) -> None:
+    def _add(self, token_type: TokenType, literal: object = None):
         lexeme = self.source[self.start : self.current]
         self.tokens.append(
             Token(type=token_type, lexeme=lexeme, literal=literal, line=self.line)
         )
 
-    def _number(self) -> None:
+    def _number(self):
         while not self._is_at_end() and self.source[self.current].isdigit():
             self.current += 1
         lexeme = self.source[self.start : self.current]
         self._add(TokenType.NUMBER, literal=float(lexeme))
 
-    def _string(self) -> None:
+    def _string(self):
         while not self._is_at_end() and self.source[self.current] != '"':
             if self.source[self.current] == "\n":
                 self.line += 1
@@ -109,7 +109,7 @@ class Tokenizer:
         value = self.source[self.start + 1 : self.current - 1]
         self._add(TokenType.STRING, literal=value)
 
-    def _identifier(self) -> None:
+    def _identifier(self):
         while not self._is_at_end() and (
             self.source[self.current].isalnum() or self.source[self.current] == "_"
         ):
