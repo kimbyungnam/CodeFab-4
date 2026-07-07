@@ -1,11 +1,7 @@
 import pytest
 
 from codefab.checker import Checker
-from codefab.error import (
-    DuplicateVariableError,
-    SelfReferenceInInitializerError,
-    UndeclaredVariableError,
-)
+from codefab.error import DuplicateVariableError, SelfReferenceInInitializerError
 from codefab.tokens import Token, TokenType
 
 
@@ -179,23 +175,6 @@ def test_정상_입력_확인(sut, make_var_stmt, make_variable, make_exp_stmt):
     assert sut.declared == {"a"}
 
 
-def test_선언_전_사용_에러_검출(sut, make_variable, make_binary, make_exp_stmt):
-    # arrange
-    variable_a = make_variable("a")
-    variable_b = make_variable("b")
-    binary_expr = make_binary(variable_a, variable_b)
-    exp_statement = make_exp_stmt(binary_expr)
-
-    ast = [exp_statement]
-
-    # act
-    # assert
-    with pytest.raises(
-        UndeclaredVariableError, match="선언되지 않은 변수를 사용했습니다."
-    ):
-        sut.resolve(ast)
-
-
 def test_변수_중복_선언_에러_검출(sut, make_var_stmt, make_block_stmt):
     # arrange
     var_stmt_a1 = make_var_stmt("a", line=1)
@@ -268,11 +247,10 @@ def test_그룹핑은_내부_표현식을_방문한다(
     ast = [exp_statement]
 
     # act
+    sut.resolve(ast)
+
     # assert
-    with pytest.raises(
-        UndeclaredVariableError, match="선언되지 않은 변수를 사용했습니다."
-    ):
-        sut.resolve(ast)
+    variable_a.accept.assert_called_once_with(sut)
 
 
 def test_단항_표현식은_피연산자를_방문한다(
@@ -286,11 +264,10 @@ def test_단항_표현식은_피연산자를_방문한다(
     ast = [exp_statement]
 
     # act
+    sut.resolve(ast)
+
     # assert
-    with pytest.raises(
-        UndeclaredVariableError, match="선언되지 않은 변수를 사용했습니다."
-    ):
-        sut.resolve(ast)
+    variable_a.accept.assert_called_once_with(sut)
 
 
 def test_논리_표현식은_좌우_피연산자를_방문한다(
@@ -305,11 +282,11 @@ def test_논리_표현식은_좌우_피연산자를_방문한다(
     ast = [exp_statement]
 
     # act
+    sut.resolve(ast)
+
     # assert
-    with pytest.raises(
-        UndeclaredVariableError, match="선언되지 않은 변수를 사용했습니다."
-    ):
-        sut.resolve(ast)
+    variable_a.accept.assert_called_once_with(sut)
+    variable_b.accept.assert_called_once_with(sut)
 
 
 def test_대입_표현식은_값을_방문한다(
@@ -324,11 +301,10 @@ def test_대입_표현식은_값을_방문한다(
     ast = [var_stmt_a, exp_statement]
 
     # act
+    sut.resolve(ast)
+
     # assert
-    with pytest.raises(
-        UndeclaredVariableError, match="선언되지 않은 변수를 사용했습니다."
-    ):
-        sut.resolve(ast)
+    variable_b.accept.assert_called_once_with(sut)
 
 
 def test_출력문은_표현식을_방문한다(sut, make_print_stmt, make_variable):
@@ -339,11 +315,10 @@ def test_출력문은_표현식을_방문한다(sut, make_print_stmt, make_varia
     ast = [print_stmt]
 
     # act
+    sut.resolve(ast)
+
     # assert
-    with pytest.raises(
-        UndeclaredVariableError, match="선언되지 않은 변수를 사용했습니다."
-    ):
-        sut.resolve(ast)
+    variable_a.accept.assert_called_once_with(sut)
 
 
 def test_조건문은_조건식과_분기를_방문한다(
@@ -358,11 +333,11 @@ def test_조건문은_조건식과_분기를_방문한다(
     ast = [if_stmt]
 
     # act
+    sut.resolve(ast)
+
     # assert
-    with pytest.raises(
-        UndeclaredVariableError, match="선언되지 않은 변수를 사용했습니다."
-    ):
-        sut.resolve(ast)
+    condition.accept.assert_called_once_with(sut)
+    then_branch.accept.assert_called_once_with(sut)
 
 
 def test_조건문은_else_분기도_방문한다(
@@ -372,19 +347,18 @@ def test_조건문은_else_분기도_방문한다(
     variable_b = make_variable("b")
     else_branch = make_exp_stmt(variable_b)
     if_stmt = make_if_stmt(
-        make_variable("dummy_undeclared"),
-        make_exp_stmt(make_variable("dummy_undeclared")),
+        make_variable("condition"),
+        make_exp_stmt(make_variable("a")),
         else_branch=else_branch,
     )
 
     ast = [if_stmt]
 
     # act
+    sut.resolve(ast)
+
     # assert
-    with pytest.raises(
-        UndeclaredVariableError, match="선언되지 않은 변수를 사용했습니다."
-    ):
-        sut.resolve(ast)
+    else_branch.accept.assert_called_once_with(sut)
 
 
 def test_반복문은_초기화식_조건식_증감식_본문을_방문한다(
@@ -394,14 +368,16 @@ def test_반복문은_초기화식_조건식_증감식_본문을_방문한다(
     initializer = make_var_stmt("i", line=1)
     condition = make_variable("i", line=2)
     increment = make_variable("i", line=3)
-    body = make_exp_stmt(make_variable("undeclared", line=4))
+    body = make_exp_stmt(make_variable("a", line=4))
     for_stmt = make_for_stmt(initializer, condition, increment, body)
 
     ast = [for_stmt]
 
     # act
+    sut.resolve(ast)
+
     # assert
-    with pytest.raises(
-        UndeclaredVariableError, match="선언되지 않은 변수를 사용했습니다."
-    ):
-        sut.resolve(ast)
+    initializer.accept.assert_called_once_with(sut)
+    condition.accept.assert_called_once_with(sut)
+    increment.accept.assert_called_once_with(sut)
+    body.accept.assert_called_once_with(sut)

@@ -14,11 +14,7 @@ from codefab.ast_nodes import (
     Variable,
     VarStmt,
 )
-from codefab.error import (
-    DuplicateVariableError,
-    SelfReferenceInInitializerError,
-    UndeclaredVariableError,
-)
+from codefab.error import DuplicateVariableError, SelfReferenceInInitializerError
 
 
 class Checker:
@@ -55,8 +51,6 @@ class Checker:
     def visit_variable(self, expr: Variable):
         if expr.name.lexeme == self.initializing:
             raise SelfReferenceInInitializerError(expr.name.line)
-        if not any(expr.name.lexeme in scope for scope in self.scopes):
-            raise UndeclaredVariableError(expr.name.line)
 
     def visit_binary(self, expr: Binary):
         expr.left.accept(self)
