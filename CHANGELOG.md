@@ -1,3 +1,14 @@
+## 0.4.0 (2026-07-07)
+
+### Feat
+
+- statement 52page
+- statement_parser 추가
+
+### Fix
+
+- 새로운 main 에 맞춰 고치기
+
 ## 0.3.1 (2026-07-07)
 
 ### Refactor
