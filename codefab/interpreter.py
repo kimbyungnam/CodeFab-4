@@ -3,9 +3,8 @@ import io
 from dataclasses import dataclass, field
 
 from codefab.assembler.assembler import Assembler
-from codefab.assembler.errors import ParseError
 from codefab.checker import Checker
-from codefab.error import CheckerError, ExecutorRuntimeError
+from codefab.error import CheckerError, ExecutorRuntimeError, ParseError
 from codefab.executor_unit import ExecutorUnit
 
 

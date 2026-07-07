@@ -1,9 +1,8 @@
 from codefab.assembler.assembler import Assembler
-from codefab.assembler.errors import ParseError
 from codefab.ast_nodes import Literal as ExprLiteral
 from codefab.ast_nodes import PrintStmt
 from codefab.checker import Checker
-from codefab.error import DuplicateVariableError, ExecutorRuntimeError
+from codefab.error import DuplicateVariableError, ExecutorRuntimeError, ParseError
 from codefab.executor_unit import ExecutorUnit
 from codefab.interpreter import Interpreter
 
