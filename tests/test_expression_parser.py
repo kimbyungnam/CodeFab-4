@@ -1,5 +1,6 @@
 from codefab.assembler.errors import ParseError
-from codefab.assembler.expr import (
+from codefab.assembler.expression_parser import ExpressionParser
+from codefab.ast_nodes import (
     Assign,
     Binary,
     Grouping,
@@ -8,7 +9,6 @@ from codefab.assembler.expr import (
     Unary,
     Variable,
 )
-from codefab.assembler.expression_parser import ExpressionParser
 from codefab.tokens import Token, TokenType
 
 

@@ -1,5 +1,5 @@
 from codefab.assembler.errors import ParseError
-from codefab.assembler.expr import (
+from codefab.ast_nodes import (
     Assign,
     Binary,
     Grouping,

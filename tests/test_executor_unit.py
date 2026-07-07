@@ -1,12 +1,17 @@
 import pytest
 
-from codefab.assembler.expr import Assign, Binary, Grouping, Literal, Unary, Variable
 from codefab.ast_nodes import (
+    Assign,
+    Binary,
     BlockStmt,
     ExpressionStmt,
     ForStmt,
+    Grouping,
     IfStmt,
+    Literal,
     PrintStmt,
+    Unary,
+    Variable,
     VarStmt,
 )
 from codefab.executor_unit import ExecutorRuntimeError, ExecutorUnit
