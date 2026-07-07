@@ -1,3 +1,4 @@
+import sys
 from collections.abc import Callable, Iterable
 
 from codefab.interpreter import Interpreter
@@ -25,3 +26,15 @@ class Repl:
             self._output(printed_line)
         if result.error is not None:
             self._output(result.error)
+
+
+def main() -> int:
+    try:
+        Repl(interpreter=Interpreter()).run(line.rstrip("\n") for line in sys.stdin)
+    except KeyboardInterrupt:
+        pass
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

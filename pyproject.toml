@@ -27,5 +27,8 @@ build = [
     "flit>=3.12.0",
 ]
 
+[project.scripts]
+codefab-repl = "codefab.app.repl:main"
+
 [project.urls]
 Home = "https://github.com/kimbyungnam/CodeFab-4"

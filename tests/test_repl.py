@@ -1,4 +1,6 @@
-from codefab.app.repl import Repl
+import io
+
+from codefab.app.repl import Repl, main
 from codefab.interpreter import Interpreter, InterpretResult
 
 
@@ -80,3 +82,25 @@ def test_같은_interpreter_인스턴스가_여러_줄에_걸쳐_재사용된다
     repl.run(["첫줄;", "둘째줄;"])
 
     assert repl._interpreter is interpreter
+
+
+def test_main이_stdin_각_줄의_개행문자를_제거해_repl_run에_전달한다(mocker):
+    mocker.patch("sys.stdin", io.StringIO("첫줄;\n둘째줄;\n"))
+    repl_instance = mocker.Mock(spec=Repl)
+    repl_cls = mocker.patch("codefab.app.repl.Repl", return_value=repl_instance)
+
+    exit_code = main()
+
+    repl_cls.assert_called_once()
+    assert list(repl_instance.run.call_args.args[0]) == ["첫줄;", "둘째줄;"]
+    assert exit_code == 0
+
+
+def test_main은_KeyboardInterrupt가_발생해도_0을_반환한다(mocker):
+    repl_instance = mocker.Mock(spec=Repl)
+    repl_instance.run.side_effect = KeyboardInterrupt
+    mocker.patch("codefab.app.repl.Repl", return_value=repl_instance)
+
+    exit_code = main()
+
+    assert exit_code == 0
