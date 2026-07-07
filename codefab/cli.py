@@ -1,0 +1,46 @@
+import argparse
+import sys
+from collections.abc import Callable
+
+from codefab.interpreter import Interpreter, InterpretResult
+
+DEFAULT_ENCODING = "utf-8"
+
+
+class Cli:
+    def __init__(
+        self,
+        interpreter: Interpreter | None = None,
+        output: Callable[[str], None] | None = None,
+    ):
+        self._interpreter = interpreter if interpreter is not None else Interpreter()
+        self._output = output if output is not None else print
+
+    def run_file(self, path: str) -> int:
+        try:
+            with open(path, encoding=DEFAULT_ENCODING) as f:
+                source = f.read()
+        except OSError:
+            self._output(f"파일 오류: '{path}' 파일을 찾을 수 없거나 열 수 없습니다.")
+            return 1
+
+        return self._emit(self._interpreter.interpret(source))
+
+    def _emit(self, result: InterpretResult) -> int:
+        for line in result.output:
+            self._output(line)
+        if result.error is not None:
+            self._output(result.error)
+            return 1
+        return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(prog="codefab")
+    parser.add_argument("path", help="실행할 스크립트 파일 경로")
+    args = parser.parse_args(argv)
+    return Cli().run_file(args.path)
+
+
+if __name__ == "__main__":
+    sys.exit(main())
