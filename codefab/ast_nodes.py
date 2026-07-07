@@ -1,17 +1,18 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import Any
 
 from codefab.tokens import Token
 
 
 class Expr(ABC):
     @abstractmethod
-    def accept(self, visitor): ...
+    def accept(self, visitor: Any) -> Any: ...
 
 
 class Stmt(ABC):
     @abstractmethod
-    def accept(self, visitor): ...
+    def accept(self, visitor: Any) -> Any: ...
 
 
 # ---- Expr 노드 ----
@@ -19,7 +20,7 @@ class Stmt(ABC):
 class Literal(Expr):
     value: object  # float | str | bool | None
 
-    def accept(self, visitor):
+    def accept(self, visitor: Any) -> Any:
         return visitor.visit_literal(self)
 
 
@@ -27,7 +28,7 @@ class Literal(Expr):
 class Variable(Expr):
     name: Token
 
-    def accept(self, visitor):
+    def accept(self, visitor: Any) -> Any:
         return visitor.visit_variable(self)
 
 
@@ -36,7 +37,7 @@ class Assign(Expr):
     name: Token
     value: Expr
 
-    def accept(self, visitor):
+    def accept(self, visitor: Any) -> Any:
         return visitor.visit_assign(self)
 
 
@@ -45,7 +46,7 @@ class Unary(Expr):
     operator: Token
     right: Expr
 
-    def accept(self, visitor):
+    def accept(self, visitor: Any) -> Any:
         return visitor.visit_unary(self)
 
 
@@ -55,7 +56,7 @@ class Binary(Expr):
     operator: Token
     right: Expr
 
-    def accept(self, visitor):
+    def accept(self, visitor: Any) -> Any:
         return visitor.visit_binary(self)
 
 
@@ -65,7 +66,7 @@ class Logical(Expr):  # and / or (단락 평가를 위해 Binary와 분리)
     operator: Token
     right: Expr
 
-    def accept(self, visitor):
+    def accept(self, visitor: Any) -> Any:
         return visitor.visit_logical(self)
 
 
@@ -73,7 +74,7 @@ class Logical(Expr):  # and / or (단락 평가를 위해 Binary와 분리)
 class Grouping(Expr):
     expression: Expr
 
-    def accept(self, visitor):
+    def accept(self, visitor: Any) -> Any:
         return visitor.visit_grouping(self)
 
 
@@ -82,7 +83,7 @@ class Grouping(Expr):
 class ExpressionStmt(Stmt):
     expression: Expr
 
-    def accept(self, visitor):
+    def accept(self, visitor: Any) -> Any:
         return visitor.visit_expression_stmt(self)
 
 
@@ -90,7 +91,7 @@ class ExpressionStmt(Stmt):
 class PrintStmt(Stmt):
     expression: Expr
 
-    def accept(self, visitor):
+    def accept(self, visitor: Any) -> Any:
         return visitor.visit_print_stmt(self)
 
 
@@ -99,7 +100,7 @@ class VarStmt(Stmt):
     name: Token
     initializer: Expr | None
 
-    def accept(self, visitor):
+    def accept(self, visitor: Any) -> Any:
         return visitor.visit_var_stmt(self)
 
 
@@ -107,7 +108,7 @@ class VarStmt(Stmt):
 class BlockStmt(Stmt):
     statements: list[Stmt]
 
-    def accept(self, visitor):
+    def accept(self, visitor: Any) -> Any:
         return visitor.visit_block_stmt(self)
 
 
@@ -117,7 +118,7 @@ class IfStmt(Stmt):
     then_branch: Stmt
     else_branch: Stmt | None
 
-    def accept(self, visitor):
+    def accept(self, visitor: Any) -> Any:
         return visitor.visit_if_stmt(self)
 
 
@@ -128,5 +129,5 @@ class ForStmt(Stmt):
     increment: Expr | None
     body: Stmt
 
-    def accept(self, visitor):
+    def accept(self, visitor: Any) -> Any:
         return visitor.visit_for_stmt(self)

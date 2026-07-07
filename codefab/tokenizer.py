@@ -1,7 +1,7 @@
 from codefab.error import ParseError
 from codefab.tokens import Token, TokenType
 
-SINGLE_CHAR_TOKENS = {
+SINGLE_CHAR_TOKENS: dict[str, TokenType] = {
     "(": TokenType.LEFT_PAREN,
     ")": TokenType.RIGHT_PAREN,
     "{": TokenType.LEFT_BRACE,
@@ -17,14 +17,14 @@ SINGLE_CHAR_TOKENS = {
     "!": TokenType.BANG,
 }
 
-DOUBLE_CHAR_TOKENS = {
+DOUBLE_CHAR_TOKENS: dict[str, TokenType] = {
     "=": TokenType.EQUAL_EQUAL,
     ">": TokenType.GREATER_EQUAL,
     "<": TokenType.LESS_EQUAL,
     "!": TokenType.BANG_EQUAL,
 }
 
-KEYWORDS = {
+KEYWORDS: dict[str, TokenType] = {
     "if": TokenType.IF,
     "만약": TokenType.IF,
     "else": TokenType.ELSE,
@@ -47,7 +47,7 @@ KEYWORDS = {
 
 
 class Tokenizer:
-    def __init__(self, source: str):
+    def __init__(self, source: str) -> None:
         self.source = source
         self.tokens: list[Token] = []
         self.start = 0
@@ -84,7 +84,7 @@ class Tokenizer:
         )
         return self.tokens
 
-    def _add(self, token_type: TokenType, literal=None) -> None:
+    def _add(self, token_type: TokenType, literal: object = None) -> None:
         lexeme = self.source[self.start : self.current]
         self.tokens.append(
             Token(type=token_type, lexeme=lexeme, literal=literal, line=self.line)
