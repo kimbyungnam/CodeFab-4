@@ -47,7 +47,10 @@ def run_repl(source: str) -> list[str]:
         env={**os.environ, "PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1"},
         timeout=10,
     )
-    return [line for line in result.stdout.splitlines() if line != PROMPT_LINE]
+    # 프롬프트는 줄바꿈 없이 다음 출력과 같은 줄에 이어붙어 나오므로(REPL 모드 스펙),
+    # 프롬프트 문자열을 전부 제거한 뒤 실제 출력 줄만 남긴다.
+    output = result.stdout.replace(PROMPT_LINE, "")
+    return [line for line in output.splitlines() if line]
 
 
 NORMAL_CASES = [

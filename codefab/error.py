@@ -207,3 +207,24 @@ class NotIndexableError(ExecutorRuntimeError):
         super().__init__(
             f"'[]' 연산은 배열에만 사용할 수 있습니다: '{node_type}'", line
         )
+# ---------------- Assembler Unit (import 관련 추가) ----------------
+
+
+class MissingImportPathError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("가져올 파일 경로는 문자열이어야 합니다.", line)
+
+
+class MissingAliasKeywordError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("'별칭' 키워드가 필요합니다.", line)
+
+
+class MissingAliasNameError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("별칭 이름이 필요합니다.", line)
+
+
+class MissingSemicolonAfterImportError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("가져오기 문 뒤에는 ';'가 필요합니다.", line)
