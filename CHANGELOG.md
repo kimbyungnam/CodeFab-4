@@ -1,3 +1,11 @@
+## 0.20.0 (2026-07-08)
+
+### Feat
+
+- mocker 기반 test double 활용한 unittest 추가
+- optimizer 분기 및 depth 중첩 unittest 추가
+- optimize 기능 개발
+
 ## 0.19.0 (2026-07-08)
 
 ### Feat
