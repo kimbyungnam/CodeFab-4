@@ -47,7 +47,6 @@ class TokenType(Enum):
     ALIAS = auto()
 
     # 함수 관련 추가 토큰
-    COMMA = auto()
     FUN = auto()
     RETURN = auto()
     CLASS = auto()
