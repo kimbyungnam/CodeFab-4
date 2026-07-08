@@ -173,7 +173,12 @@ class ExecutorUnit:
         for statement in statements:
             self._execute_stmt(statement)
 
+    def _before_stmt(self, statement: Stmt) -> None:
+        """서브클래스가 각 Stmt 실행 직전에 끼어들 수 있는 훅. 기본은 아무 것도 안 함."""
+
     def _execute_stmt(self, statement: Stmt):
+        self._before_stmt(statement)
+
         if isinstance(statement, PrintStmt):
             value = self._evaluate_expr(statement.expression)
             print(self._stringify(value))

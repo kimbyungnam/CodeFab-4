@@ -135,11 +135,12 @@ class ExpressionParser:
 
     def _primary(self) -> Expr:
         if self._match(TokenType.NUMBER, TokenType.STRING):
-            return Literal(self._previous().literal)
+            token = self._previous()
+            return Literal(token.literal, line=token.line)
         if self._match(TokenType.TRUE):
-            return Literal(True)
+            return Literal(True, line=self._previous().line)
         if self._match(TokenType.FALSE):
-            return Literal(False)
+            return Literal(False, line=self._previous().line)
         if self._match(TokenType.THIS):
             return This(self._previous())
         if self._match(TokenType.SUPER):
