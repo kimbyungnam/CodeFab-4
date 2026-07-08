@@ -41,6 +41,11 @@ class TokenType(Enum):
     OR = auto()
     PRINT = auto()
 
+    # 함수 관련 추가 토큰
+    COMMA = auto()
+    FUN = auto()
+    RETURN = auto()
+
     EOF = auto()
 
 

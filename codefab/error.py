@@ -148,3 +148,32 @@ class MissingLeftParenAfterIfError(ParseError):
 class MissingRightParenAfterIfConditionError(ParseError):
     def __init__(self, line: int | None = None):
         super().__init__("조건식 뒤에는 ')'가 필요합니다.", line)
+
+
+# ---------------- Checker Unit (함수 관련 추가) ----------------
+
+
+class DuplicateParameterError(CheckerError):
+    def __init__(self, line: int | None = None):
+        super().__init__("파라미터 이름이 중복되었습니다.", line)
+
+
+class ReturnOutsideFunctionError(CheckerError):
+    def __init__(self, line: int | None = None):
+        super().__init__("함수 외부에서는 '반환'을 사용할 수 없습니다.", line)
+
+
+# ---------------- Executor Unit (함수 관련 추가) ----------------
+
+
+class NotCallableError(ExecutorRuntimeError):
+    def __init__(self, line: int = 1):
+        super().__init__("호출 가능한 대상(함수)이 아닙니다.", line)
+
+
+class ArgumentCountMismatchError(ExecutorRuntimeError):
+    def __init__(self, expected: int, actual: int, line: int = 1):
+        super().__init__(
+            f"인자 개수가 일치하지 않습니다. (필요: {expected}개, 전달: {actual}개)",
+            line,
+        )
