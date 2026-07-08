@@ -168,17 +168,30 @@ class LaughInstance:
 class ExecutorUnit:
     def __init__(self):
         self.environment = Environment()
+        self._depth = 0
 
     def execute(self, statements: list[Stmt]):
         for statement in statements:
             self._execute_stmt(statement)
 
-    def _before_stmt(self, statement: Stmt) -> None:
-        """서브클래스가 각 Stmt 실행 직전에 끼어들 수 있는 훅. 기본은 아무 것도 안 함."""
+    def _before_stmt(self, statement: Stmt, depth: int) -> None:
+        """서브클래스가 각 Stmt 실행 직전에 끼어들 수 있는 훅. 기본은 아무 것도 안 함.
+
+        depth는 최상위 statement 목록 기준 0부터 시작해서, 블록/반복문 내부로
+        재귀할 때마다 1씩 늘어난다 (디버그 모드의 `next`가 내부로 안 들어가고
+        건너뛸 수 있게 구분하기 위함).
+        """
 
     def _execute_stmt(self, statement: Stmt):
-        self._before_stmt(statement)
+        self._before_stmt(statement, self._depth)
 
+        self._depth += 1
+        try:
+            self._dispatch_stmt(statement)
+        finally:
+            self._depth -= 1
+
+    def _dispatch_stmt(self, statement: Stmt):
         if isinstance(statement, PrintStmt):
             value = self._evaluate_expr(statement.expression)
             print(self._stringify(value))

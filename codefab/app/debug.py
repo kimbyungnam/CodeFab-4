@@ -4,6 +4,7 @@ from codefab.assembler.assembler import Assembler
 from codefab.ast_nodes import (
     Assign,
     Binary,
+    BlockStmt,
     Expr,
     ExpressionStmt,
     ForStmt,
@@ -90,22 +91,30 @@ class Debugger:
         self._source_lines = source_lines
         self._input = input_source if input_source is not None else input
         self._output = output if output is not None else print
+        self._prompt = "> "
         self._breakpoints: set[int] = set()
         self._watches: list[str] = []
         self._run_to_breakpoint = False
+        self._next_until_depth: int | None = None
 
-    def before_stmt(self, line: int, environment: Environment) -> None:
-        if self._run_to_breakpoint and line not in self._breakpoints:
-            return
+    def before_stmt(self, line: int, depth: int, environment: Environment) -> None:
+        if self._run_to_breakpoint:
+            if line not in self._breakpoints:
+                return
+            stopped_by_breakpoint = True
+        else:
+            stopped_by_breakpoint = False
+            if self._next_until_depth is not None and depth > self._next_until_depth:
+                return  # next로 건너뛰기로 한 블록/반복문 내부 - 멈추지 않는다
 
-        stopped_by_breakpoint = self._run_to_breakpoint and line in self._breakpoints
         self._run_to_breakpoint = False
+        self._next_until_depth = None
 
         text = self._line_text(line)
         reason = " (breakpoint)" if stopped_by_breakpoint else ""
         self._output(f"[DEBUG] {line}번째 줄에서 정지{reason} -> {text}")
         self._print_watch_values(environment)
-        self._read_commands(environment)
+        self._read_commands(environment, depth)
 
     def _line_text(self, line: int) -> str:
         if 0 < line <= len(self._source_lines):
@@ -118,11 +127,22 @@ class Debugger:
             if value is not _UNSET:
                 self._output(f"[WATCH] {name} = {_stringify(value)}")
 
-    def _read_commands(self, environment: Environment) -> None:
+    def _show_prompt(self) -> None:
+        # 기본 출력(print)일 때는 줄바꿈 없이 찍어서 입력이 프롬프트와 같은 줄에 오게 한다.
+        if self._output is print:
+            print(self._prompt, end="", flush=True)
+        else:
+            self._output(self._prompt)
+
+    def _read_commands(self, environment: Environment, depth: int) -> None:
         while True:
+            self._show_prompt()
             command = self._input().strip()
 
-            if command in ("step", "next"):
+            if command == "step":
+                return
+            if command == "next":
+                self._next_until_depth = depth
                 return
             if command == "continue":
                 self._run_to_breakpoint = True
@@ -191,8 +211,10 @@ class DebugExecutor(ExecutorUnit):
         super().__init__()
         self._debugger = debugger
 
-    def _before_stmt(self, statement: Stmt) -> None:
-        self._debugger.before_stmt(line_of_stmt(statement), self.environment)
+    def _before_stmt(self, statement: Stmt, depth: int) -> None:
+        if isinstance(statement, BlockStmt):
+            return  # 블록 여는 지점 자체는 멈춤 지점이 아니고, 안쪽 statement들만 멈춘다
+        self._debugger.before_stmt(line_of_stmt(statement), depth, self.environment)
 
 
 class DebugRunner:
