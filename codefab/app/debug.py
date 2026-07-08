@@ -23,6 +23,11 @@ from codefab.executor_unit import Environment, ExecutorUnit
 
 DEFAULT_ENCODING = "utf-8"
 _UNSET = object()
+_EXIT_COMMANDS = {"exit", "quit"}
+
+
+class DebugExitRequested(Exception):
+    """디버그 세션에서 exit/quit 입력 시 실행을 즉시 중단하기 위한 내부 신호."""
 
 
 def line_of_expr(expr: Expr) -> int:
@@ -139,6 +144,8 @@ class Debugger:
             self._show_prompt()
             command = self._input().strip()
 
+            if command in _EXIT_COMMANDS:
+                raise DebugExitRequested
             if command == "step":
                 return
             if command == "next":
@@ -248,6 +255,8 @@ class DebugRunner:
         )
         try:
             DebugExecutor(debugger).execute(statements)
+        except DebugExitRequested:
+            return 0
         except Exception as exc:  # noqa: BLE001
             self._output(str(exc))
             return 1
