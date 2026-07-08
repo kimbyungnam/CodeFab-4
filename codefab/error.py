@@ -66,6 +66,11 @@ class SelfInheritanceError(CheckerError):
         super().__init__("클래스는 자기 자신을 상속할 수 없습니다.", line)
 
 
+class ImportInsideLoopError(CheckerError):
+    def __init__(self, line: int | None = None):
+        super().__init__("반복문 내부에서는 가져오기를 사용할 수 없습니다.", line)
+
+
 # ---------------- Executor Unit ----------------
 
 
