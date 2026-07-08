@@ -294,3 +294,11 @@ class MissingAliasNameError(ParseError):
 class MissingSemicolonAfterImportError(ParseError):
     def __init__(self, line: int | None = None):
         super().__init__("가져오기 문 뒤에는 ';'가 필요합니다.", line)
+
+
+# ---------------- Executor Unit (import 관련 추가) ----------------
+
+
+class UndefinedModuleMemberError(ExecutorRuntimeError):
+    def __init__(self, name: str, line: int = 1):
+        super().__init__(f"정의되지 않은 멤버 '{name}'입니다.", line)
