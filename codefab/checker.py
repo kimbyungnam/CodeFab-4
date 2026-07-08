@@ -146,20 +146,14 @@ class Checker:
         self.scopes[-1].add(stmt.alias.lexeme)
 
     def visit_class_stmt(self, stmt: ClassStmt):
-        if (
-            stmt.superclass is not None
-            and stmt.superclass.name.lexeme == stmt.name.lexeme
-        ):
-            raise SelfInheritanceError(stmt.name.line)
-
-        if stmt.superclass is not None:
-            stmt.superclass.accept(self)
-
         enclosing_class = self.current_class
+        self.current_class = _ClassContext.CLASS
+
         if stmt.superclass is not None:
+            if stmt.superclass.name.lexeme == stmt.name.lexeme:
+                raise SelfInheritanceError(stmt.name.line)
+            stmt.superclass.accept(self)
             self.current_class = _ClassContext.SUBCLASS
-        else:
-            self.current_class = _ClassContext.CLASS
 
         for method in stmt.methods:
             self.scopes.append(set())
