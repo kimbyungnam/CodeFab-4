@@ -60,7 +60,7 @@ class ExpressionParser:
         expression = self._comparison()
         while self._match(TokenType.INSTANCEOF):
             class_name = self._consume(
-                TokenType.IDENTIFIER, "'instanceof' 뒤에는 클래스 이름이 필요합니다."
+                TokenType.IDENTIFIER, "'타입확인' 뒤에는 클래스 이름이 필요합니다."
             )
             expression = InstanceOf(expression, Variable(class_name))
         return expression
@@ -145,9 +145,9 @@ class ExpressionParser:
             return This(self._previous())
         if self._match(TokenType.SUPER):
             keyword = self._previous()
-            self._consume(TokenType.DOT, "'Super' 뒤에는 '.'이 필요합니다.")
+            self._consume(TokenType.DOT, "'부모' 뒤에는 '.'이 필요합니다.")
             method = self._consume(
-                TokenType.IDENTIFIER, "'Super.' 뒤에는 메서드 이름이 필요합니다."
+                TokenType.IDENTIFIER, "'부모.' 뒤에는 메서드 이름이 필요합니다."
             )
             return Super(keyword, method)
         if self._match(TokenType.ARRAY):

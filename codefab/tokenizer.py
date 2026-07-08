@@ -63,6 +63,7 @@ KEYWORDS: dict[str, TokenType] = {
     "Super": TokenType.SUPER,
     "부모": TokenType.SUPER,
     "instanceof": TokenType.INSTANCEOF,
+    "타입확인": TokenType.INSTANCEOF,
     "Array": TokenType.ARRAY,
     "배열": TokenType.ARRAY,
 }
