@@ -2,12 +2,13 @@ import argparse
 import sys
 from collections.abc import Callable
 
+from codefab.app.repl import main as repl_main
 from codefab.interpreter import Interpreter, InterpretResult
 
 DEFAULT_ENCODING = "utf-8"
 
 
-class Cli:
+class FileRunner:
     def __init__(
         self,
         interpreter: Interpreter | None = None,
@@ -37,9 +38,19 @@ class Cli:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="codefab")
-    parser.add_argument("path", help="실행할 스크립트 파일 경로")
+    subparsers = parser.add_subparsers(dest="mode")
+
+    run_parser = subparsers.add_parser(
+        "run", help="파일 모드: 스크립트 파일을 실행합니다."
+    )
+    run_parser.add_argument("path", help="실행할 스크립트 파일 경로")
+
     args = parser.parse_args(argv)
-    return Cli().run_file(args.path)
+
+    if args.mode == "run":
+        return FileRunner().run_file(args.path)
+
+    return repl_main()
 
 
 if __name__ == "__main__":

@@ -27,7 +27,7 @@ FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures" / "cli"
 
 def run_cli(script: Path) -> subprocess.CompletedProcess:
     return subprocess.run(
-        [sys.executable, "-m", "codefab.cli", str(script)],
+        [sys.executable, "-m", "codefab.cli", "run", str(script)],
         capture_output=True,
         text=True,
         encoding="utf-8",

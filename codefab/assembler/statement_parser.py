@@ -7,6 +7,7 @@ from codefab.ast_nodes import (
     ForStmt,
     IfStmt,
     MethodDecl,
+    ImportStmt,
     PrintStmt,
     Stmt,
     Variable,
@@ -43,6 +44,8 @@ class StatementParser:
             return self._for_statement()
         if self._match(TokenType.CLASS):
             return self._class_declaration()
+        if self._match(TokenType.IMPORT):
+            return self._import_statement()
         return self._expression_statement()
 
     def _class_declaration(self) -> ClassStmt:
@@ -140,6 +143,15 @@ class StatementParser:
             else_branch = self.parse_statement()
 
         return IfStmt(condition, then_branch, else_branch)
+
+    def _import_statement(self) -> ImportStmt:
+        path = self._consume(
+            TokenType.STRING, "가져올 파일 경로는 문자열이어야 합니다."
+        )
+        self._consume(TokenType.ALIAS, "'별칭' 키워드가 필요합니다.")
+        alias = self._consume(TokenType.IDENTIFIER, "별칭 이름이 필요합니다.")
+        self._consume(TokenType.SEMICOLON, "가져오기 문 뒤에는 ';'가 필요합니다.")
+        return ImportStmt(path, alias)
 
     def _expression_statement(self) -> ExpressionStmt:
         expression = self._expression()

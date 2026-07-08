@@ -4,18 +4,20 @@ from codefab.app.repl import Repl, main
 from codefab.interpreter import Interpreter, InterpretResult
 
 
-def test_빈_입력_목록이면_아무것도_실행하지_않는다(mocker):
+def test_빈_입력_목록이어도_프롬프트는_한_번_출력된다(mocker):
+    # 실제 터미널에서는 입력이 더 있을지 미리 알 수 없으므로, EOF를 만나기 전에
+    # 프롬프트부터 먼저 보여줘야 한다.
     interpreter = mocker.Mock(spec=Interpreter)
     calls = []
     repl = Repl(interpreter=interpreter, output=calls.append)
 
     repl.run([])
 
-    assert calls == []
+    assert calls == ["> "]
     interpreter.interpret.assert_not_called()
 
 
-def test_각_줄_입력_전에_prompt가_output으로_전달된다(mocker):
+def test_각_줄을_읽기_전에_prompt가_먼저_output으로_전달된다(mocker):
     interpreter = mocker.Mock(spec=Interpreter)
     interpreter.interpret.return_value = InterpretResult(output=[])
     calls = []
@@ -23,7 +25,43 @@ def test_각_줄_입력_전에_prompt가_output으로_전달된다(mocker):
 
     repl.run(["첫줄;", "둘째줄;"])
 
-    assert calls == ["laugh> ", "laugh> "]
+    # 마지막 줄 처리 후에도 다음 입력을 기다리며 프롬프트를 한 번 더 출력한다.
+    assert calls == ["laugh> ", "laugh> ", "laugh> "]
+
+
+def test_기본_output_사용시_프롬프트_뒤에_줄바꿈이_없다(mocker, capsys):
+    # output 콜백을 안 넘기면(실제 터미널 사용 시) 프롬프트가 print() 기본 동작처럼
+    # 줄바꿈되면 안 되고, 입력이 같은 줄에 이어져야 한다.
+    interpreter = mocker.Mock(spec=Interpreter)
+    interpreter.interpret.return_value = InterpretResult(output=["1"])
+    repl = Repl(interpreter=interpreter)
+
+    repl.run(["출력 1;"])
+
+    captured = capsys.readouterr()
+    assert captured.out == "> 1\n> "
+
+
+def test_exit_입력시_반복을_종료하고_실행하지_않는다(mocker):
+    interpreter = mocker.Mock(spec=Interpreter)
+    calls = []
+    repl = Repl(interpreter=interpreter, output=calls.append)
+
+    repl.run(["exit", "출력 1;"])
+
+    assert calls == ["> "]
+    interpreter.interpret.assert_not_called()
+
+
+def test_quit_입력시_반복을_종료하고_실행하지_않는다(mocker):
+    interpreter = mocker.Mock(spec=Interpreter)
+    calls = []
+    repl = Repl(interpreter=interpreter, output=calls.append)
+
+    repl.run(["quit", "출력 1;"])
+
+    assert calls == ["> "]
+    interpreter.interpret.assert_not_called()
 
 
 def test_각_줄마다_interpret가_한_번씩_호출된다(mocker):

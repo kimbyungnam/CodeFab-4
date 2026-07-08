@@ -4,25 +4,53 @@
 CodeFab Interpreter 프로젝트
 
 ## Install
-```bash
+
+가상환경(venv)을 만들고, 그 안에서 설치합니다.
+
+**cmd (Windows)**
+```cmd
+python -m venv .venv
+.venv\Scripts\activate.bat
 python -m pip install flit
 flit install -s
 ```
 
-## How to use
-
-### REPL
-
-```bash
-codefab-repl
+**PowerShell (Windows)**
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install flit
+flit install -s
 ```
 
-### Interpreter
+**Git Bash / macOS / Linux**
+```bash
+python -m venv .venv
+source .venv/Scripts/activate   # macOS/Linux는 source .venv/bin/activate
+python -m pip install flit
+flit install -s
+```
+
+`flit install -s`를 실행하면 venv 안에 `codefab` 명령어가 설치됩니다. 이후 작업은 venv를
+활성화한 상태(프롬프트 앞에 `(.venv)`가 붙은 상태)에서 진행하면 되고, 빠져나올 때는
+`deactivate`를 입력합니다.
+
+## How to use
+
+`codefab`은 서브커맨드로 모드를 선택합니다.
+
+### REPL 모드 (인자 없이 실행)
 
 ```bash
-> codefab        
-usage: codefab [-h] path
-codefab: error: the following arguments are required: path
+codefab
+```
+
+한 줄씩 입력하면 즉시 실행되고, `exit` 또는 `quit`을 입력하면 종료됩니다.
+
+### 파일 모드 (`run` 서브커맨드)
+
+```bash
+codefab run <스크립트경로>
 ```
 
 ## Development

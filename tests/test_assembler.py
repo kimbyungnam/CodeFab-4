@@ -1,7 +1,7 @@
 import pytest
 
 from codefab.assembler.assembler import Assembler
-from codefab.ast_nodes import IfStmt, Literal, PrintStmt, VarStmt
+from codefab.ast_nodes import IfStmt, ImportStmt, Literal, PrintStmt, VarStmt
 from codefab.error import ParseError
 
 # Assembler 는 stateless 하므로 테스트 전체에서 인스턴스 하나를 재사용한다.
@@ -56,3 +56,43 @@ def test_assemble_propagates_parse_error_without_swallowing():
     # var 뒤에 식별자가 없어 StatementParser 가 ParseError 를 던진다.
     with pytest.raises(ParseError):
         assembler.assemble("var = 3;")
+
+
+def test_assemble_import_statement():
+    statements = assembler.assemble('import "sum.txt" alias sum;')
+
+    assert len(statements) == 1
+    stmt = statements[0]
+    assert isinstance(stmt, ImportStmt)
+    assert stmt.path.literal == "sum.txt"
+    assert stmt.alias.lexeme == "sum"
+
+
+def test_assemble_korean_import_statement():
+    statements = assembler.assemble('가져오기 "sum.txt" 별칭 sum;')
+
+    assert len(statements) == 1
+    stmt = statements[0]
+    assert isinstance(stmt, ImportStmt)
+    assert stmt.path.literal == "sum.txt"
+    assert stmt.alias.lexeme == "sum"
+
+
+def test_assemble_import_statement_missing_path_raises_parse_error():
+    with pytest.raises(ParseError):
+        assembler.assemble("import alias sum;")
+
+
+def test_assemble_import_statement_missing_alias_keyword_raises_parse_error():
+    with pytest.raises(ParseError):
+        assembler.assemble('import "sum.txt" sum;')
+
+
+def test_assemble_import_statement_missing_alias_name_raises_parse_error():
+    with pytest.raises(ParseError):
+        assembler.assemble('import "sum.txt" alias;')
+
+
+def test_assemble_import_statement_missing_semicolon_raises_parse_error():
+    with pytest.raises(ParseError):
+        assembler.assemble('import "sum.txt" alias sum')

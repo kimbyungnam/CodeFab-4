@@ -225,3 +225,9 @@ class ClassStmt(Stmt):
 
     def accept(self, visitor):
         return visitor.visit_class_stmt(self)
+class ImportStmt(Stmt):
+    path: Token  # STRING 토큰, path.literal 이 실제 파일 경로 문자열
+    alias: Token  # IDENTIFIER 토큰
+
+    def accept(self, visitor):
+        return visitor.visit_import_stmt(self)
