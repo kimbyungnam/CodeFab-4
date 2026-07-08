@@ -204,4 +204,6 @@ class ArrayIndexOutOfRangeError(ExecutorRuntimeError):
 
 class NotIndexableError(ExecutorRuntimeError):
     def __init__(self, node_type: str, line: int = 1):
-        super().__init__(f"'[]' 연산은 배열에만 사용할 수 있습니다: '{node_type}'", line)
+        super().__init__(
+            f"'[]' 연산은 배열에만 사용할 수 있습니다: '{node_type}'", line
+        )

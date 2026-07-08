@@ -161,20 +161,30 @@ def test_인덱스로_읽고_쓸_수_있다():
 
 def test_범위를_벗어난_인덱스는_런타임_오류():
     with pytest.raises(ArrayIndexOutOfRangeError):
-        evaluate(IndexGet(target=ArrayLiteral(Literal(3.0), line=1), index=Literal(5.0), line=1))
+        evaluate(
+            IndexGet(
+                target=ArrayLiteral(Literal(3.0), line=1), index=Literal(5.0), line=1
+            )
+        )
 
 
 def test_음수_인덱스는_런타임_오류():
     with pytest.raises(ArrayIndexOutOfRangeError):
         evaluate(
-            IndexGet(target=ArrayLiteral(Literal(3.0), line=1), index=Literal(-1.0), line=1)
+            IndexGet(
+                target=ArrayLiteral(Literal(3.0), line=1), index=Literal(-1.0), line=1
+            )
         )
 
 
 def test_인덱스가_숫자가_아니면_런타임_오류():
     with pytest.raises(ArrayIndexNotNumberError):
         evaluate(
-            IndexGet(target=ArrayLiteral(Literal(3.0), line=1), index=Literal("hello"), line=1)
+            IndexGet(
+                target=ArrayLiteral(Literal(3.0), line=1),
+                index=Literal("hello"),
+                line=1,
+            )
         )
 
 
