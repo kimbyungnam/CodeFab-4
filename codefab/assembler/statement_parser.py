@@ -6,7 +6,6 @@ from codefab.ast_nodes import (
     ExpressionStmt,
     ForStmt,
     IfStmt,
-    MethodDecl,
     ImportStmt,
     MethodDecl,
     PrintStmt,

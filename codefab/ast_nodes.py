@@ -225,29 +225,12 @@ class ClassStmt(Stmt):
 
     def accept(self, visitor):
         return visitor.visit_class_stmt(self)
+
+
+@dataclass
 class ImportStmt(Stmt):
     path: Token  # STRING 토큰, path.literal 이 실제 파일 경로 문자열
     alias: Token  # IDENTIFIER 토큰
 
     def accept(self, visitor):
         return visitor.visit_import_stmt(self)
-
-
-@dataclass
-class MethodDecl:
-    """클래스 본문에 선언된 메서드 하나. Stmt가 아닌 순수 데이터로,
-    ClassStmt가 목록으로 보관하며 별도로 accept 되지 않는다."""
-
-    name: Token
-    params: list[Token]
-    body: list[Stmt]
-
-
-@dataclass
-class ClassStmt(Stmt):
-    name: Token
-    superclass: Variable | None
-    methods: list[MethodDecl]
-
-    def accept(self, visitor):
-        return visitor.visit_class_stmt(self)
