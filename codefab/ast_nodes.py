@@ -130,3 +130,33 @@ class ForStmt(Stmt):
 
     def accept(self, visitor):
         return visitor.visit_for_stmt(self)
+
+
+# ---- 함수 관련 추가 노드 ----
+@dataclass
+class Call(Expr):
+    callee: Expr
+    paren: Token  # 인자 목록을 닫는 ')' 토큰. 런타임 에러 라인 리포팅용
+    arguments: list[Expr]
+
+    def accept(self, visitor):
+        return visitor.visit_call(self)
+
+
+@dataclass
+class FunctionStmt(Stmt):
+    name: Token
+    params: list[Token]
+    body: list[Stmt]
+
+    def accept(self, visitor):
+        return visitor.visit_function_stmt(self)
+
+
+@dataclass
+class ReturnStmt(Stmt):
+    keyword: Token  # '반환' 토큰. 함수 외부 사용 에러 라인 리포팅용
+    value: Expr | None
+
+    def accept(self, visitor):
+        return visitor.visit_return_stmt(self)
