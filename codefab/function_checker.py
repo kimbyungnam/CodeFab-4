@@ -57,8 +57,7 @@ class FunctionChecker(Checker):
     def visit_return_stmt(self, stmt: ReturnStmt):
         if self.function_depth == 0:
             raise ReturnOutsideFunctionError(stmt.keyword.line)
-        if stmt.value is not None:
-            stmt.value.accept(self)
+        super().visit_return_stmt(stmt)
 
     def visit_call(self, expr: Call):
         expr.callee.accept(self)
