@@ -46,8 +46,6 @@ class StatementParser:
             return self._class_declaration()
         if self._match(TokenType.IMPORT):
             return self._import_statement()
-        if self._match(TokenType.CLASS):
-            return self._class_declaration()
         return self._expression_statement()
 
     def _class_declaration(self) -> ClassStmt:
