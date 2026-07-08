@@ -3,6 +3,21 @@
 # CodeFab-4
 CodeFab Interpreter 프로젝트
 
+## Quick Start
+
+| 구분 | 명령 |
+|---|---|
+| 설치 | 👉 [Install](#install) 참고 |
+| REPL 모드 실행 | `(.venv) codefab` |
+| 파일 모드 실행 | `(.venv) codefab run <스크립트경로>` |
+| 디버그 모드 실행 | `(.venv) codefab debug <스크립트경로>` |
+
+`(.venv)`는 venv를 활성화한 상태(터미널 프롬프트 앞에 실제로 붙는 표시)에서 실행해야 한다는
+뜻입니다 — `codefab` 명령어 자체가 설치 과정에서 venv 안에 생성되기 때문에, venv를 활성화하지
+않은 터미널에서는 실행되지 않습니다.
+
+아래는 각 단계의 상세 설명입니다.
+
 ## Install
 
 가상환경(venv)을 만들고, 그 안에서 설치합니다.
@@ -52,6 +67,30 @@ codefab
 ```bash
 codefab run <스크립트경로>
 ```
+
+스크립트 파일을 한 번에 읽어 실행합니다.
+
+### 디버그 모드 (`debug` 서브커맨드)
+
+```bash
+codefab debug <스크립트경로>
+```
+
+Stmt(문장) 단위로 멈춰가며 실행 상태를 점검합니다. 정지 상태에서 아래 명령을 입력할 수 있습니다.
+
+| 명령 | 설명 |
+|---|---|
+| `step` | 현재 Stmt 실행 후 다음 Stmt에서 정지 |
+| `next` | 현재 Stmt 실행 (블록/반복문 내부로는 진입하지 않음) |
+| `break <줄번호>` | 해당 줄에 breakpoint 설정 |
+| `breakpoints` | 설정된 breakpoint 목록 출력 |
+| `remove <줄번호>` | breakpoint 해제 |
+| `continue` | 다음 breakpoint까지 실행 |
+| `watch <변수명>` | 정지할 때마다 해당 변수 값을 자동으로 출력 |
+| `unwatch <변수명>` | 감시 목록에서 제거 |
+| `watches` | 감시 중인 변수 목록과 값 출력 |
+| `inspect` | 현재 스코프의 모든 변수와 값(타입 포함) 출력 |
+| `exit` / `quit` | 디버그 세션 종료 |
 
 ## Development
 
