@@ -37,7 +37,7 @@ class Cli:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="factory")
+    parser = argparse.ArgumentParser(prog="codefab")
     subparsers = parser.add_subparsers(dest="mode")
 
     run_parser = subparsers.add_parser(
