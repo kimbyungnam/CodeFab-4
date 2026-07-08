@@ -1,26 +1,49 @@
+from enum import Enum, auto
+
 from codefab.ast_nodes import (
     Assign,
     Binary,
     BlockStmt,
+    Call,
+    ClassStmt,
     ExpressionStmt,
     ForStmt,
+    Get,
     Grouping,
     IfStmt,
+    InstanceOf,
     Literal,
     Logical,
     PrintStmt,
+    Set,
     Stmt,
+    Super,
+    This,
     Unary,
     Variable,
     VarStmt,
 )
-from codefab.error import DuplicateVariableError, SelfReferenceInInitializerError
+from codefab.error import (
+    DuplicateVariableError,
+    SelfInheritanceError,
+    SelfReferenceInInitializerError,
+    SuperOutsideClassError,
+    SuperWithoutSuperclassError,
+    ThisOutsideClassError,
+)
+
+
+class _ClassContext(Enum):
+    NONE = auto()
+    CLASS = auto()
+    SUBCLASS = auto()
 
 
 class Checker:
     def __init__(self):
         self.scopes: list[set[str]] = [set()]
         self.initializing: str | None = None
+        self.current_class = _ClassContext.NONE
 
     @property
     def declared(self) -> set[str]:
@@ -89,3 +112,53 @@ class Checker:
         if stmt.increment is not None:
             stmt.increment.accept(self)
         stmt.body.accept(self)
+
+    def visit_class_stmt(self, stmt: ClassStmt):
+        if (
+            stmt.superclass is not None
+            and stmt.superclass.name.lexeme == stmt.name.lexeme
+        ):
+            raise SelfInheritanceError(stmt.name.line)
+
+        if stmt.superclass is not None:
+            stmt.superclass.accept(self)
+
+        enclosing_class = self.current_class
+        if stmt.superclass is not None:
+            self.current_class = _ClassContext.SUBCLASS
+        else:
+            self.current_class = _ClassContext.CLASS
+
+        for method in stmt.methods:
+            self.scopes.append(set())
+            for statement in method.body:
+                statement.accept(self)
+            self.scopes.pop()
+
+        self.current_class = enclosing_class
+
+    def visit_this(self, expr: This):
+        if self.current_class == _ClassContext.NONE:
+            raise ThisOutsideClassError(expr.keyword.line)
+
+    def visit_super(self, expr: Super):
+        if self.current_class == _ClassContext.NONE:
+            raise SuperOutsideClassError(expr.keyword.line)
+        if self.current_class != _ClassContext.SUBCLASS:
+            raise SuperWithoutSuperclassError(expr.keyword.line)
+
+    def visit_get(self, expr: Get):
+        expr.object.accept(self)
+
+    def visit_set(self, expr: Set):
+        expr.object.accept(self)
+        expr.value.accept(self)
+
+    def visit_call(self, expr: Call):
+        expr.callee.accept(self)
+        for argument in expr.arguments:
+            argument.accept(self)
+
+    def visit_instance_of(self, expr: InstanceOf):
+        expr.object.accept(self)
+        expr.klass.accept(self)

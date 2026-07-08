@@ -44,6 +44,28 @@ class SelfReferenceInInitializerError(CheckerError):
         super().__init__("지역 변수 자기 참조 에러입니다.", line)
 
 
+class ThisOutsideClassError(CheckerError):
+    def __init__(self, line: int | None = None):
+        super().__init__("클래스 외부에서는 'This'를 사용할 수 없습니다.", line)
+
+
+class SuperOutsideClassError(CheckerError):
+    def __init__(self, line: int | None = None):
+        super().__init__("클래스 외부에서는 'Super'를 사용할 수 없습니다.", line)
+
+
+class SuperWithoutSuperclassError(CheckerError):
+    def __init__(self, line: int | None = None):
+        super().__init__(
+            "부모 클래스가 없는 클래스 내부에서는 'Super'를 사용할 수 없습니다.", line
+        )
+
+
+class SelfInheritanceError(CheckerError):
+    def __init__(self, line: int | None = None):
+        super().__init__("클래스는 자기 자신을 상속할 수 없습니다.", line)
+
+
 # ---------------- Executor Unit ----------------
 
 
@@ -85,6 +107,26 @@ class DivisionByZeroError(ExecutorRuntimeError):
 class MismatchedPlusOperandTypeError(ExecutorRuntimeError):
     def __init__(self, line: int = 1):
         super().__init__("피연산자는 둘 다 숫자이거나 둘 다 문자열이어야 합니다.", line)
+
+
+class NotCallableError(ExecutorRuntimeError):
+    def __init__(self, line: int = 1):
+        super().__init__("호출할 수 없는 대상입니다.", line)
+
+
+class OnlyInstancesHaveFieldsError(ExecutorRuntimeError):
+    def __init__(self, line: int = 1):
+        super().__init__("인스턴스만 필드를 가질 수 있습니다.", line)
+
+
+class UndefinedPropertyError(ExecutorRuntimeError):
+    def __init__(self, name: str, line: int = 1):
+        super().__init__(f"정의되지 않은 필드/메서드 '{name}'입니다.", line)
+
+
+class SuperclassMustBeClassError(ExecutorRuntimeError):
+    def __init__(self, line: int = 1):
+        super().__init__("클래스가 아닌 대상은 상속할 수 없습니다.", line)
 
 
 # ---------------- Assembler Unit ----------------
