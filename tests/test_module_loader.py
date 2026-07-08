@@ -91,6 +91,19 @@ def test_서로를_가져오면_순환_import_에러(loader, tmp_path, monkeypat
         loader.load(tmp_path / "a.txt", referencing_line=1)
 
 
+def test_세_파일이_간접적으로_순환_참조하면_순환_import_에러(
+    loader, tmp_path, monkeypatch
+):
+    # a.txt -> b.txt -> c.txt -> a.txt (직접 서로를 가져오지는 않지만 간접 순환)
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "a.txt").write_text('가져오기 "b.txt" 별칭 b;', encoding="utf-8")
+    (tmp_path / "b.txt").write_text('가져오기 "c.txt" 별칭 c;', encoding="utf-8")
+    (tmp_path / "c.txt").write_text('가져오기 "a.txt" 별칭 a;', encoding="utf-8")
+
+    with pytest.raises(CircularImportError):
+        loader.load(tmp_path / "a.txt", referencing_line=1)
+
+
 def test_순환이_아닌_다이아몬드_형태의_import는_허용한다(loader, tmp_path, monkeypatch):
     # a.txt -> b.txt, c.txt 둘 다 -> shared.txt (순환은 아님)
     monkeypatch.chdir(tmp_path)
