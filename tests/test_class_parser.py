@@ -7,6 +7,7 @@ from codefab.ast_nodes import (
     InstanceOf,
     Literal,
     PrintStmt,
+    ReturnStmt,
     Set,
     Super,
     This,
@@ -158,3 +159,23 @@ def test_출력문에서_instanceof_표현식을_사용할_수_있다():
     assert isinstance(stmt, PrintStmt)
     grouped = stmt.expression
     assert isinstance(grouped.expression, InstanceOf)
+
+
+def test_생성자_본문의_반환문은_ReturnStmt로_파싱된다():
+    # 클래스 Robot { 생성자() { 반환 5; } }
+    stmt = parse_statements("클래스 Robot { 생성자() { 반환 5; } }")[0]
+
+    assert isinstance(stmt, ClassStmt)
+    method = stmt.methods[0]
+    assert len(method.body) == 1
+    assert isinstance(method.body[0], ReturnStmt)
+    assert method.body[0].value == Literal(5.0)
+
+
+def test_값이_없는_반환문도_파싱된다():
+    # 생성자() { 반환; }
+    stmt = parse_statements("클래스 Robot { 생성자() { 반환; } }")[0]
+
+    return_stmt = stmt.methods[0].body[0]
+    assert isinstance(return_stmt, ReturnStmt)
+    assert return_stmt.value is None

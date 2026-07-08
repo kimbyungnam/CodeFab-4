@@ -9,6 +9,7 @@ from codefab.ast_nodes import (
     ImportStmt,
     MethodDecl,
     PrintStmt,
+    ReturnStmt,
     Stmt,
     Variable,
     VarStmt,
@@ -46,7 +47,19 @@ class StatementParser:
             return self._class_declaration()
         if self._match(TokenType.IMPORT):
             return self._import_statement()
+        if self._match(TokenType.RETURN):
+            return self._return_statement()
         return self._expression_statement()
+
+    def _return_statement(self) -> ReturnStmt:
+        keyword = self._previous()
+
+        value: Expr | None = None
+        if not self._check(TokenType.SEMICOLON):
+            value = self._expression()
+
+        self._consume(TokenType.SEMICOLON, "반환 값 뒤에는 ';'가 필요합니다.")
+        return ReturnStmt(keyword=keyword, value=value)
 
     def _class_declaration(self) -> ClassStmt:
         name = self._consume(TokenType.IDENTIFIER, "클래스 이름이 필요합니다.")
