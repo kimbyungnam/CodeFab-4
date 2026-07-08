@@ -291,6 +291,22 @@ def test_이항연산_출력문에서_정지하면_연산자_줄에서_멈춘다
     assert "[DEBUG] 2번째 줄에서 정지 -> 출력 a + 1;" in calls
 
 
+def test_배열_인덱스_대입문에서_정지하면_실제_줄에서_멈춘다(tmp_path):
+    script = tmp_path / "script.txt"
+    script.write_text(
+        "변수 arr = 배열(3);\narr[0] = 10;\n출력 arr[0];\n", encoding="utf-8"
+    )
+    calls = []
+    commands = ["step", "step", "step"]
+    runner = DebugRunner(output=calls.append, input_source=_fake_input(commands))
+
+    runner.run_file(str(script))
+
+    assert "[DEBUG] 1번째 줄에서 정지 -> 변수 arr = 배열(3);" in calls
+    assert "[DEBUG] 2번째 줄에서 정지 -> arr[0] = 10;" in calls
+    assert "[DEBUG] 3번째 줄에서 정지 -> 출력 arr[0];" in calls
+
+
 def test_문법_오류가_있으면_에러_메시지를_출력하고_1을_반환한다(tmp_path):
     script = tmp_path / "script.txt"
     script.write_text("출력 1 +;\n", encoding="utf-8")

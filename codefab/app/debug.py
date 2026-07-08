@@ -1,5 +1,6 @@
 from collections.abc import Callable
 
+from codefab.array_nodes import ArrayLiteral, IndexGet, IndexSet
 from codefab.assembler.assembler import Assembler
 from codefab.ast_nodes import (
     Assign,
@@ -41,6 +42,8 @@ def line_of_expr(expr: Expr) -> int:
         return expr.operator.line
     if isinstance(expr, Grouping):
         return line_of_expr(expr.expression)
+    if isinstance(expr, (ArrayLiteral, IndexGet, IndexSet)):
+        return expr.line
     return 1
 
 
