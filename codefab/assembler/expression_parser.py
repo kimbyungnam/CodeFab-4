@@ -4,10 +4,16 @@ from codefab.array_nodes import ArrayLiteral, IndexGet, IndexSet
 from codefab.ast_nodes import (
     Assign,
     Binary,
+    Call,
     Expr,
+    Get,
     Grouping,
+    InstanceOf,
     Literal,
     Logical,
+    Set,
+    Super,
+    This,
     Unary,
     Variable,
 )
@@ -30,6 +36,8 @@ class ExpressionParser:
             value = self._assignment()
             if isinstance(expression, Variable):
                 return Assign(expression.name, value)
+            if isinstance(expression, Get):
+                return Set(expression.object, expression.name, value)
             if isinstance(expression, IndexGet):
                 return IndexSet(
                     expression.target, expression.index, value, expression.line
@@ -45,8 +53,17 @@ class ExpressionParser:
 
     def _equality(self) -> Expr:
         return self._left_assoc(
-            Binary, self._comparison, TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL
+            Binary, self._instance_of, TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL
         )
+
+    def _instance_of(self) -> Expr:
+        expression = self._comparison()
+        while self._match(TokenType.INSTANCEOF):
+            class_name = self._consume(
+                TokenType.IDENTIFIER, "'instanceof' 뒤에는 클래스 이름이 필요합니다."
+            )
+            expression = InstanceOf(expression, Variable(class_name))
+        return expression
 
     def _comparison(self) -> Expr:
         return self._left_assoc(
@@ -82,16 +99,39 @@ class ExpressionParser:
             operator = self._previous()
             right = self._unary()
             return Unary(operator, right)
-        return self._index_access()
+        return self._call()
 
-    def _index_access(self) -> Expr:
+    def _call(self) -> Expr:
         expression = self._primary()
-        while self._match(TokenType.LEFT_BRACKET):
-            bracket_line = self._previous().line
-            index = self.parse()
-            self._consume(TokenType.RIGHT_BRACKET, "인덱스 뒤에는 ']'가 필요합니다.")
-            expression = IndexGet(expression, index, bracket_line)
+        while True:
+            if self._match(TokenType.LEFT_PAREN):
+                expression = self._finish_call(expression)
+            elif self._match(TokenType.DOT):
+                name = self._consume(
+                    TokenType.IDENTIFIER, "'.' 뒤에는 속성 이름이 필요합니다."
+                )
+                expression = Get(expression, name)
+            elif self._match(TokenType.LEFT_BRACKET):
+                bracket_line = self._previous().line
+                index = self.parse()
+                self._consume(
+                    TokenType.RIGHT_BRACKET, "인덱스 뒤에는 ']'가 필요합니다."
+                )
+                expression = IndexGet(expression, index, bracket_line)
+            else:
+                break
         return expression
+
+    def _finish_call(self, callee: Expr) -> Expr:
+        arguments = []
+        if not self._check(TokenType.RIGHT_PAREN):
+            arguments.append(self._assignment())
+            while self._match(TokenType.COMMA):
+                arguments.append(self._assignment())
+        paren = self._consume(
+            TokenType.RIGHT_PAREN, "인자 목록 뒤에는 ')'가 필요합니다."
+        )
+        return Call(callee, paren, arguments)
 
     def _primary(self) -> Expr:
         if self._match(TokenType.NUMBER, TokenType.STRING):
@@ -100,6 +140,15 @@ class ExpressionParser:
             return Literal(True)
         if self._match(TokenType.FALSE):
             return Literal(False)
+        if self._match(TokenType.THIS):
+            return This(self._previous())
+        if self._match(TokenType.SUPER):
+            keyword = self._previous()
+            self._consume(TokenType.DOT, "'Super' 뒤에는 '.'이 필요합니다.")
+            method = self._consume(
+                TokenType.IDENTIFIER, "'Super.' 뒤에는 메서드 이름이 필요합니다."
+            )
+            return Super(keyword, method)
         if self._match(TokenType.ARRAY):
             return self._array_literal()
         if self._match(TokenType.IDENTIFIER):
