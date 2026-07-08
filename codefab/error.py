@@ -76,6 +76,28 @@ class ImportInsideLoopError(CheckerError):
         super().__init__("반복문 내부에서는 가져오기를 사용할 수 없습니다.", line)
 
 
+class ImportedFileNotFoundError(CheckerError):
+    def __init__(self, path: str, line: int | None = None):
+        super().__init__(f"가져올 파일을 찾을 수 없습니다: '{path}'", line)
+
+
+class InvalidModuleContentError(CheckerError):
+    def __init__(self, path: str, line: int | None = None):
+        super().__init__(
+            f"가져온 파일 '{path}'에는 가져오기, 변수 선언만 작성할 수 있습니다.", line
+        )
+
+
+class CircularImportError(CheckerError):
+    def __init__(self, path: str, line: int | None = None):
+        super().__init__(f"순환 import가 발생했습니다: '{path}'", line)
+
+
+class DuplicateImportError(CheckerError):
+    def __init__(self, path: str, line: int | None = None):
+        super().__init__(f"이미 가져온 파일입니다: '{path}'", line)
+
+
 # ---------------- Executor Unit ----------------
 
 
