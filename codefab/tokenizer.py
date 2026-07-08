@@ -7,6 +7,9 @@ SINGLE_CHAR_TOKENS: dict[str, TokenType] = {
     "{": TokenType.LEFT_BRACE,
     "}": TokenType.RIGHT_BRACE,
     ";": TokenType.SEMICOLON,
+    ",": TokenType.COMMA,
+    ".": TokenType.DOT,
+    ":": TokenType.COLON,
     "+": TokenType.PLUS,
     "-": TokenType.MINUS,
     "*": TokenType.STAR,
@@ -43,6 +46,13 @@ KEYWORDS: dict[str, TokenType] = {
     "그리고": TokenType.AND,
     "or": TokenType.OR,
     "또는": TokenType.OR,
+    "Class": TokenType.CLASS,
+    "클래스": TokenType.CLASS,
+    "This": TokenType.THIS,
+    "나": TokenType.THIS,
+    "Super": TokenType.SUPER,
+    "부모": TokenType.SUPER,
+    "instanceof": TokenType.INSTANCEOF,
 }
 
 

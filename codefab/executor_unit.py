@@ -2,15 +2,22 @@ from codefab.ast_nodes import (
     Assign,
     Binary,
     BlockStmt,
+    Call,
+    ClassStmt,
     Expr,
     ExpressionStmt,
     ForStmt,
+    Get,
     Grouping,
     IfStmt,
+    InstanceOf,
     Literal,
     Logical,
     PrintStmt,
+    Set,
     Stmt,
+    Super,
+    This,
     Unary,
     Variable,
     VarStmt,
@@ -19,6 +26,10 @@ from codefab.error import (
     DivisionByZeroError,
     InvalidOperandTypeError,
     MismatchedPlusOperandTypeError,
+    NotCallableError,
+    OnlyInstancesHaveFieldsError,
+    SuperclassMustBeClassError,
+    UndefinedPropertyError,
     UndefinedVariableError,
     UnsupportedBinaryOperatorError,
     UnsupportedExpressionError,
@@ -26,6 +37,10 @@ from codefab.error import (
     UnsupportedUnaryOperatorError,
 )
 from codefab.tokens import Token, TokenType
+
+_THIS_KEY = "this"
+_SUPER_KEY = "super"
+_INIT_METHOD_NAMES = ("init", "생성자")
 
 
 class Environment:
@@ -59,6 +74,91 @@ class Environment:
             return
 
         raise UndefinedVariableError(lexeme, line=name_token.line)
+
+    def get_by_name(self, name: str) -> object:
+        """'this'/'super' 처럼 소스 문법과 무관하게 내부적으로 고정된 이름으로
+        바인딩되는 값을 조회한다. Checker가 이미 유효성을 보장하므로 항상 존재한다."""
+        if name in self.values:
+            return self.values[name]
+        if self.enclosing is not None:
+            return self.enclosing.get_by_name(name)
+        raise KeyError(name)
+
+
+class LaughFunction:
+    """클래스 메서드(생성자 포함)를 표현하는 런타임 콜러블."""
+
+    def __init__(
+        self, name: str, params: list[Token], body: list[Stmt], closure: Environment
+    ):
+        self.name = name
+        self.params = params
+        self.body = body
+        self.closure = closure
+
+    def bind(self, instance: "LaughInstance") -> "LaughFunction":
+        environment = Environment(self.closure)
+        environment.define(_THIS_KEY, instance)
+        return LaughFunction(self.name, self.params, self.body, environment)
+
+
+class LaughClass:
+    def __init__(
+        self,
+        name: str,
+        superclass: "LaughClass | None",
+        methods: dict[str, LaughFunction],
+    ):
+        self.name = name
+        self.superclass = superclass
+        self.methods = methods
+
+    def find_method(self, name: str) -> LaughFunction | None:
+        if name in self.methods:
+            return self.methods[name]
+        if self.superclass is not None:
+            return self.superclass.find_method(name)
+        return None
+
+    def find_initializer(self) -> LaughFunction | None:
+        for name in _INIT_METHOD_NAMES:
+            method = self.find_method(name)
+            if method is not None:
+                return method
+        return None
+
+    def is_same_or_subclass_of(self, other: "LaughClass") -> bool:
+        current: LaughClass | None = self
+        while current is not None:
+            if current is other:
+                return True
+            current = current.superclass
+        return False
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class LaughInstance:
+    def __init__(self, klass: LaughClass):
+        self.klass = klass
+        self.fields: dict[str, object] = {}
+
+    def get(self, name_token: Token) -> object:
+        if name_token.lexeme in self.fields:
+            return self.fields[name_token.lexeme]
+
+        method = self.klass.find_method(name_token.lexeme)
+        if method is not None:
+            return method.bind(self)
+
+        raise UndefinedPropertyError(name_token.lexeme, line=name_token.line)
+
+    def set(self, name_token: Token, value: object):
+        self.fields[name_token.lexeme] = value
+
+    def __str__(self) -> str:
+        return f"{self.klass.name} instance"
 
 
 class ExecutorUnit:
@@ -109,7 +209,33 @@ class ExecutorUnit:
                     self._evaluate_expr(statement.increment)
             return
 
+        if isinstance(statement, ClassStmt):
+            self._execute_class_stmt(statement)
+            return
+
         raise UnsupportedStatementError(type(statement).__name__)
+
+    def _execute_class_stmt(self, statement: ClassStmt):
+        superclass = None
+        if statement.superclass is not None:
+            superclass = self._evaluate_expr(statement.superclass)
+            if not isinstance(superclass, LaughClass):
+                raise SuperclassMustBeClassError(line=statement.name.line)
+
+        method_environment = self.environment
+        if superclass is not None:
+            method_environment = Environment(self.environment)
+            method_environment.define(_SUPER_KEY, superclass)
+
+        methods: dict[str, LaughFunction] = {
+            method.name.lexeme: LaughFunction(
+                method.name.lexeme, method.params, method.body, method_environment
+            )
+            for method in statement.methods
+        }
+
+        klass = LaughClass(statement.name.lexeme, superclass, methods)
+        self.environment.define(statement.name.lexeme, klass)
 
     def _execute_block(self, statements: list[Stmt], environment: Environment):
         previous = self.environment
@@ -142,7 +268,84 @@ class ExecutorUnit:
         if isinstance(expression, Binary):
             return self._evaluate_binary(expression)
 
+        if isinstance(expression, This):
+            return self.environment.get_by_name(_THIS_KEY)
+
+        if isinstance(expression, Super):
+            return self._evaluate_super(expression)
+
+        if isinstance(expression, Get):
+            return self._evaluate_get(expression)
+
+        if isinstance(expression, Set):
+            return self._evaluate_set(expression)
+
+        if isinstance(expression, Call):
+            return self._evaluate_call(expression)
+
+        if isinstance(expression, InstanceOf):
+            return self._evaluate_instance_of(expression)
+
         raise UnsupportedExpressionError(type(expression).__name__)
+
+    def _evaluate_super(self, expression: Super) -> object:
+        superclass: LaughClass = self.environment.get_by_name(_SUPER_KEY)
+        instance = self.environment.get_by_name(_THIS_KEY)
+
+        method = superclass.find_method(expression.method.lexeme)
+        if method is None:
+            raise UndefinedPropertyError(
+                expression.method.lexeme, line=expression.method.line
+            )
+        return method.bind(instance)
+
+    def _evaluate_get(self, expression: Get) -> object:
+        obj = self._evaluate_expr(expression.object)
+        if not isinstance(obj, LaughInstance):
+            raise OnlyInstancesHaveFieldsError(line=expression.name.line)
+        return obj.get(expression.name)
+
+    def _evaluate_set(self, expression: Set) -> object:
+        obj = self._evaluate_expr(expression.object)
+        if not isinstance(obj, LaughInstance):
+            raise OnlyInstancesHaveFieldsError(line=expression.name.line)
+        value = self._evaluate_expr(expression.value)
+        obj.set(expression.name, value)
+        return value
+
+    def _evaluate_call(self, expression: Call) -> object:
+        callee = self._evaluate_expr(expression.callee)
+        arguments = [self._evaluate_expr(argument) for argument in expression.arguments]
+        return self._call(callee, arguments, expression.paren.line)
+
+    def _call(self, callee: object, arguments: list[object], line: int) -> object:
+        if isinstance(callee, LaughClass):
+            instance = LaughInstance(callee)
+            initializer = callee.find_initializer()
+            if initializer is not None:
+                self._invoke_function(initializer.bind(instance), arguments)
+            return instance
+
+        if isinstance(callee, LaughFunction):
+            return self._invoke_function(callee, arguments)
+
+        raise NotCallableError(line=line)
+
+    def _invoke_function(
+        self, function: LaughFunction, arguments: list[object]
+    ) -> object:
+        environment = Environment(function.closure)
+        for param, argument in zip(function.params, arguments):
+            environment.define(param.lexeme, argument)
+        self._execute_block(function.body, environment)
+        return None
+
+    def _evaluate_instance_of(self, expression: InstanceOf) -> object:
+        obj = self._evaluate_expr(expression.object)
+        klass = self._evaluate_expr(expression.klass)
+        if not isinstance(klass, LaughClass) or not isinstance(obj, LaughInstance):
+            return False
+        return obj.klass.is_same_or_subclass_of(klass)
 
     def _look_up_variable(self, name_token: Token) -> object:
         return self.environment.get(name_token)
