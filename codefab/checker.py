@@ -25,6 +25,7 @@ from codefab.ast_nodes import (
     VarStmt,
 )
 from codefab.error import (
+    DuplicateImportError,
     DuplicateVariableError,
     ImportInsideLoopError,
     SelfInheritanceError,
@@ -33,6 +34,7 @@ from codefab.error import (
     SuperWithoutSuperclassError,
     ThisOutsideClassError,
 )
+from codefab.module_loader import ModuleLoader
 
 
 class _ClassContext(Enum):
@@ -42,11 +44,15 @@ class _ClassContext(Enum):
 
 
 class Checker:
-    def __init__(self):
+    def __init__(self, module_loader: ModuleLoader | None = None):
         self.scopes: list[set[str]] = [set()]
+        self.imported_paths: list[set] = [set()]
         self.initializing: str | None = None
         self.current_class = _ClassContext.NONE
         self.loop_depth = 0
+        self._module_loader = (
+            module_loader if module_loader is not None else ModuleLoader()
+        )
 
     @property
     def declared(self) -> set[str]:
@@ -61,9 +67,13 @@ class Checker:
 
     def visit_block_stmt(self, stmt: BlockStmt):
         self.scopes.append(set())
-        for statement in stmt.statements:
-            statement.accept(self)
-        self.scopes.pop()
+        self.imported_paths.append(set())
+        try:
+            for statement in stmt.statements:
+                statement.accept(self)
+        finally:
+            self.scopes.pop()
+            self.imported_paths.pop()
 
     def visit_var_stmt(self, stmt: VarStmt):
         if stmt.name.lexeme in self.scopes[-1]:
@@ -125,6 +135,14 @@ class Checker:
             raise ImportInsideLoopError(stmt.path.line)
         if stmt.alias.lexeme in self.scopes[-1]:
             raise DuplicateVariableError(stmt.alias.line)
+
+        resolved_path = self._module_loader.resolve(stmt.path.literal)
+        if any(resolved_path in scope for scope in self.imported_paths):
+            raise DuplicateImportError(stmt.path.literal, stmt.path.line)
+
+        self._module_loader.load(resolved_path, referencing_line=stmt.path.line)
+
+        self.imported_paths[-1].add(resolved_path)
         self.scopes[-1].add(stmt.alias.lexeme)
 
     def visit_class_stmt(self, stmt: ClassStmt):
