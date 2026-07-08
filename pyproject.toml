@@ -7,7 +7,7 @@ name = "codefab"
 authors = [{name = "Bug Hunters 4", email = "kimbyungnam@ajou.ac.kr"}]
 readme = "README.md"
 requires-python = ">= 3.13"
-version = "0.12.0"
+version = "0.13.0"
 description = "CodeFab Interpreter Project"
 
 [project.optional-dependencies]
