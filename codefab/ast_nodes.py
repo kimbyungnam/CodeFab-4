@@ -77,6 +77,61 @@ class Grouping(Expr):
         return visitor.visit_grouping(self)
 
 
+@dataclass
+class This(Expr):
+    keyword: Token
+
+    def accept(self, visitor):
+        return visitor.visit_this(self)
+
+
+@dataclass
+class Super(Expr):
+    keyword: Token
+    method: Token
+
+    def accept(self, visitor):
+        return visitor.visit_super(self)
+
+
+@dataclass
+class Get(Expr):
+    object: Expr
+    name: Token
+
+    def accept(self, visitor):
+        return visitor.visit_get(self)
+
+
+@dataclass
+class Set(Expr):
+    object: Expr
+    name: Token
+    value: Expr
+
+    def accept(self, visitor):
+        return visitor.visit_set(self)
+
+
+@dataclass
+class Call(Expr):
+    callee: Expr
+    paren: Token  # 오류 리포팅용 ')' 토큰
+    arguments: list[Expr]
+
+    def accept(self, visitor):
+        return visitor.visit_call(self)
+
+
+@dataclass
+class InstanceOf(Expr):
+    object: Expr
+    klass: Expr
+
+    def accept(self, visitor):
+        return visitor.visit_instance_of(self)
+
+
 # ---- Stmt 노드 ----
 @dataclass
 class ExpressionStmt(Stmt):
@@ -169,3 +224,23 @@ class ImportStmt(Stmt):
 
     def accept(self, visitor):
         return visitor.visit_import_stmt(self)
+
+
+@dataclass
+class MethodDecl:
+    """클래스 본문에 선언된 메서드 하나. Stmt가 아닌 순수 데이터로,
+    ClassStmt가 목록으로 보관하며 별도로 accept 되지 않는다."""
+
+    name: Token
+    params: list[Token]
+    body: list[Stmt]
+
+
+@dataclass
+class ClassStmt(Stmt):
+    name: Token
+    superclass: Variable | None
+    methods: list[MethodDecl]
+
+    def accept(self, visitor):
+        return visitor.visit_class_stmt(self)

@@ -1,13 +1,16 @@
 from codefab.assembler.expression_parser import ExpressionParser
 from codefab.ast_nodes import (
     BlockStmt,
+    ClassStmt,
     Expr,
     ExpressionStmt,
     ForStmt,
     IfStmt,
     ImportStmt,
+    MethodDecl,
     PrintStmt,
     Stmt,
+    Variable,
     VarStmt,
 )
 from codefab.error import ParseError
@@ -41,7 +44,47 @@ class StatementParser:
             return self._for_statement()
         if self._match(TokenType.IMPORT):
             return self._import_statement()
+        if self._match(TokenType.CLASS):
+            return self._class_declaration()
         return self._expression_statement()
+
+    def _class_declaration(self) -> ClassStmt:
+        name = self._consume(TokenType.IDENTIFIER, "클래스 이름이 필요합니다.")
+
+        superclass = None
+        if self._match(TokenType.COLON):
+            super_name = self._consume(
+                TokenType.IDENTIFIER, "상속할 클래스 이름이 필요합니다."
+            )
+            superclass = Variable(super_name)
+
+        self._consume(TokenType.LEFT_BRACE, "클래스 본문은 '{'로 시작해야 합니다.")
+        methods = []
+        while not self._check(TokenType.RIGHT_BRACE) and not self.is_at_end():
+            methods.append(self._method_declaration())
+        self._consume(TokenType.RIGHT_BRACE, "클래스 본문은 '}'로 닫아야 합니다.")
+
+        return ClassStmt(name, superclass, methods)
+
+    def _method_declaration(self) -> MethodDecl:
+        name = self._consume(TokenType.IDENTIFIER, "메서드 이름이 필요합니다.")
+        self._consume(TokenType.LEFT_PAREN, "메서드 이름 뒤에는 '('가 필요합니다.")
+
+        params = []
+        if not self._check(TokenType.RIGHT_PAREN):
+            params.append(
+                self._consume(TokenType.IDENTIFIER, "매개변수 이름이 필요합니다.")
+            )
+            while self._match(TokenType.COMMA):
+                params.append(
+                    self._consume(TokenType.IDENTIFIER, "매개변수 이름이 필요합니다.")
+                )
+        self._consume(TokenType.RIGHT_PAREN, "매개변수 목록 뒤에는 ')'가 필요합니다.")
+
+        self._consume(TokenType.LEFT_BRACE, "메서드 본문은 '{'로 시작해야 합니다.")
+        body = self._block()
+
+        return MethodDecl(name, params, body)
 
     def _print_statement(self) -> PrintStmt:
         expression = self._expression()
