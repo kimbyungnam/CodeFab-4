@@ -26,7 +26,6 @@ from codefab.error import (
     DivisionByZeroError,
     InvalidOperandTypeError,
     MismatchedPlusOperandTypeError,
-    NotCallableError,
     OnlyInstancesHaveFieldsError,
     SuperclassMustBeClassError,
     UndefinedPropertyError,
@@ -316,9 +315,9 @@ class ExecutorUnit:
     def _evaluate_call(self, expression: Call) -> object:
         callee = self._evaluate_expr(expression.callee)
         arguments = [self._evaluate_expr(argument) for argument in expression.arguments]
-        return self._call(callee, arguments, expression.paren.line)
+        return self._call(callee, arguments)
 
-    def _call(self, callee: object, arguments: list[object], line: int) -> object:
+    def _call(self, callee: object, arguments: list[object]) -> object:
         if isinstance(callee, LaughClass):
             instance = LaughInstance(callee)
             initializer = callee.find_initializer()
@@ -329,7 +328,7 @@ class ExecutorUnit:
         if isinstance(callee, LaughFunction):
             return self._invoke_function(callee, arguments)
 
-        raise NotCallableError(line=line)
+        return None
 
     def _invoke_function(
         self, function: LaughFunction, arguments: list[object]
