@@ -45,7 +45,7 @@ def test_if_stmt_without_else_is_parsed_as_if_stmt():
     assert isinstance(stmt.then_branch, ExpressionStmt)
     assert isinstance(stmt.then_branch.expression, Assign)
     assert stmt.then_branch.expression.name.lexeme == "y"
-    assert stmt.then_branch.expression.value == Literal(1.0)
+    assert stmt.then_branch.expression.value == Literal(1.0, line=2)
 
     assert stmt.else_branch is None
 
