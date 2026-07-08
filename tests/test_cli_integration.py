@@ -25,13 +25,13 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures" / "cli"
 
 
-def run_cli(script: Path) -> subprocess.CompletedProcess:
+def run_cli(script: Path, cwd: Path = REPO_ROOT) -> subprocess.CompletedProcess:
     return subprocess.run(
         [sys.executable, "-m", "codefab.cli", "run", str(script)],
         capture_output=True,
         text=True,
         encoding="utf-8",
-        cwd=REPO_ROOT,
+        cwd=cwd,
         env={**os.environ, "PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1"},
         timeout=10,
     )
@@ -71,3 +71,16 @@ def test_존재하지_않는_파일이면_파일_오류_메시지를_내고_종�
 
     assert "파일 오류" in result.stdout
     assert result.returncode == 1
+
+
+def test_가져오기로_다른_파일의_변수를_읽어_출력한다(tmp_path):
+    (tmp_path / "math.txt").write_text("변수 pi = 3.14;", encoding="utf-8")
+    main_script = tmp_path / "main.laugh"
+    main_script.write_text(
+        '가져오기 "math.txt" 별칭 math;\n출력 math.pi;', encoding="utf-8"
+    )
+
+    result = run_cli(main_script, cwd=tmp_path)
+
+    assert result.stdout == "3.14\n"
+    assert result.returncode == 0

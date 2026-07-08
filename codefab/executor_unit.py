@@ -11,6 +11,7 @@ from codefab.ast_nodes import (
     Get,
     Grouping,
     IfStmt,
+    ImportStmt,
     InstanceOf,
     Literal,
     Logical,
@@ -33,6 +34,7 @@ from codefab.error import (
     NotIndexableError,
     OnlyInstancesHaveFieldsError,
     SuperclassMustBeClassError,
+    UndefinedModuleMemberError,
     UndefinedPropertyError,
     UndefinedVariableError,
     UnsupportedBinaryOperatorError,
@@ -40,6 +42,7 @@ from codefab.error import (
     UnsupportedStatementError,
     UnsupportedUnaryOperatorError,
 )
+from codefab.module_loader import ModuleLoader
 from codefab.tokens import Token, TokenType
 
 _THIS_KEY = "this"
@@ -165,10 +168,28 @@ class LaughInstance:
         return f"{self.klass.name} instance"
 
 
+class Module:
+    """가져오기(import)로 만들어진 모듈 값. 점 표기(alias.member)로 멤버를 읽는다."""
+
+    def __init__(self, environment: Environment):
+        self._environment = environment
+
+    def get_member(self, name_token: Token) -> object:
+        try:
+            return self._environment.get(name_token)
+        except UndefinedVariableError:
+            raise UndefinedModuleMemberError(
+                name_token.lexeme, line=name_token.line
+            ) from None
+
+
 class ExecutorUnit:
-    def __init__(self):
+    def __init__(self, module_loader: ModuleLoader | None = None):
         self.environment = Environment()
         self._depth = 0
+        self._module_loader = (
+            module_loader if module_loader is not None else ModuleLoader()
+        )
 
     def execute(self, statements: list[Stmt]):
         for statement in statements:
@@ -235,6 +256,10 @@ class ExecutorUnit:
             self._execute_class_stmt(statement)
             return
 
+        if isinstance(statement, ImportStmt):
+            self._execute_import_stmt(statement)
+            return
+
         raise UnsupportedStatementError(type(statement).__name__)
 
     def _execute_class_stmt(self, statement: ClassStmt):
@@ -258,6 +283,17 @@ class ExecutorUnit:
 
         klass = LaughClass(statement.name.lexeme, superclass, methods)
         self.environment.define(statement.name.lexeme, klass)
+
+    def _execute_import_stmt(self, statement: ImportStmt):
+        resolved_path = self._module_loader.resolve(statement.path.literal)
+        module_statements = self._module_loader.load(
+            resolved_path, referencing_line=statement.path.line
+        )
+
+        module_environment = Environment()  # 호출자 스코프와 격리된 새 환경
+        self._execute_block(module_statements, module_environment)
+
+        self.environment.define(statement.alias.lexeme, Module(module_environment))
 
     def _execute_block(self, statements: list[Stmt], environment: Environment):
         previous = self.environment
@@ -331,6 +367,8 @@ class ExecutorUnit:
 
     def _evaluate_get(self, expression: Get) -> object:
         obj = self._evaluate_expr(expression.object)
+        if isinstance(obj, Module):
+            return obj.get_member(expression.name)
         if not isinstance(obj, LaughInstance):
             raise OnlyInstancesHaveFieldsError(line=expression.name.line)
         return obj.get(expression.name)
