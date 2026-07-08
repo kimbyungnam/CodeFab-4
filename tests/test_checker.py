@@ -3,6 +3,7 @@ import pytest
 from codefab.assembler.assembler import Assembler
 from codefab.checker import Checker
 from codefab.error import (
+    DuplicateImportError,
     DuplicateVariableError,
     ImportedFileNotFoundError,
     ImportInsideLoopError,
@@ -502,6 +503,68 @@ def test_반복문_밖에서는_가져오기_사용_가능(
 
     # assert
     assert sut.declared == {"i", "sum"}
+
+
+def test_같은_스코프에서_같은_파일_재_import시_에러(
+    sut, make_import_stmt, make_block_stmt
+):
+    # arrange
+    import_a = make_import_stmt("sum.txt", "sum", line=1)
+    import_b = make_import_stmt("sum.txt", "s2", line=2)
+    block_stmt = make_block_stmt([import_a, import_b])
+
+    ast = [block_stmt]
+
+    # act
+    # assert
+    with pytest.raises(DuplicateImportError):
+        sut.resolve(ast)
+
+
+def test_중첩_스코프에서_상위에서_이미_import된_파일_재_import시_에러(
+    sut, make_import_stmt, make_block_stmt
+):
+    # arrange
+    import_outer = make_import_stmt("sum.txt", "sum", line=1)
+    import_inner = make_import_stmt("sum.txt", "s2", line=2)
+    block_stmt = make_block_stmt([import_inner])
+
+    ast = [import_outer, block_stmt]
+
+    # act
+    # assert
+    with pytest.raises(DuplicateImportError):
+        sut.resolve(ast)
+
+
+def test_서로_다른_형제_스코프에서는_같은_파일_재_import_허용(
+    sut, make_import_stmt, make_block_stmt
+):
+    # arrange
+    block_a = make_block_stmt([make_import_stmt("sum.txt", "sum", line=1)])
+    block_b = make_block_stmt([make_import_stmt("sum.txt", "sum", line=2)])
+
+    ast = [block_a, block_b]
+
+    # act
+    # assert (에러 없이 통과)
+    sut.resolve(ast)
+
+
+def test_중첩_블록이_끝난_후에는_같은_파일_재_import_허용(
+    sut, make_import_stmt, make_block_stmt
+):
+    # arrange
+    block_stmt = make_block_stmt([make_import_stmt("sum.txt", "sum", line=1)])
+    import_after_block = make_import_stmt("sum.txt", "sum", line=2)
+
+    ast = [block_stmt, import_after_block]
+
+    # act
+    sut.resolve(ast)
+
+    # assert
+    assert sut.declared == {"sum"}
 
 
 def test_실제_모듈로더로_존재하지_않는_파일_가져오기는_에러(tmp_path, monkeypatch):

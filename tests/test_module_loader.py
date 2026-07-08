@@ -1,7 +1,11 @@
 import pytest
 
 from codefab.ast_nodes import ImportStmt, VarStmt
-from codefab.error import ImportedFileNotFoundError, InvalidModuleContentError
+from codefab.error import (
+    CircularImportError,
+    ImportedFileNotFoundError,
+    InvalidModuleContentError,
+)
 from codefab.module_loader import ModuleLoader
 
 
@@ -68,3 +72,35 @@ def test_중첩된_파일의_선언_외_구문도_에러로_전파된다(loader,
 
     with pytest.raises(InvalidModuleContentError):
         loader.load(tmp_path / "main.txt", referencing_line=1)
+
+
+def test_자기_자신을_가져오면_순환_import_에러(loader, tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "a.txt").write_text('가져오기 "a.txt" 별칭 a;', encoding="utf-8")
+
+    with pytest.raises(CircularImportError):
+        loader.load(tmp_path / "a.txt", referencing_line=1)
+
+
+def test_서로를_가져오면_순환_import_에러(loader, tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "a.txt").write_text('가져오기 "b.txt" 별칭 b;', encoding="utf-8")
+    (tmp_path / "b.txt").write_text('가져오기 "a.txt" 별칭 a;', encoding="utf-8")
+
+    with pytest.raises(CircularImportError):
+        loader.load(tmp_path / "a.txt", referencing_line=1)
+
+
+def test_순환이_아닌_다이아몬드_형태의_import는_허용한다(loader, tmp_path, monkeypatch):
+    # a.txt -> b.txt, c.txt 둘 다 -> shared.txt (순환은 아님)
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "shared.txt").write_text("변수 x = 1;", encoding="utf-8")
+    (tmp_path / "b.txt").write_text('가져오기 "shared.txt" 별칭 s;', encoding="utf-8")
+    (tmp_path / "c.txt").write_text('가져오기 "shared.txt" 별칭 s;', encoding="utf-8")
+    (tmp_path / "a.txt").write_text(
+        '가져오기 "b.txt" 별칭 b;\n가져오기 "c.txt" 별칭 c;', encoding="utf-8"
+    )
+
+    statements = loader.load(tmp_path / "a.txt", referencing_line=1)
+
+    assert len(statements) == 2

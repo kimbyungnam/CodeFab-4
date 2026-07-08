@@ -83,6 +83,16 @@ class InvalidModuleContentError(CheckerError):
         )
 
 
+class CircularImportError(CheckerError):
+    def __init__(self, path: str, line: int | None = None):
+        super().__init__(f"순환 import가 발생했습니다: '{path}'", line)
+
+
+class DuplicateImportError(CheckerError):
+    def __init__(self, path: str, line: int | None = None):
+        super().__init__(f"이미 가져온 파일입니다: '{path}'", line)
+
+
 # ---------------- Executor Unit ----------------
 
 
