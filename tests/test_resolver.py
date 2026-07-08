@@ -78,9 +78,12 @@ def test_for문의_초기화_변수는_조건_증감식과_같은_스코프_body
     # 블록으로 한 번 감싸야 한다.)
     i_token = make_identifier_token("i")
     initializer = VarStmt(i_token, Literal(0.0))
-    condition = Binary(Variable(i_token), Token(TokenType.LESS, "<", None, 1), Literal(3.0))
+    condition = Binary(
+        Variable(i_token), Token(TokenType.LESS, "<", None, 1), Literal(3.0)
+    )
     increment = Assign(
-        i_token, Binary(Variable(i_token), Token(TokenType.PLUS, "+", None, 1), Literal(1.0))
+        i_token,
+        Binary(Variable(i_token), Token(TokenType.PLUS, "+", None, 1), Literal(1.0)),
     )
     body_ref = Variable(i_token)
     body = BlockStmt([ExpressionStmt(body_ref)])

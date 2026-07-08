@@ -28,7 +28,9 @@ def test_distance가_없으면_기존_동적_조회로_동작한다(capsys):
     assert capsys.readouterr().out.splitlines() == ["1"]
 
 
-def test_distance가_있으면_스코프를_거슬러_올라가지_않고_바로_값을_읽는다(mocker, capsys):
+def test_distance가_있으면_스코프를_거슬러_올라가지_않고_바로_값을_읽는다(
+    mocker, capsys
+):
     # { var a = 5; print a; }
     var_stmt = VarStmt(make_identifier_token("a"), Literal(5.0))
     variable_a = Variable(make_identifier_token("a"))
@@ -56,7 +58,11 @@ def test_distance가_있는_대입도_스코프를_거슬러_올라가지_않는
         ),
     )
     block = BlockStmt(
-        [var_stmt, ExpressionStmt(assign), PrintStmt(Variable(make_identifier_token("a")))]
+        [
+            var_stmt,
+            ExpressionStmt(assign),
+            PrintStmt(Variable(make_identifier_token("a"))),
+        ]
     )
 
     Resolver().resolve([block])
@@ -85,7 +91,9 @@ def test_중첩_스코프에서도_결과값이_기존_ExecutorUnit과_동일하
             ),
         ]
     )
-    outer_block = BlockStmt([VarStmt(make_identifier_token("a"), Literal(1.0)), inner_block])
+    outer_block = BlockStmt(
+        [VarStmt(make_identifier_token("a"), Literal(1.0)), inner_block]
+    )
 
     Resolver().resolve([outer_block])
     assert inner_ref_a.distance == 1
