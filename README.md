@@ -7,7 +7,7 @@ CodeFab Interpreter 프로젝트
 
 | 구분 | 명령 |
 |---|---|
-| 설치 | `python -m venv .venv` → venv 활성화 → `pip install flit` → `flit install -s` |
+| 설치 | 👉 [Install](#install) 참고 |
 | REPL 모드 실행 | `(.venv) codefab` |
 | 파일 모드 실행 | `(.venv) codefab run <스크립트경로>` |
 | 디버그 모드 실행 | `(.venv) codefab debug <스크립트경로>` |
