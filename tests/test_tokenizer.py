@@ -119,6 +119,8 @@ def test_산술식_예제_토큰화():
         ("거짓", TokenType.FALSE),
         ("그리고", TokenType.AND),
         ("또는", TokenType.OR),
+        ("가져오기", TokenType.IMPORT),
+        ("별칭", TokenType.ALIAS),
     ],
 )
 def test_한글_키워드_토큰을_인식한다(source, expected_type):
@@ -126,6 +128,55 @@ def test_한글_키워드_토큰을_인식한다(source, expected_type):
 
     assert tokens == [
         Token(type=expected_type, lexeme=source, literal=None, line=1),
+        Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
+    ]
+
+
+@pytest.mark.parametrize(
+    "source,expected_type",
+    [
+        ("import", TokenType.IMPORT),
+        ("alias", TokenType.ALIAS),
+    ],
+)
+def test_영문_import_키워드_토큰을_인식한다(source, expected_type):
+    tokens = Tokenizer(source).scan_tokens()
+
+    assert tokens == [
+        Token(type=expected_type, lexeme=source, literal=None, line=1),
+        Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
+    ]
+
+
+def test_점_토큰을_인식한다():
+    tokens = Tokenizer(".").scan_tokens()
+
+    assert tokens == [
+        Token(type=TokenType.DOT, lexeme=".", literal=None, line=1),
+        Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
+    ]
+
+
+def test_가져오기_문_예제_토큰화():
+    tokens = Tokenizer('가져오기 "sum.txt" 별칭 sum;').scan_tokens()
+
+    assert tokens == [
+        Token(type=TokenType.IMPORT, lexeme="가져오기", literal=None, line=1),
+        Token(type=TokenType.STRING, lexeme='"sum.txt"', literal="sum.txt", line=1),
+        Token(type=TokenType.ALIAS, lexeme="별칭", literal=None, line=1),
+        Token(type=TokenType.IDENTIFIER, lexeme="sum", literal=None, line=1),
+        Token(type=TokenType.SEMICOLON, lexeme=";", literal=None, line=1),
+        Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
+    ]
+
+
+def test_점_표기로_멤버_접근을_토큰화한다():
+    tokens = Tokenizer("sum.add").scan_tokens()
+
+    assert tokens == [
+        Token(type=TokenType.IDENTIFIER, lexeme="sum", literal=None, line=1),
+        Token(type=TokenType.DOT, lexeme=".", literal=None, line=1),
+        Token(type=TokenType.IDENTIFIER, lexeme="add", literal=None, line=1),
         Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
     ]
 
