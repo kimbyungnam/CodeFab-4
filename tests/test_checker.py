@@ -1,7 +1,11 @@
 import pytest
 
 from codefab.checker import Checker
-from codefab.error import DuplicateVariableError, SelfReferenceInInitializerError
+from codefab.error import (
+    DuplicateVariableError,
+    ImportInsideLoopError,
+    SelfReferenceInInitializerError,
+)
 from codefab.tokens import Token, TokenType
 
 
@@ -156,6 +160,25 @@ def make_for_stmt(mocker):
         )
         for_stmt.accept.side_effect = lambda visitor: visitor.visit_for_stmt(for_stmt)
         return for_stmt
+
+    return _make
+
+
+@pytest.fixture
+def make_import_stmt(mocker):
+    def _make(path_literal, alias_lexeme, line=1):
+        import_stmt = mocker.Mock()
+        import_stmt.path = Token(
+            type=TokenType.STRING,
+            lexeme=f'"{path_literal}"',
+            literal=path_literal,
+            line=line,
+        )
+        import_stmt.alias = make_token(alias_lexeme, line)
+        import_stmt.accept.side_effect = lambda visitor: visitor.visit_import_stmt(
+            import_stmt
+        )
+        return import_stmt
 
     return _make
 
@@ -381,3 +404,87 @@ def test_반복문은_초기화식_조건식_증감식_본문을_방문한다(
     condition.accept.assert_called_once_with(sut)
     increment.accept.assert_called_once_with(sut)
     body.accept.assert_called_once_with(sut)
+
+
+def test_가져오기_문은_별칭을_현재_스코프에_등록한다(sut, make_import_stmt):
+    # arrange
+    import_stmt = make_import_stmt("sum.txt", "sum")
+
+    ast = [import_stmt]
+
+    # act
+    sut.resolve(ast)
+
+    # assert
+    assert sut.declared == {"sum"}
+
+
+def test_같은_스코프에서_별칭_이름_중복시_에러(sut, make_import_stmt, make_block_stmt):
+    # arrange
+    import_a = make_import_stmt("a.txt", "sum", line=1)
+    import_b = make_import_stmt("b.txt", "sum", line=2)
+    block_stmt = make_block_stmt([import_a, import_b])
+
+    ast = [block_stmt]
+
+    # act
+    # assert
+    with pytest.raises(DuplicateVariableError, match="이미 선언된 변수입니다."):
+        sut.resolve(ast)
+
+
+def test_다른_스코프에서는_같은_별칭_이름_재선언_허용(
+    sut, make_import_stmt, make_block_stmt
+):
+    # arrange
+    import_outer = make_import_stmt("a.txt", "sum", line=1)
+    import_inner = make_import_stmt("b.txt", "sum", line=2)
+    block_stmt = make_block_stmt([import_inner])
+
+    ast = [import_outer, block_stmt]
+
+    # act
+    sut.resolve(ast)
+
+    # assert
+    assert sut.declared == {"sum"}
+
+
+def test_반복문_내에선_가져오기_사용시_에러(
+    sut, make_for_stmt, make_var_stmt, make_variable, make_import_stmt
+):
+    # arrange
+    initializer = make_var_stmt("i", line=1)
+    condition = make_variable("i", line=1)
+    increment = make_variable("i", line=1)
+    body = make_import_stmt("sum.txt", "sum", line=2)
+    for_stmt = make_for_stmt(initializer, condition, increment, body)
+
+    ast = [for_stmt]
+
+    # act
+    # assert
+    with pytest.raises(
+        ImportInsideLoopError, match="반복문 내부에서는 가져오기를 사용할 수 없습니다."
+    ):
+        sut.resolve(ast)
+
+
+def test_반복문_밖에서는_가져오기_사용_가능(
+    sut, make_for_stmt, make_var_stmt, make_variable, make_import_stmt, make_block_stmt
+):
+    # arrange
+    initializer = make_var_stmt("i", line=1)
+    condition = make_variable("i", line=1)
+    increment = make_variable("i", line=1)
+    body = make_block_stmt([])
+    for_stmt = make_for_stmt(initializer, condition, increment, body)
+    import_after_loop = make_import_stmt("sum.txt", "sum", line=5)
+
+    ast = [for_stmt, import_after_loop]
+
+    # act
+    sut.resolve(ast)
+
+    # assert
+    assert sut.declared == {"i", "sum"}

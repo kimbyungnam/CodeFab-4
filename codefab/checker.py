@@ -11,6 +11,7 @@ from codefab.ast_nodes import (
     Get,
     Grouping,
     IfStmt,
+    ImportStmt,
     InstanceOf,
     Literal,
     Logical,
@@ -25,6 +26,7 @@ from codefab.ast_nodes import (
 )
 from codefab.error import (
     DuplicateVariableError,
+    ImportInsideLoopError,
     SelfInheritanceError,
     SelfReferenceInInitializerError,
     SuperOutsideClassError,
@@ -44,6 +46,7 @@ class Checker:
         self.scopes: list[set[str]] = [set()]
         self.initializing: str | None = None
         self.current_class = _ClassContext.NONE
+        self.loop_depth = 0
 
     @property
     def declared(self) -> set[str]:
@@ -111,7 +114,18 @@ class Checker:
             stmt.condition.accept(self)
         if stmt.increment is not None:
             stmt.increment.accept(self)
-        stmt.body.accept(self)
+        self.loop_depth += 1
+        try:
+            stmt.body.accept(self)
+        finally:
+            self.loop_depth -= 1
+
+    def visit_import_stmt(self, stmt: ImportStmt):
+        if self.loop_depth > 0:
+            raise ImportInsideLoopError(stmt.path.line)
+        if stmt.alias.lexeme in self.scopes[-1]:
+            raise DuplicateVariableError(stmt.alias.line)
+        self.scopes[-1].add(stmt.alias.lexeme)
 
     def visit_class_stmt(self, stmt: ClassStmt):
         if (
