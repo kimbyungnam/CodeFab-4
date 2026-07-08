@@ -16,6 +16,7 @@ from codefab.ast_nodes import (
     Literal,
     Logical,
     PrintStmt,
+    ReturnStmt,
     Set,
     Stmt,
     Super,
@@ -28,6 +29,7 @@ from codefab.error import (
     DuplicateImportError,
     DuplicateVariableError,
     ImportInsideLoopError,
+    ReturnInInitializerError,
     SelfInheritanceError,
     SelfReferenceInInitializerError,
     SuperOutsideClassError,
@@ -35,6 +37,8 @@ from codefab.error import (
     ThisOutsideClassError,
 )
 from codefab.module_loader import ModuleLoader
+
+_INIT_METHOD_NAMES = ("init", "생성자")
 
 
 class _ClassContext(Enum):
@@ -53,6 +57,7 @@ class Checker:
         self._module_loader = (
             module_loader if module_loader is not None else ModuleLoader()
         )
+        self.in_initializer = False
 
     @property
     def declared(self) -> set[str]:
@@ -155,13 +160,22 @@ class Checker:
             stmt.superclass.accept(self)
             self.current_class = _ClassContext.SUBCLASS
 
+        enclosing_initializer = self.in_initializer
         for method in stmt.methods:
+            self.in_initializer = method.name.lexeme in _INIT_METHOD_NAMES
             self.scopes.append(set())
             for statement in method.body:
                 statement.accept(self)
             self.scopes.pop()
+        self.in_initializer = enclosing_initializer
 
         self.current_class = enclosing_class
+
+    def visit_return_stmt(self, stmt: ReturnStmt):
+        if self.in_initializer:
+            raise ReturnInInitializerError(stmt.keyword.line)
+        if stmt.value is not None:
+            stmt.value.accept(self)
 
     def visit_this(self, expr: This):
         if self.current_class == _ClassContext.NONE:

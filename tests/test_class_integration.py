@@ -116,3 +116,22 @@ def test_7_인스턴스_타입_확인():
     """
 
     assert run(source) == ["참", "참"]
+
+
+def test_생성자에서_반환을_사용하면_에러가_발생한다():
+    source = """
+    클래스 Robot {
+        생성자(name) {
+            나.name = name;
+            반환 나;
+        }
+    }
+
+    변수 r = Robot("AndOr");
+    """
+
+    result = Interpreter().interpret(source)
+
+    assert result.output == []
+    assert "생성자" in result.error
+    assert "반환" in result.error
