@@ -164,12 +164,15 @@ class Checker:
         for method in stmt.methods:
             self.in_initializer = method.name.lexeme in _INIT_METHOD_NAMES
             self.scopes.append(set())
-            for statement in method.body:
-                statement.accept(self)
+            self._visit_method_body(method)
             self.scopes.pop()
         self.in_initializer = enclosing_initializer
 
         self.current_class = enclosing_class
+
+    def _visit_method_body(self, method) -> None:
+        for statement in method.body:
+            statement.accept(self)
 
     def visit_return_stmt(self, stmt: ReturnStmt):
         if self.in_initializer:
