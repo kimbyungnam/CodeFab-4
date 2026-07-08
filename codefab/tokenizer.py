@@ -6,6 +6,8 @@ SINGLE_CHAR_TOKENS: dict[str, TokenType] = {
     ")": TokenType.RIGHT_PAREN,
     "{": TokenType.LEFT_BRACE,
     "}": TokenType.RIGHT_BRACE,
+    "[": TokenType.LEFT_BRACKET,
+    "]": TokenType.RIGHT_BRACKET,
     ";": TokenType.SEMICOLON,
     "+": TokenType.PLUS,
     "-": TokenType.MINUS,

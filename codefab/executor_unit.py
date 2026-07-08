@@ -1,3 +1,4 @@
+from codefab.array_nodes import ArrayLiteral, IndexGet, IndexSet
 from codefab.ast_nodes import (
     Assign,
     Binary,
@@ -16,9 +17,13 @@ from codefab.ast_nodes import (
     VarStmt,
 )
 from codefab.error import (
+    ArrayIndexNotNumberError,
+    ArrayIndexOutOfRangeError,
+    ArraySizeNotNumberError,
     DivisionByZeroError,
     InvalidOperandTypeError,
     MismatchedPlusOperandTypeError,
+    NotIndexableError,
     UndefinedVariableError,
     UnsupportedBinaryOperatorError,
     UnsupportedExpressionError,
@@ -59,6 +64,18 @@ class Environment:
             return
 
         raise UndefinedVariableError(lexeme, line=name_token.line)
+
+    def get_at(self, distance: int, lexeme: str) -> object:
+        return self._ancestor(distance).values[lexeme]
+
+    def assign_at(self, distance: int, lexeme: str, value: object) -> None:
+        self._ancestor(distance).values[lexeme] = value
+
+    def _ancestor(self, distance: int) -> "Environment":
+        environment = self
+        for _ in range(distance):
+            environment = environment.enclosing
+        return environment
 
 
 class ExecutorUnit:
@@ -125,7 +142,7 @@ class ExecutorUnit:
             return expression.value
 
         if isinstance(expression, Variable):
-            return self._look_up_variable(expression.name)
+            return self._look_up_variable(expression)
 
         if isinstance(expression, Assign):
             return self._evaluate_assign(expression)
@@ -142,14 +159,32 @@ class ExecutorUnit:
         if isinstance(expression, Binary):
             return self._evaluate_binary(expression)
 
+        if isinstance(expression, ArrayLiteral):
+            return self._evaluate_array_literal(expression)
+
+        if isinstance(expression, IndexGet):
+            return self._evaluate_index_get(expression)
+
+        if isinstance(expression, IndexSet):
+            return self._evaluate_index_set(expression)
+
         raise UnsupportedExpressionError(type(expression).__name__)
 
-    def _look_up_variable(self, name_token: Token) -> object:
-        return self.environment.get(name_token)
+    def _look_up_variable(self, expression: Variable) -> object:
+        # 정적 바인딩(Resolver)이 distance 를 미리 계산해둔 경우 O(1)로 접근하고,
+        # 아니라면(전역 변수 등) 기존처럼 동적으로 상위 스코프를 탐색한다.
+        distance = getattr(expression, "distance", None)
+        if distance is not None:
+            return self.environment.get_at(distance, expression.name.lexeme)
+        return self.environment.get(expression.name)
 
     def _evaluate_assign(self, expression: Assign) -> object:
         value = self._evaluate_expr(expression.value)
-        self.environment.assign(expression.name, value)
+        distance = getattr(expression, "distance", None)
+        if distance is not None:
+            self.environment.assign_at(distance, expression.name.lexeme, value)
+        else:
+            self.environment.assign(expression.name, value)
         return value
 
     def _is_truthy(self, value: object) -> bool:
@@ -246,6 +281,38 @@ class ExecutorUnit:
     def _check_number_operands(self, left: object, right: object, line: int):
         if not isinstance(left, float) or not isinstance(right, float):
             raise InvalidOperandTypeError(line=line)
+
+    def _evaluate_array_literal(self, expression: ArrayLiteral) -> object:
+        size = self._evaluate_expr(expression.size)
+        if not isinstance(size, float):
+            raise ArraySizeNotNumberError(line=expression.line)
+        return [None] * int(size)
+
+    def _evaluate_index_get(self, expression: IndexGet) -> object:
+        target = self._evaluate_expr(expression.target)
+        index = self._resolve_array_index(target, expression.index, expression.line)
+        return target[index]
+
+    def _evaluate_index_set(self, expression: IndexSet) -> object:
+        target = self._evaluate_expr(expression.target)
+        index = self._resolve_array_index(target, expression.index, expression.line)
+        value = self._evaluate_expr(expression.value)
+        target[index] = value
+        return value
+
+    def _resolve_array_index(self, target: object, index_expr: Expr, line: int) -> int:
+        if not isinstance(target, list):
+            raise NotIndexableError(type(target).__name__, line=line)
+
+        index_value = self._evaluate_expr(index_expr)
+        if not isinstance(index_value, float):
+            raise ArrayIndexNotNumberError(line=line)
+
+        index = int(index_value)
+        if index < 0 or index >= len(target):
+            raise ArrayIndexOutOfRangeError(line=line)
+
+        return index
 
     def _stringify(self, value: object) -> str:
         if isinstance(value, bool):
