@@ -6,6 +6,7 @@ from codefab.ast_nodes import (
     ExpressionStmt,
     ForStmt,
     IfStmt,
+    MethodDecl,
     ImportStmt,
     MethodDecl,
     PrintStmt,
@@ -42,6 +43,8 @@ class StatementParser:
             return self._if_statement()
         if self._match(TokenType.FOR):
             return self._for_statement()
+        if self._match(TokenType.CLASS):
+            return self._class_declaration()
         if self._match(TokenType.IMPORT):
             return self._import_statement()
         if self._match(TokenType.CLASS):
