@@ -239,13 +239,12 @@ class ExecutorUnit:
 
     def _execute_class_stmt(self, statement: ClassStmt):
         superclass = None
+        method_environment = self.environment
+
         if statement.superclass is not None:
             superclass = self._evaluate_expr(statement.superclass)
             if not isinstance(superclass, LaughClass):
                 raise SuperclassMustBeClassError(line=statement.name.line)
-
-        method_environment = self.environment
-        if superclass is not None:
             method_environment = Environment(self.environment)
             method_environment.define(_SUPER_KEY, superclass)
 
