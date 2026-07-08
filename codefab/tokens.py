@@ -9,7 +9,12 @@ class TokenType(Enum):
     RIGHT_PAREN = auto()
     LEFT_BRACE = auto()
     RIGHT_BRACE = auto()
+    LEFT_BRACKET = auto()
+    RIGHT_BRACKET = auto()
     SEMICOLON = auto()
+    COMMA = auto()
+    DOT = auto()
+    COLON = auto()
 
     # 연산자
     PLUS = auto()
@@ -40,6 +45,16 @@ class TokenType(Enum):
     AND = auto()
     OR = auto()
     PRINT = auto()
+    FUNC = auto()
+    RETURN = auto()
+    CLASS = auto()
+    THIS = auto()
+    INIT = auto()
+    SUPER = auto()
+    ARRAY = auto()
+    IMPORT = auto()
+    ALIAS = auto()
+    INSTANCEOF = auto()
 
     EOF = auto()
 

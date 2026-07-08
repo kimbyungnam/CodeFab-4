@@ -119,6 +119,16 @@ def test_산술식_예제_토큰화():
         ("거짓", TokenType.FALSE),
         ("그리고", TokenType.AND),
         ("또는", TokenType.OR),
+        ("함수", TokenType.FUNC),
+        ("반환", TokenType.RETURN),
+        ("클래스", TokenType.CLASS),
+        ("나", TokenType.THIS),
+        ("생성자", TokenType.INIT),
+        ("부모", TokenType.SUPER),
+        ("배열", TokenType.ARRAY),
+        ("가져오기", TokenType.IMPORT),
+        ("별칭", TokenType.ALIAS),
+        ("instanceof", TokenType.INSTANCEOF),
     ],
 )
 def test_한글_키워드_토큰을_인식한다(source, expected_type):
@@ -126,6 +136,36 @@ def test_한글_키워드_토큰을_인식한다(source, expected_type):
 
     assert tokens == [
         Token(type=expected_type, lexeme=source, literal=None, line=1),
+        Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
+    ]
+
+
+@pytest.mark.parametrize(
+    "source,expected_type",
+    [
+        ("[", TokenType.LEFT_BRACKET),
+        ("]", TokenType.RIGHT_BRACKET),
+        (",", TokenType.COMMA),
+        (".", TokenType.DOT),
+        (":", TokenType.COLON),
+    ],
+)
+def test_함수_클래스_배열_구두점_토큰을_인식한다(source, expected_type):
+    tokens = Tokenizer(source).scan_tokens()
+
+    assert tokens == [
+        Token(type=expected_type, lexeme=source, literal=None, line=1),
+        Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
+    ]
+
+
+def test_점_표기로_필드_접근을_토큰화한다():
+    tokens = Tokenizer("r.name").scan_tokens()
+
+    assert tokens == [
+        Token(type=TokenType.IDENTIFIER, lexeme="r", literal=None, line=1),
+        Token(type=TokenType.DOT, lexeme=".", literal=None, line=1),
+        Token(type=TokenType.IDENTIFIER, lexeme="name", literal=None, line=1),
         Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
     ]
 

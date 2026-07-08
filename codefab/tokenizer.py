@@ -15,6 +15,11 @@ SINGLE_CHAR_TOKENS: dict[str, TokenType] = {
     ">": TokenType.GREATER,
     "<": TokenType.LESS,
     "!": TokenType.BANG,
+    "[": TokenType.LEFT_BRACKET,
+    "]": TokenType.RIGHT_BRACKET,
+    ",": TokenType.COMMA,
+    ".": TokenType.DOT,
+    ":": TokenType.COLON,
 }
 
 DOUBLE_CHAR_TOKENS: dict[str, TokenType] = {
@@ -43,6 +48,25 @@ KEYWORDS: dict[str, TokenType] = {
     "그리고": TokenType.AND,
     "or": TokenType.OR,
     "또는": TokenType.OR,
+    "func": TokenType.FUNC,
+    "함수": TokenType.FUNC,
+    "return": TokenType.RETURN,
+    "반환": TokenType.RETURN,
+    "class": TokenType.CLASS,
+    "클래스": TokenType.CLASS,
+    "this": TokenType.THIS,
+    "나": TokenType.THIS,
+    "init": TokenType.INIT,
+    "생성자": TokenType.INIT,
+    "super": TokenType.SUPER,
+    "부모": TokenType.SUPER,
+    "array": TokenType.ARRAY,
+    "배열": TokenType.ARRAY,
+    "import": TokenType.IMPORT,
+    "가져오기": TokenType.IMPORT,
+    "alias": TokenType.ALIAS,
+    "별칭": TokenType.ALIAS,
+    "instanceof": TokenType.INSTANCEOF,
 }
 
 
