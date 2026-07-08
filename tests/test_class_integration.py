@@ -111,8 +111,8 @@ def test_7_인스턴스_타입_확인():
 
     변수 w = SpeedRobot("Sam");
 
-    출력 (w instanceof SpeedRobot);
-    출력 (w instanceof Robot);
+    출력 (w 타입확인 SpeedRobot);
+    출력 (w 타입확인 Robot);
     """
 
     assert run(source) == ["참", "참"]

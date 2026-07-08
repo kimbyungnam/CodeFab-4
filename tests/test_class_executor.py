@@ -164,7 +164,7 @@ def test_메서드_내부에서_나로_필드에_접근하고_갱신한다(capsy
 
 
 def test_생성자는_인스턴스_생성시_자동으로_호출되고_인스턴스를_반환한다(capsys):
-    # 클래스 Robot { init(name, speed) { 나.name = name; 나.speed = speed; } }
+    # 클래스 Robot { 생성자(name, speed) { 나.name = name; 나.speed = speed; } }
     # 변수 r = Robot("AndOr", 10); 출력 r.name;
     init_body = [
         ExpressionStmt(
@@ -177,7 +177,7 @@ def test_생성자는_인스턴스_생성시_자동으로_호출되고_인스턴
 
     statements = [
         make_class_stmt(
-            "Robot", methods=[make_method("init", ["name", "speed"], init_body)]
+            "Robot", methods=[make_method("생성자", ["name", "speed"], init_body)]
         ),
         make_var_stmt(
             "r", make_call(make_variable("Robot"), [Literal("AndOr"), Literal(10.0)])
@@ -263,10 +263,10 @@ def test_부모_메서드를_오버라이딩하고_Super로_부모_구현을_호
     assert run_and_capture_prints(capsys, statements) == ["move", "Speeeed!"]
 
 
-def test_instanceof는_자기_자신과_부모_클래스에_대해_참을_반환한다(capsys):
+def test_타입확인은_자기_자신과_부모_클래스에_대해_참을_반환한다(capsys):
     # 클래스 Robot { } 클래스 SpeedRobot : Robot { }
     # 변수 w = SpeedRobot();
-    # 출력 (w instanceof SpeedRobot); 출력 (w instanceof Robot);
+    # 출력 (w 타입확인 SpeedRobot); 출력 (w 타입확인 Robot);
     statements = [
         make_class_stmt("Robot"),
         make_class_stmt("SpeedRobot", superclass=make_variable("Robot")),
@@ -278,7 +278,7 @@ def test_instanceof는_자기_자신과_부모_클래스에_대해_참을_반환
     assert run_and_capture_prints(capsys, statements) == ["참", "참"]
 
 
-def test_instanceof는_관련_없는_클래스에_대해_거짓을_반환한다(capsys):
+def test_타입확인은_관련_없는_클래스에_대해_거짓을_반환한다(capsys):
     statements = [
         make_class_stmt("Robot"),
         make_class_stmt("Toaster"),

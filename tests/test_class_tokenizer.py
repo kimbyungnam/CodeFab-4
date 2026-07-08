@@ -7,13 +7,10 @@ from codefab.tokens import Token, TokenType
 @pytest.mark.parametrize(
     "source, expected_type",
     [
-        ("Class", TokenType.CLASS),
         ("클래스", TokenType.CLASS),
-        ("This", TokenType.THIS),
         ("나", TokenType.THIS),
-        ("Super", TokenType.SUPER),
         ("부모", TokenType.SUPER),
-        ("instanceof", TokenType.INSTANCEOF),
+        ("타입확인", TokenType.INSTANCEOF),
     ],
 )
 def test_클래스_관련_키워드를_인식한다(source, expected_type):
@@ -65,8 +62,8 @@ def test_필드_접근에_사용되는_점은_숫자_리터럴의_소수점과_�
 
 
 def test_상속_문법에_사용되는_콜론을_인식한다():
-    # Class SpeedRobot : Robot { }
-    tokens = Tokenizer("Class SpeedRobot : Robot { }").scan_tokens()
+    # 클래스 SpeedRobot : Robot { }
+    tokens = Tokenizer("클래스 SpeedRobot : Robot { }").scan_tokens()
 
     assert [t.type for t in tokens] == [
         TokenType.CLASS,

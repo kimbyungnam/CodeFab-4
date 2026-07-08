@@ -44,7 +44,7 @@ from codefab.tokens import Token, TokenType
 
 _THIS_KEY = "this"
 _SUPER_KEY = "super"
-_INIT_METHOD_NAMES = ("init", "생성자")
+_INIT_METHOD_NAME = "생성자"
 
 
 class Environment:
@@ -125,11 +125,7 @@ class LaughClass:
         return None
 
     def find_initializer(self) -> LaughFunction | None:
-        for name in _INIT_METHOD_NAMES:
-            method = self.find_method(name)
-            if method is not None:
-                return method
-        return None
+        return self.find_method(_INIT_METHOD_NAME)
 
     def is_same_or_subclass_of(self, other: "LaughClass") -> bool:
         current: LaughClass | None = self

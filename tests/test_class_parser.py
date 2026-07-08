@@ -140,9 +140,9 @@ def test_부모_메서드_호출을_파싱한다():
     assert expression.arguments == [expected_arg]
 
 
-def test_instanceof_표현식을_파싱한다():
-    # w instanceof SpeedRobot
-    expression = parse_expression("w instanceof SpeedRobot")
+def test_타입확인_표현식을_파싱한다():
+    # w 타입확인 SpeedRobot
+    expression = parse_expression("w 타입확인 SpeedRobot")
 
     assert isinstance(expression, InstanceOf)
     assert isinstance(expression.object, Variable)
@@ -151,9 +151,9 @@ def test_instanceof_표현식을_파싱한다():
     assert expression.klass.name.lexeme == "SpeedRobot"
 
 
-def test_출력문에서_instanceof_표현식을_사용할_수_있다():
-    # 출력 (w instanceof Robot);
-    stmt = parse_statements("출력 (w instanceof Robot);")[0]
+def test_출력문에서_타입확인_표현식을_사용할_수_있다():
+    # 출력 (w 타입확인 Robot);
+    stmt = parse_statements("출력 (w 타입확인 Robot);")[0]
 
     assert isinstance(stmt, PrintStmt)
     grouped = stmt.expression
