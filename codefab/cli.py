@@ -8,7 +8,7 @@ from codefab.interpreter import Interpreter, InterpretResult
 DEFAULT_ENCODING = "utf-8"
 
 
-class Cli:
+class FileRunner:
     def __init__(
         self,
         interpreter: Interpreter | None = None,
@@ -48,7 +48,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.mode == "run":
-        return Cli().run_file(args.path)
+        return FileRunner().run_file(args.path)
 
     return repl_main()
 
