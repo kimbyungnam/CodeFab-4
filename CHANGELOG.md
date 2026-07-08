@@ -1,3 +1,17 @@
+## 0.24.0 (2026-07-08)
+
+### Feat
+
+- import 실행 단계 연결 (Module 값, Get 평가)
+
+### Fix
+
+- Qucik start 와 Install 중복 제거
+
+### Refactor
+
+- README.md 수정
+
 ## 0.23.0 (2026-07-08)
 
 ### Feat
