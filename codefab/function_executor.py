@@ -1,6 +1,6 @@
 from codefab.ast_nodes import Call, Expr, FunctionStmt, ReturnStmt, Stmt
 from codefab.error import ArgumentCountMismatchError, NotCallableError
-from codefab.executor_unit import Environment, ExecutorUnit
+from codefab.executor_unit import Environment, ExecutorUnit, LaughClass, LaughFunction
 
 
 class ReturnSignal(Exception):
@@ -76,12 +76,16 @@ class FunctionExecutorUnit(ExecutorUnit):
         callee = self._evaluate_expr(expression.callee)
         arguments = [self._evaluate_expr(argument) for argument in expression.arguments]
 
-        if not isinstance(callee, UserFunction):
-            raise NotCallableError(line=expression.paren.line)
+        if isinstance(callee, UserFunction):
+            if len(arguments) != callee.arity:
+                raise ArgumentCountMismatchError(
+                    expected=callee.arity,
+                    actual=len(arguments),
+                    line=expression.paren.line,
+                )
+            return callee.call(arguments)
 
-        if len(arguments) != callee.arity:
-            raise ArgumentCountMismatchError(
-                expected=callee.arity, actual=len(arguments), line=expression.paren.line
-            )
+        if isinstance(callee, (LaughClass, LaughFunction)):
+            return self._call(callee, arguments)
 
-        return callee.call(arguments)
+        raise NotCallableError(line=expression.paren.line)
