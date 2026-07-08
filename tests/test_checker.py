@@ -1,11 +1,15 @@
 import pytest
 
+from codefab.assembler.assembler import Assembler
 from codefab.checker import Checker
 from codefab.error import (
     DuplicateVariableError,
+    ImportedFileNotFoundError,
     ImportInsideLoopError,
+    InvalidModuleContentError,
     SelfReferenceInInitializerError,
 )
+from codefab.module_loader import ModuleLoader
 from codefab.tokens import Token, TokenType
 
 
@@ -14,8 +18,18 @@ def make_token(lexeme, line=1):
 
 
 @pytest.fixture
-def sut():
-    return Checker()
+def stub_module_loader(mocker):
+    # 스코프/루프 규칙만 검증하는 테스트가 실제 파일 시스템에 의존하지 않도록
+    # ModuleLoader를 대역으로 대체한다.
+    loader = mocker.Mock()
+    loader.resolve.side_effect = lambda literal: literal
+    loader.load.return_value = []
+    return loader
+
+
+@pytest.fixture
+def sut(stub_module_loader):
+    return Checker(module_loader=stub_module_loader)
 
 
 @pytest.fixture
@@ -488,3 +502,35 @@ def test_반복문_밖에서는_가져오기_사용_가능(
 
     # assert
     assert sut.declared == {"i", "sum"}
+
+
+def test_실제_모듈로더로_존재하지_않는_파일_가져오기는_에러(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    statements = Assembler().assemble('가져오기 "missing.txt" 별칭 m;')
+
+    with pytest.raises(ImportedFileNotFoundError):
+        Checker(module_loader=ModuleLoader()).resolve(statements)
+
+
+def test_실제_모듈로더로_선언_외_구문이_있는_파일_가져오기는_에러(
+    tmp_path, monkeypatch
+):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "bad.txt").write_text("출력 1;", encoding="utf-8")
+    statements = Assembler().assemble('가져오기 "bad.txt" 별칭 bad;')
+
+    with pytest.raises(InvalidModuleContentError):
+        Checker(module_loader=ModuleLoader()).resolve(statements)
+
+
+def test_실제_모듈로더로_변수_선언만_있는_파일_가져오기는_정상_동작(
+    tmp_path, monkeypatch
+):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "sum.txt").write_text("변수 x = 3;", encoding="utf-8")
+    statements = Assembler().assemble('가져오기 "sum.txt" 별칭 sum;')
+
+    checker = Checker(module_loader=ModuleLoader())
+    checker.resolve(statements)
+
+    assert checker.declared == {"sum"}

@@ -33,6 +33,7 @@ from codefab.error import (
     SuperWithoutSuperclassError,
     ThisOutsideClassError,
 )
+from codefab.module_loader import ModuleLoader
 
 
 class _ClassContext(Enum):
@@ -42,11 +43,14 @@ class _ClassContext(Enum):
 
 
 class Checker:
-    def __init__(self):
+    def __init__(self, module_loader: ModuleLoader | None = None):
         self.scopes: list[set[str]] = [set()]
         self.initializing: str | None = None
         self.current_class = _ClassContext.NONE
         self.loop_depth = 0
+        self._module_loader = (
+            module_loader if module_loader is not None else ModuleLoader()
+        )
 
     @property
     def declared(self) -> set[str]:
@@ -125,6 +129,10 @@ class Checker:
             raise ImportInsideLoopError(stmt.path.line)
         if stmt.alias.lexeme in self.scopes[-1]:
             raise DuplicateVariableError(stmt.alias.line)
+
+        resolved_path = self._module_loader.resolve(stmt.path.literal)
+        self._module_loader.load(resolved_path, referencing_line=stmt.path.line)
+
         self.scopes[-1].add(stmt.alias.lexeme)
 
     def visit_class_stmt(self, stmt: ClassStmt):
