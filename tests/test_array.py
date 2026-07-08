@@ -184,7 +184,8 @@ def test_인덱스로_읽고_쓸_수_있다(executor):
     arr_var = Variable(make_identifier_token("arr"))
 
     evaluate(
-        executor, IndexSet(target=arr_var, index=Literal(1.0), value=Literal(20.0), line=1)
+        executor,
+        IndexSet(target=arr_var, index=Literal(1.0), value=Literal(20.0), line=1),
     )
     value = evaluate(executor, IndexGet(target=arr_var, index=Literal(1.0), line=1))
 
@@ -196,7 +197,9 @@ def test_범위를_벗어난_인덱스는_런타임_오류(executor):
     with pytest.raises(ArrayIndexOutOfRangeError):
         evaluate(
             executor,
-            IndexGet(target=ArrayLiteral(Literal(3.0), line=1), index=Literal(5.0), line=1),
+            IndexGet(
+                target=ArrayLiteral(Literal(3.0), line=1), index=Literal(5.0), line=1
+            ),
         )
 
 

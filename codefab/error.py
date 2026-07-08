@@ -207,6 +207,8 @@ class NotIndexableError(ExecutorRuntimeError):
         super().__init__(
             f"'[]' 연산은 배열에만 사용할 수 있습니다: '{node_type}'", line
         )
+
+
 # ---------------- Assembler Unit (import 관련 추가) ----------------
 
 
