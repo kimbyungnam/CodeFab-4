@@ -2,7 +2,7 @@ import pytest
 
 from codefab.array_nodes import ArrayLiteral, IndexGet, IndexSet
 from codefab.assembler.expression_parser import ExpressionParser
-from codefab.ast_nodes import Literal, VarStmt, Variable
+from codefab.ast_nodes import Literal, Variable, VarStmt
 from codefab.checker import Checker
 from codefab.error import (
     ArrayIndexNotNumberError,
