@@ -1,0 +1,8 @@
+#!/bin/sh
+# python/python3 중 PATH에 있는 걸 찾아서 실행한다 (시스템마다 이름이 다를 수 있어서).
+PYTHON=$(command -v python || command -v python3)
+if [ -z "$PYTHON" ]; then
+    echo "factory: python 또는 python3 실행 파일을 찾을 수 없습니다." >&2
+    exit 1
+fi
+exec "$PYTHON" -m codefab.cli "$@"

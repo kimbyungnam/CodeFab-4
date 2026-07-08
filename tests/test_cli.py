@@ -90,15 +90,24 @@ def test_utf8_한글_스크립트_파일을_정상적으로_실행한다(mocker,
     assert exit_code == 0
 
 
-def test_main이_path_인자를_cli_run_file에_전달한다(mocker):
+def test_main이_run_경로_인자를_cli_run_file에_전달한다(mocker):
     run_file = mocker.patch.object(Cli, "run_file", return_value=0)
 
-    exit_code = main(["script.txt"])
+    exit_code = main(["run", "script.txt"])
 
     run_file.assert_called_once_with("script.txt")
     assert exit_code == 0
 
 
-def test_main에_경로_인자가_없으면_SystemExit이_발생한다():
+def test_run_서브커맨드에_경로_인자가_없으면_SystemExit이_발생한다():
     with pytest.raises(SystemExit):
-        main([])
+        main(["run"])
+
+
+def test_main에_인자가_없으면_repl_모드로_진입한다(mocker):
+    repl_main = mocker.patch("codefab.cli.repl_main", return_value=0)
+
+    exit_code = main([])
+
+    repl_main.assert_called_once_with()
+    assert exit_code == 0

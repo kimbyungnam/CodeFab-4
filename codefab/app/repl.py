@@ -3,6 +3,8 @@ from collections.abc import Callable, Iterable
 
 from codefab.interpreter import Interpreter
 
+EXIT_COMMANDS = {"exit", "quit"}
+
 
 class Repl:
     def __init__(
@@ -16,9 +18,24 @@ class Repl:
         self._prompt = prompt
 
     def run(self, input_lines: Iterable[str]) -> None:
-        for line in input_lines:
-            self._output(self._prompt)
+        iterator = iter(input_lines)
+        while True:
+            self._show_prompt()
+            try:
+                line = next(iterator)
+            except StopIteration:
+                break
+            if line.strip() in EXIT_COMMANDS:
+                break
             self.run_source(line)
+
+    def _show_prompt(self) -> None:
+        # 기본 출력(print)일 때는 줄바꿈 없이 찍어서 입력이 프롬프트와 같은 줄에 오게 한다.
+        # 커스텀 output 콜백이 주어진 경우(테스트 등)는 기존처럼 그대로 전달한다.
+        if self._output is print:
+            print(self._prompt, end="", flush=True)
+        else:
+            self._output(self._prompt)
 
     def run_source(self, source: str) -> None:
         result = self._interpreter.interpret(source)
