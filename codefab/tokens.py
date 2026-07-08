@@ -45,6 +45,7 @@ class TokenType(Enum):
     PRINT = auto()
     IMPORT = auto()
     ALIAS = auto()
+    ARRAY = auto()
 
     # 함수 관련 추가 토큰
     COMMA = auto()

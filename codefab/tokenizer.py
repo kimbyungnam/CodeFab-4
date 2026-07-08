@@ -55,6 +55,8 @@ KEYWORDS: dict[str, TokenType] = {
     "가져오기": TokenType.IMPORT,
     "alias": TokenType.ALIAS,
     "별칭": TokenType.ALIAS,
+    "Array": TokenType.ARRAY,
+    "배열": TokenType.ARRAY,
 }
 
 

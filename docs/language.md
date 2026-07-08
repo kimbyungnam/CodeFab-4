@@ -19,6 +19,7 @@ class TokenType(Enum):
     # 구분자 / 그룹핑
     LEFT_PAREN = auto(); RIGHT_PAREN = auto()
     LEFT_BRACE = auto(); RIGHT_BRACE = auto()
+    LEFT_BRACKET = auto(); RIGHT_BRACKET = auto()
     SEMICOLON = auto()
 
     # 연산자
@@ -33,7 +34,7 @@ class TokenType(Enum):
     # 키워드
     VAR = auto(); IF = auto(); ELSE = auto(); FOR = auto()
     TRUE = auto(); FALSE = auto(); AND = auto(); OR = auto()
-    PRINT = auto()
+    PRINT = auto(); ARRAY = auto()
 
     EOF = auto()
 ```
@@ -42,13 +43,19 @@ class TokenType(Enum):
 |---|---|---|
 | 구분자 | `LEFT_PAREN` `RIGHT_PAREN` | `(` `)` |
 | | `LEFT_BRACE` `RIGHT_BRACE` | `{` `}` |
+| | `LEFT_BRACKET` `RIGHT_BRACKET` | `[` `]` |
 | | `SEMICOLON` | `;` |
 | 산술 연산자 | `PLUS` `MINUS` `STAR` `SLASH` | `+` `-` `*` `/` |
 | 대입/동등 | `EQUAL` `EQUAL_EQUAL` | `=` `==` |
 | 비교 | `GREATER` `GREATER_EQUAL` `LESS` `LESS_EQUAL` | `>` `>=` `<` `<=` |
 | 리터럴 | `IDENTIFIER` `STRING` `NUMBER` | `age` `"hello"` `3.14` |
-| 키워드 | `VAR` `IF` `ELSE` `FOR` `TRUE` `FALSE` `AND` `OR` `PRINT` | `변수` `만약` `아니면` `반복` `참` `거짓` `그리고` `또는` `출력` |
+| 키워드 | `VAR` `IF` `ELSE` `FOR` `TRUE` `FALSE` `AND` `OR` `PRINT` `ARRAY` | `변수` `만약` `아니면` `반복` `참` `거짓` `그리고` `또는` `출력` `배열` |
 | 종료 | `EOF` | (입력 끝) |
+
+> `ARRAY`는 정적 배열 리터럴 `Array(n)` / `배열(n)` 을 위한 키워드 토큰이다.
+> `if`/`var` 등 다른 키워드와 동일하게 `KEYWORDS` 테이블(`tokenizer.py`)을 통해
+> 인식되며, `IDENTIFIER`로 먼저 읽은 뒤 파서에서 이름을 비교하는 방식이 아니다
+> — 토큰화 단계에서 확정된다.
 
 > `!` (BANG) / `!=` (BANG_EQUAL)은 현재 범위에서 제외한다. 부정 연산과
 > 부등 비교가 필요해지면 `TokenType`에 다시 추가한다.
@@ -166,6 +173,22 @@ Binary(
 우선순위(`*`가 `+`보다 먼저 묶임)와 결합 방향은 Parser가 만드는 트리 모양으로
 표현되며, 이 문서의 데이터 구조 자체에는 우선순위 정보가 없다.
 
+### 2.1.1 정적 배열 확장 Expr (`codefab/array_nodes.py`)
+
+정적 배열 관련 노드는 위의 `Expr` 계열과 같은 규약(`accept(visitor)`)을 따르되,
+기존 `ast_nodes.py`는 건드리지 않고 별도 모듈에 정의한다.
+
+| 클래스 | 필드 | 문법 예시 |
+|---|---|---|
+| `ArrayLiteral` | `size: Expr`, `line: int` | `Array(3)`, `배열(3)` |
+| `IndexGet` | `target: Expr`, `index: Expr`, `line: int` | `arr[0]` |
+| `IndexSet` | `target: Expr`, `index: Expr`, `value: Expr`, `line: int` | `arr[0] = 10` |
+
+`line`은 `Grouping` 등 기존 노드에는 없던 필드인데, 배열은 실행 중 발생 가능한
+런타임 에러(크기/인덱스 타입 오류, 범위 초과 등)를 보고할 때 별도로 참조할
+Token이 없어서(예: `ArrayLiteral`은 여는 `(` 하나만 소비) 노드 자체에 라인
+번호를 직접 들고 있는다.
+
 ### 2.2 Stmt 계열
 
 | 클래스 | 필드 | 문법 예시 |
@@ -277,32 +300,44 @@ forStmt     -> "반복" "(" ( varDecl | exprStmt | ";" )
                          expression? ")" statement ;
 
 expression  -> assignment ;
-assignment  -> IDENTIFIER "=" assignment | logic_or ;
+assignment  -> ( IDENTIFIER | indexAccess ) "=" assignment | logic_or ;
 logic_or    -> logic_and ( "또는" logic_and )* ;
 logic_and   -> equality ( "그리고" equality )* ;
 equality    -> comparison ( "==" comparison )* ;
 comparison  -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term        -> factor ( ( "+" | "-" ) factor )* ;
 factor      -> unary ( ( "*" | "/" ) unary )* ;
-unary       -> "-" unary | primary ;
+unary       -> "-" unary | indexAccess ;
+indexAccess -> primary ( "[" expression "]" )* ;
 primary     -> NUMBER | STRING | "참" | "거짓" | IDENTIFIER
+             | arrayLiteral
              | "(" expression ")" ;
+arrayLiteral -> ( "Array" | "배열" ) "(" expression ")" ;
 ```
 
+`indexAccess`는 `primary` 뒤에 `[expression]`이 0개 이상 붙는 후위(postfix)
+표현이다 (`arr[0]`, `arr[i][j]`처럼 중첩도 가능). `assignment`는 좌변이
+`IDENTIFIER`(→ `Assign`)이거나 `indexAccess`의 결과가 `IndexGet`(→ `IndexSet`
+으로 변환)인 경우만 대입 대상으로 허용하고, 그 외에는 파싱 에러를 낸다.
+
 키워드(`"출력"`, `"변수"`, `"만약"`, `"아니면"`, `"반복"`, `"그리고"`, `"또는"`,
-`"참"`, `"거짓"`)만 한글 표면형이고, `NUMBER` / `STRING` / `IDENTIFIER`가
-가리키는 실제 값(예: `a`, `count`, `"안녕"`)의 표기법은 그대로다.
+`"참"`, `"거짓"`, `"배열"`)만 한글 표면형이고, `NUMBER` / `STRING` / `IDENTIFIER`가
+가리키는 실제 값(예: `a`, `count`, `"안녕"`)의 표기법은 그대로다. `"Array"`는
+영문 표면형으로도 동일하게 지원한다.
 
 각 규칙과 노드의 대응 관계:
 
 | 문법 규칙 | 대응 노드 |
 |---|---|
-| `assignment` (대입일 때) | `Assign` |
+| `assignment` (대입일 때, 좌변이 `IDENTIFIER`) | `Assign` |
+| `assignment` (대입일 때, 좌변이 `indexAccess`) | `IndexSet` |
 | `logic_or` / `logic_and` | `Logical` |
 | `equality` / `comparison` / `term` / `factor` | `Binary` |
 | `unary` | `Unary` |
+| `indexAccess` (`[expression]`이 붙을 때) | `IndexGet` |
 | `primary` → `NUMBER`/`STRING`/`참`/`거짓` | `Literal` |
 | `primary` → `IDENTIFIER` | `Variable` |
+| `primary` → `arrayLiteral` | `ArrayLiteral` |
 | `primary` → `"(" expression ")"` | `Grouping` |
 | `exprStmt` | `ExpressionStmt` |
 | `printStmt` | `PrintStmt` |

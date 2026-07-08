@@ -121,6 +121,7 @@ def test_산술식_예제_토큰화():
         ("또는", TokenType.OR),
         ("가져오기", TokenType.IMPORT),
         ("별칭", TokenType.ALIAS),
+        ("배열", TokenType.ARRAY),
     ],
 )
 def test_한글_키워드_토큰을_인식한다(source, expected_type):
@@ -144,6 +145,15 @@ def test_영문_import_키워드_토큰을_인식한다(source, expected_type):
 
     assert tokens == [
         Token(type=expected_type, lexeme=source, literal=None, line=1),
+        Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
+    ]
+
+
+def test_Array_키워드_토큰을_인식한다():
+    tokens = Tokenizer("Array").scan_tokens()
+
+    assert tokens == [
+        Token(type=TokenType.ARRAY, lexeme="Array", literal=None, line=1),
         Token(type=TokenType.EOF, lexeme="", literal=None, line=1),
     ]
 
