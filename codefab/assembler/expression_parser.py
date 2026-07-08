@@ -1,5 +1,6 @@
 from typing import Callable
 
+from codefab.array_nodes import ArrayLiteral, IndexGet, IndexSet
 from codefab.ast_nodes import (
     Assign,
     Binary,
@@ -37,6 +38,10 @@ class ExpressionParser:
                 return Assign(expression.name, value)
             if isinstance(expression, Get):
                 return Set(expression.object, expression.name, value)
+            if isinstance(expression, IndexGet):
+                return IndexSet(
+                    expression.target, expression.index, value, expression.line
+                )
             raise ParseError("잘못된 대입 대상입니다.", equals.line)
         return expression
 
@@ -120,6 +125,16 @@ class ExpressionParser:
             TokenType.RIGHT_PAREN, "인자 목록 뒤에는 ')'가 필요합니다."
         )
         return Call(callee, paren, arguments)
+        return self._index_access()
+
+    def _index_access(self) -> Expr:
+        expression = self._primary()
+        while self._match(TokenType.LEFT_BRACKET):
+            bracket_line = self._previous().line
+            index = self.parse()
+            self._consume(TokenType.RIGHT_BRACKET, "인덱스 뒤에는 ']'가 필요합니다.")
+            expression = IndexGet(expression, index, bracket_line)
+        return expression
 
     def _primary(self) -> Expr:
         if self._match(TokenType.NUMBER, TokenType.STRING):
@@ -137,6 +152,8 @@ class ExpressionParser:
                 TokenType.IDENTIFIER, "'Super.' 뒤에는 메서드 이름이 필요합니다."
             )
             return Super(keyword, method)
+        if self._match(TokenType.ARRAY):
+            return self._array_literal()
         if self._match(TokenType.IDENTIFIER):
             return Variable(self._previous())
         if self._match(TokenType.LEFT_PAREN):
@@ -144,6 +161,13 @@ class ExpressionParser:
             self._consume(TokenType.RIGHT_PAREN, "표현식 뒤에는 ')'가 필요합니다.")
             return Grouping(expression)
         raise NotImplementedError("아직 처리하지 않는 표현식 종류입니다.")
+
+    def _array_literal(self) -> Expr:
+        array_token = self._previous()  # "Array"/"배열" 토큰 (이미 소비됨)
+        self._consume(TokenType.LEFT_PAREN, "'배열' 뒤에는 '('가 필요합니다.")
+        size = self.parse()
+        self._consume(TokenType.RIGHT_PAREN, "표현식 뒤에는 ')'가 필요합니다.")
+        return ArrayLiteral(size, array_token.line)
 
     # ---------------- helpers ----------------
 

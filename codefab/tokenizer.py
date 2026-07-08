@@ -6,6 +6,8 @@ SINGLE_CHAR_TOKENS: dict[str, TokenType] = {
     ")": TokenType.RIGHT_PAREN,
     "{": TokenType.LEFT_BRACE,
     "}": TokenType.RIGHT_BRACE,
+    "[": TokenType.LEFT_BRACKET,
+    "]": TokenType.RIGHT_BRACKET,
     ";": TokenType.SEMICOLON,
     ",": TokenType.COMMA,
     ".": TokenType.DOT,
@@ -61,6 +63,8 @@ KEYWORDS: dict[str, TokenType] = {
     "Super": TokenType.SUPER,
     "부모": TokenType.SUPER,
     "instanceof": TokenType.INSTANCEOF,
+    "Array": TokenType.ARRAY,
+    "배열": TokenType.ARRAY,
 }
 
 
