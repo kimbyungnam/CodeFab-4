@@ -162,6 +162,7 @@ class Checker:
     def visit_instance_of(self, expr: InstanceOf):
         expr.object.accept(self)
         expr.klass.accept(self)
+
     # ---- 정적 배열 (codefab/array_nodes.py) ----
 
     def visit_array_literal(self, expr):

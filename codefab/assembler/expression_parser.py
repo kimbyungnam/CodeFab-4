@@ -111,6 +111,13 @@ class ExpressionParser:
                     TokenType.IDENTIFIER, "'.' 뒤에는 속성 이름이 필요합니다."
                 )
                 expression = Get(expression, name)
+            elif self._match(TokenType.LEFT_BRACKET):
+                bracket_line = self._previous().line
+                index = self.parse()
+                self._consume(
+                    TokenType.RIGHT_BRACKET, "인덱스 뒤에는 ']'가 필요합니다."
+                )
+                expression = IndexGet(expression, index, bracket_line)
             else:
                 break
         return expression
@@ -125,16 +132,6 @@ class ExpressionParser:
             TokenType.RIGHT_PAREN, "인자 목록 뒤에는 ')'가 필요합니다."
         )
         return Call(callee, paren, arguments)
-        return self._index_access()
-
-    def _index_access(self) -> Expr:
-        expression = self._primary()
-        while self._match(TokenType.LEFT_BRACKET):
-            bracket_line = self._previous().line
-            index = self.parse()
-            self._consume(TokenType.RIGHT_BRACKET, "인덱스 뒤에는 ']'가 필요합니다.")
-            expression = IndexGet(expression, index, bracket_line)
-        return expression
 
     def _primary(self) -> Expr:
         if self._match(TokenType.NUMBER, TokenType.STRING):
