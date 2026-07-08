@@ -46,18 +46,18 @@ class SelfReferenceInInitializerError(CheckerError):
 
 class ThisOutsideClassError(CheckerError):
     def __init__(self, line: int | None = None):
-        super().__init__("클래스 외부에서는 'This'를 사용할 수 없습니다.", line)
+        super().__init__("클래스 외부에서는 '나'를 사용할 수 없습니다.", line)
 
 
 class SuperOutsideClassError(CheckerError):
     def __init__(self, line: int | None = None):
-        super().__init__("클래스 외부에서는 'Super'를 사용할 수 없습니다.", line)
+        super().__init__("클래스 외부에서는 '부모'를 사용할 수 없습니다.", line)
 
 
 class SuperWithoutSuperclassError(CheckerError):
     def __init__(self, line: int | None = None):
         super().__init__(
-            "부모 클래스가 없는 클래스 내부에서는 'Super'를 사용할 수 없습니다.", line
+            "부모 클래스가 없는 클래스 내부에서는 '부모'를 사용할 수 없습니다.", line
         )
 
 
