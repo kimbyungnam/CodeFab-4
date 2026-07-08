@@ -18,6 +18,7 @@ class Stmt(ABC):
 @dataclass
 class Literal(Expr):
     value: object  # float | str | bool | None
+    line: int = 1
 
     def accept(self, visitor):
         return visitor.visit_literal(self)

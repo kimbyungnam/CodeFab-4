@@ -2,6 +2,7 @@ import argparse
 import sys
 from collections.abc import Callable
 
+from codefab.app.debug import DebugRunner
 from codefab.app.repl import main as repl_main
 from codefab.interpreter import Interpreter, InterpretResult
 
@@ -45,10 +46,18 @@ def main(argv: list[str] | None = None) -> int:
     )
     run_parser.add_argument("path", help="실행할 스크립트 파일 경로")
 
+    debug_parser = subparsers.add_parser(
+        "debug", help="디버그 모드: 스크립트 파일을 Stmt 단위로 실행합니다."
+    )
+    debug_parser.add_argument("path", help="디버그할 스크립트 파일 경로")
+
     args = parser.parse_args(argv)
 
     if args.mode == "run":
         return FileRunner().run_file(args.path)
+
+    if args.mode == "debug":
+        return DebugRunner().run_file(args.path)
 
     return repl_main()
 

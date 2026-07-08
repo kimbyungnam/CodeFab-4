@@ -1,5 +1,6 @@
 import pytest
 
+from codefab.app.debug import DebugRunner
 from codefab.cli import FileRunner, main
 from codefab.interpreter import Interpreter, InterpretResult
 
@@ -102,6 +103,20 @@ def test_main이_run_경로_인자를_file_runner_run_file에_전달한다(mocke
 def test_run_서브커맨드에_경로_인자가_없으면_SystemExit이_발생한다():
     with pytest.raises(SystemExit):
         main(["run"])
+
+
+def test_main이_debug_경로_인자를_debug_runner_run_file에_전달한다(mocker):
+    run_file = mocker.patch.object(DebugRunner, "run_file", return_value=0)
+
+    exit_code = main(["debug", "script.txt"])
+
+    run_file.assert_called_once_with("script.txt")
+    assert exit_code == 0
+
+
+def test_debug_서브커맨드에_경로_인자가_없으면_SystemExit이_발생한다():
+    with pytest.raises(SystemExit):
+        main(["debug"])
 
 
 def test_main에_인자가_없으면_repl_모드로_진입한다(mocker):
