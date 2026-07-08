@@ -9,6 +9,8 @@ class TokenType(Enum):
     RIGHT_PAREN = auto()
     LEFT_BRACE = auto()
     RIGHT_BRACE = auto()
+    LEFT_BRACKET = auto()
+    RIGHT_BRACKET = auto()
     SEMICOLON = auto()
     DOT = auto()
 
@@ -43,6 +45,7 @@ class TokenType(Enum):
     PRINT = auto()
     IMPORT = auto()
     ALIAS = auto()
+    ARRAY = auto()
 
     # 함수 관련 추가 토큰
     COMMA = auto()
