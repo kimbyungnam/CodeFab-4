@@ -65,18 +65,6 @@ class Environment:
 
         raise UndefinedVariableError(lexeme, line=name_token.line)
 
-    def get_at(self, distance: int, lexeme: str) -> object:
-        return self._ancestor(distance).values[lexeme]
-
-    def assign_at(self, distance: int, lexeme: str, value: object) -> None:
-        self._ancestor(distance).values[lexeme] = value
-
-    def _ancestor(self, distance: int) -> "Environment":
-        environment = self
-        for _ in range(distance):
-            environment = environment.enclosing
-        return environment
-
 
 class ExecutorUnit:
     def __init__(self):
@@ -142,7 +130,7 @@ class ExecutorUnit:
             return expression.value
 
         if isinstance(expression, Variable):
-            return self._look_up_variable(expression)
+            return self._look_up_variable(expression.name)
 
         if isinstance(expression, Assign):
             return self._evaluate_assign(expression)
@@ -170,21 +158,12 @@ class ExecutorUnit:
 
         raise UnsupportedExpressionError(type(expression).__name__)
 
-    def _look_up_variable(self, expression: Variable) -> object:
-        # 정적 바인딩(Resolver)이 distance 를 미리 계산해둔 경우 O(1)로 접근하고,
-        # 아니라면(전역 변수 등) 기존처럼 동적으로 상위 스코프를 탐색한다.
-        distance = getattr(expression, "distance", None)
-        if distance is not None:
-            return self.environment.get_at(distance, expression.name.lexeme)
-        return self.environment.get(expression.name)
+    def _look_up_variable(self, name_token: Token) -> object:
+        return self.environment.get(name_token)
 
     def _evaluate_assign(self, expression: Assign) -> object:
         value = self._evaluate_expr(expression.value)
-        distance = getattr(expression, "distance", None)
-        if distance is not None:
-            self.environment.assign_at(distance, expression.name.lexeme, value)
-        else:
-            self.environment.assign(expression.name, value)
+        self.environment.assign(expression.name, value)
         return value
 
     def _is_truthy(self, value: object) -> bool:
