@@ -179,3 +179,131 @@ def test_inspect은_로컬과_전역_변수를_타입과_함께_보여준다(tmp
     assert "[전역] a = 3 (Number)" in calls
     assert "[로컬] b = 10 (Number)" in calls
     assert "[로컬] flag = 참 (Boolean)" in calls
+
+
+def test_inspect은_문자열_변수도_타입과_함께_보여준다(tmp_path):
+    script = tmp_path / "script.txt"
+    script.write_text('변수 s = "hi";\n출력 s;\n', encoding="utf-8")
+    calls = []
+    commands = ["step", "inspect"]
+    runner = DebugRunner(output=calls.append, input_source=_fake_input(commands))
+
+    runner.run_file(str(script))
+
+    assert "[전역] s = hi (String)" in calls
+
+
+def test_breakpoints_명령으로_설정된_breakpoint_목록을_보여준다(tmp_path):
+    script = tmp_path / "script.txt"
+    script.write_text("출력 1;\n출력 2;\n출력 3;\n", encoding="utf-8")
+    calls = []
+    commands = ["break 2", "breakpoints", "step", "step", "step"]
+    runner = DebugRunner(output=calls.append, input_source=_fake_input(commands))
+
+    runner.run_file(str(script))
+
+    assert "[DEBUG] breakpoint: 2번째 줄" in calls
+
+
+def test_remove_명령으로_breakpoint를_해제한다(tmp_path, capsys):
+    script = tmp_path / "script.txt"
+    script.write_text("출력 1;\n출력 2;\n출력 3;\n", encoding="utf-8")
+    calls = []
+    commands = ["break 2", "remove 2", "continue"]
+    runner = DebugRunner(output=calls.append, input_source=_fake_input(commands))
+
+    runner.run_file(str(script))
+
+    assert "[DEBUG] 2번째 줄 breakpoint 해제" in calls
+    # breakpoint를 해제했으므로 continue가 끝까지 실행해서 1,2,3 모두 출력된다
+    out = capsys.readouterr().out
+    assert "1" in out
+    assert "2" in out
+    assert "3" in out
+
+
+def test_watches_명령으로_감시중인_변수_목록을_보여주고_unwatch로_해제한다(tmp_path):
+    script = tmp_path / "script.txt"
+    script.write_text("변수 a = 3;\n변수 b = 5;\n출력 a;\n", encoding="utf-8")
+    calls = []
+    commands = ["step", "watch a", "watches", "unwatch a", "watches", "step", "step"]
+    runner = DebugRunner(output=calls.append, input_source=_fake_input(commands))
+
+    runner.run_file(str(script))
+
+    assert "a = 3" in calls
+    assert "[WATCH] 'a' 감시 해제" in calls
+
+
+def test_watch는_존재하지_않는_변수는_조용히_건너뛴다(tmp_path):
+    script = tmp_path / "script.txt"
+    script.write_text("출력 1;\n출력 2;\n", encoding="utf-8")
+    calls = []
+    commands = ["watch nope", "step", "step"]
+    runner = DebugRunner(output=calls.append, input_source=_fake_input(commands))
+
+    runner.run_file(str(script))
+
+    assert not any(call.startswith("[WATCH] nope") for call in calls)
+
+
+def test_watch는_바깥_스코프의_변수도_찾아서_보여준다(tmp_path):
+    script = tmp_path / "script.txt"
+    script.write_text("변수 a = 3;\n{\n  출력 a;\n}\n", encoding="utf-8")
+    calls = []
+    commands = ["watch a", "step", "step"]
+    runner = DebugRunner(output=calls.append, input_source=_fake_input(commands))
+
+    runner.run_file(str(script))
+
+    assert "[WATCH] a = 3" in calls
+
+
+def test_만약문에서_정지하면_조건식_줄에서_멈춘다(tmp_path):
+    script = tmp_path / "script.txt"
+    script.write_text('만약 (참) 출력 "hi";\n출력 2;\n', encoding="utf-8")
+    calls = []
+    commands = ["step", "step", "step"]
+    runner = DebugRunner(output=calls.append, input_source=_fake_input(commands))
+
+    runner.run_file(str(script))
+
+    assert '[DEBUG] 1번째 줄에서 정지 -> 만약 (참) 출력 "hi";' in calls
+
+
+def test_반복문에서_정지하면_초기화식_줄에서_멈춘다(tmp_path):
+    script = tmp_path / "script.txt"
+    script.write_text(
+        "반복 (변수 i = 0; i < 2; i = i + 1) { 출력 i; }\n", encoding="utf-8"
+    )
+    calls = []
+    commands = ["step", "exit"]
+    runner = DebugRunner(output=calls.append, input_source=_fake_input(commands))
+
+    runner.run_file(str(script))
+
+    assert any("1번째 줄에서 정지" in call for call in calls)
+
+
+def test_이항연산_출력문에서_정지하면_연산자_줄에서_멈춘다(tmp_path):
+    script = tmp_path / "script.txt"
+    script.write_text("변수 a = 1;\n출력 a + 1;\n", encoding="utf-8")
+    calls = []
+    commands = ["step", "step"]
+    runner = DebugRunner(output=calls.append, input_source=_fake_input(commands))
+
+    runner.run_file(str(script))
+
+    assert "[DEBUG] 2번째 줄에서 정지 -> 출력 a + 1;" in calls
+
+
+def test_문법_오류가_있으면_에러_메시지를_출력하고_1을_반환한다(tmp_path):
+    script = tmp_path / "script.txt"
+    script.write_text("출력 1 +;\n", encoding="utf-8")
+    calls = []
+    runner = DebugRunner(output=calls.append, input_source=_fake_input([]))
+
+    exit_code = runner.run_file(str(script))
+
+    assert exit_code == 1
+    assert len(calls) == 2  # 로딩 메시지 + 에러 메시지
