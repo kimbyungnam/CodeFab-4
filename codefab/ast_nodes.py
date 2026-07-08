@@ -189,16 +189,6 @@ class ForStmt(Stmt):
 
 # ---- 함수 관련 추가 노드 ----
 @dataclass
-class Call(Expr):
-    callee: Expr
-    paren: Token  # 인자 목록을 닫는 ')' 토큰. 런타임 에러 라인 리포팅용
-    arguments: list[Expr]
-
-    def accept(self, visitor):
-        return visitor.visit_call(self)
-
-
-@dataclass
 class FunctionStmt(Stmt):
     name: Token
     params: list[Token]

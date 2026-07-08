@@ -109,11 +109,6 @@ class MismatchedPlusOperandTypeError(ExecutorRuntimeError):
         super().__init__("피연산자는 둘 다 숫자이거나 둘 다 문자열이어야 합니다.", line)
 
 
-class NotCallableError(ExecutorRuntimeError):
-    def __init__(self, line: int = 1):
-        super().__init__("호출할 수 없는 대상입니다.", line)
-
-
 class OnlyInstancesHaveFieldsError(ExecutorRuntimeError):
     def __init__(self, line: int = 1):
         super().__init__("인스턴스만 필드를 가질 수 있습니다.", line)
