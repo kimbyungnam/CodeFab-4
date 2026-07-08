@@ -1,5 +1,6 @@
 from typing import Callable
 
+from codefab.array_nodes import ArrayLiteral, IndexGet, IndexSet
 from codefab.ast_nodes import (
     Assign,
     Binary,
@@ -12,6 +13,8 @@ from codefab.ast_nodes import (
 )
 from codefab.error import ParseError
 from codefab.tokens import Token, TokenType
+
+ARRAY_KEYWORD_LEXEME = "Array"
 
 
 class ExpressionParser:
@@ -29,6 +32,10 @@ class ExpressionParser:
             value = self._assignment()
             if isinstance(expression, Variable):
                 return Assign(expression.name, value)
+            if isinstance(expression, IndexGet):
+                return IndexSet(
+                    expression.target, expression.index, value, expression.line
+                )
             raise ParseError("잘못된 대입 대상입니다.", equals.line)
         return expression
 
@@ -77,7 +84,16 @@ class ExpressionParser:
             operator = self._previous()
             right = self._unary()
             return Unary(operator, right)
-        return self._primary()
+        return self._index_access()
+
+    def _index_access(self) -> Expr:
+        expression = self._primary()
+        while self._match(TokenType.LEFT_BRACKET):
+            bracket_line = self._previous().line
+            index = self.parse()
+            self._consume(TokenType.RIGHT_BRACKET, "인덱스 뒤에는 ']'가 필요합니다.")
+            expression = IndexGet(expression, index, bracket_line)
+        return expression
 
     def _primary(self) -> Expr:
         if self._match(TokenType.NUMBER, TokenType.STRING):
@@ -86,6 +102,8 @@ class ExpressionParser:
             return Literal(True)
         if self._match(TokenType.FALSE):
             return Literal(False)
+        if self._is_array_literal_start():
+            return self._array_literal()
         if self._match(TokenType.IDENTIFIER):
             return Variable(self._previous())
         if self._match(TokenType.LEFT_PAREN):
@@ -93,6 +111,20 @@ class ExpressionParser:
             self._consume(TokenType.RIGHT_PAREN, "표현식 뒤에는 ')'가 필요합니다.")
             return Grouping(expression)
         raise NotImplementedError("아직 처리하지 않는 표현식 종류입니다.")
+
+    def _is_array_literal_start(self) -> bool:
+        return (
+            self._check(TokenType.IDENTIFIER)
+            and self._peek().lexeme == ARRAY_KEYWORD_LEXEME
+            and self._check_next(TokenType.LEFT_PAREN)
+        )
+
+    def _array_literal(self) -> Expr:
+        array_token = self._advance()  # "Array" 소비
+        self._advance()  # "(" 소비
+        size = self.parse()
+        self._consume(TokenType.RIGHT_PAREN, "표현식 뒤에는 ')'가 필요합니다.")
+        return ArrayLiteral(size, array_token.line)
 
     # ---------------- helpers ----------------
 
@@ -112,6 +144,12 @@ class ExpressionParser:
         if self._is_at_end():
             return False
         return self._peek().type == token_type
+
+    def _check_next(self, token_type: TokenType) -> bool:
+        next_index = self.current + 1
+        if next_index >= len(self.tokens):
+            return False
+        return self.tokens[next_index].type == token_type
 
     def _advance(self) -> Token:
         if not self._is_at_end():

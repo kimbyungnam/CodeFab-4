@@ -148,3 +148,31 @@ class MissingLeftParenAfterIfError(ParseError):
 class MissingRightParenAfterIfConditionError(ParseError):
     def __init__(self, line: int | None = None):
         super().__init__("조건식 뒤에는 ')'가 필요합니다.", line)
+
+
+class MissingRightBracketAfterIndexError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("인덱스 뒤에는 ']'가 필요합니다.", line)
+
+
+# ---------------- 정적 배열 (Executor Unit) ----------------
+
+
+class ArraySizeNotNumberError(ExecutorRuntimeError):
+    def __init__(self, line: int = 1):
+        super().__init__("배열의 크기는 반드시 숫자여야 합니다.", line)
+
+
+class ArrayIndexNotNumberError(ExecutorRuntimeError):
+    def __init__(self, line: int = 1):
+        super().__init__("배열의 인덱스는 반드시 숫자여야 합니다.", line)
+
+
+class ArrayIndexOutOfRangeError(ExecutorRuntimeError):
+    def __init__(self, line: int = 1):
+        super().__init__("배열의 인덱스 범위를 벗어났습니다.", line)
+
+
+class NotIndexableError(ExecutorRuntimeError):
+    def __init__(self, node_type: str, line: int = 1):
+        super().__init__(f"'[]' 연산은 배열에만 사용할 수 있습니다: '{node_type}'", line)
