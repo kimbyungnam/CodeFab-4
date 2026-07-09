@@ -111,6 +111,26 @@ def test_인자_개수가_일치하지_않으면_에러():
     assert "전달: 2개" in result.error
 
 
+def test_함수_파이프라인에서도_클래스_인스턴스를_생성할_수_있다():
+    source = """
+    클래스 Robot {
+    }
+
+    함수 make() {
+        반환 Robot();
+    }
+
+    변수 r = make();
+    r.name = "SpeedRobot";
+    출력 r.name;
+    """
+
+    result = interpret(source)
+
+    assert result.error is None
+    assert result.output == ["SpeedRobot"]
+
+
 def test_영어_키워드로도_함수를_선언하고_호출할_수_있다():
     # func/return 도 함수/반환과 동일하게 동작해야 한다 (테스트케이스.md 관례)
     source = """

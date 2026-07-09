@@ -1,8 +1,10 @@
 import pytest
 
+from codefab.assembler.function_assembler import FunctionAssembler
 from codefab.error import (
     DuplicateParameterError,
     DuplicateVariableError,
+    ReturnInInitializerError,
     ReturnOutsideFunctionError,
 )
 from codefab.function_checker import FunctionChecker
@@ -194,6 +196,37 @@ def test_재귀_호출은_함수_본문에서_자기_이름을_참조할_수_있
     sut.resolve([function_stmt])  # 재귀 호출도 에러 없이 통과해야 한다
 
     self_reference.accept.assert_called_once_with(sut)
+
+
+def test_클래스_메서드_내부의_반환은_함수_외부_에러가_아니다():
+    # 클래스 Robot { move() { 반환 5; } }
+    statements = FunctionAssembler().assemble(
+        """
+        클래스 Robot {
+            move() {
+                반환 5;
+            }
+        }
+        """
+    )
+
+    FunctionChecker().resolve(statements)  # 에러 없이 통과해야 한다
+
+
+def test_생성자_내부의_반환은_여전히_에러다():
+    # 클래스 Robot { init() { 반환 5; } }
+    statements = FunctionAssembler().assemble(
+        """
+        클래스 Robot {
+            init() {
+                반환 5;
+            }
+        }
+        """
+    )
+
+    with pytest.raises(ReturnInInitializerError):
+        FunctionChecker().resolve(statements)
 
 
 def test_중첩_함수_선언도_각자의_함수_depth를_올바르게_복원한다(
