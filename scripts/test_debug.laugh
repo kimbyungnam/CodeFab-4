@@ -1,0 +1,51 @@
+변수 x = 1;
+변수 y = 2;
+
+만약 (x < y) {
+    출력 "x가 y보다 작음";
+} 아니면 {
+    출력 "x가 y보다 크거나 같음";
+}
+
+반복 (변수 i = 0; i < 3; i = i + 1) {
+    출력 i;
+}
+
+함수 피보나치(n) {
+    만약 (n < 2) {
+        반환 n;
+    }
+    반환 피보나치(n - 1) + 피보나치(n - 2);
+}
+
+출력 (피보나치(6));
+
+{
+    변수 local = 99;
+    출력 local;
+}
+
+클래스 Robot {
+    init(name) {
+        나.name = name;
+    }
+    move(dist) {
+        출력 "move";
+    }
+}
+
+클래스 SpeedRobot : Robot {
+    move(dist) {
+        부모.move(dist);
+        출력 "Speeeed!";
+    }
+}
+
+변수 r = SpeedRobot("R2D2");
+r.move(3);
+출력 (r 타입확인 Robot);
+
+변수 arr = 배열(3);
+arr[0] = 10;
+arr[1] = arr[0] + 5;
+출력 arr[1];
