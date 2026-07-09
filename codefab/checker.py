@@ -177,8 +177,12 @@ class Checker(Visitor):
         for method in stmt.methods:
             self.in_initializer = method.name.lexeme in _INIT_METHOD_NAMES
             self.scopes.append(set())
-            self._visit_method_body(method)
-            self.scopes.pop()
+            self.imported_paths.append(set())
+            try:
+                self._visit_method_body(method)
+            finally:
+                self.imported_paths.pop()
+                self.scopes.pop()
         self.in_initializer = enclosing_initializer
 
         self.current_class = enclosing_class

@@ -551,6 +551,25 @@ def test_서로_다른_형제_스코프에서는_같은_파일_재_import_허용
     sut.resolve(ast)
 
 
+def test_클래스의_서로_다른_메서드_스코프에서는_같은_파일_재_import_허용(
+    mocker, sut, make_import_stmt
+):
+    # 클래스 Robot { move() { 가져오기 "x.txt" 별칭 x; } other() { 가져오기 "x.txt" 별칭 x2; } }
+    move_method = mocker.Mock(body=[make_import_stmt("x.txt", "x", line=1)])
+    move_method.name = make_token("move")
+    other_method = mocker.Mock(body=[make_import_stmt("x.txt", "x2", line=2)])
+    other_method.name = make_token("other")
+
+    class_stmt = mocker.Mock(superclass=None, methods=[move_method, other_method])
+    class_stmt.name = make_token("Robot")
+    class_stmt.accept.side_effect = lambda visitor: visitor.visit_class_stmt(class_stmt)
+
+    ast = [class_stmt]
+
+    # act / assert (에러 없이 통과)
+    sut.resolve(ast)
+
+
 def test_중첩_블록이_끝난_후에는_같은_파일_재_import_허용(
     sut, make_import_stmt, make_block_stmt
 ):
