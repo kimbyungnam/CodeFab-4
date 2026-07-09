@@ -9,6 +9,7 @@ from codefab.executor.executor import (
     Module,
 )
 from codefab.executor.function_executor import FunctionExecutorUnit
+from codefab.executor.optimized_executor import OptimizedExecutorUnit
 
 __all__ = [
     "Environment",
@@ -18,4 +19,5 @@ __all__ = [
     "LaughInstance",
     "Module",
     "FunctionExecutorUnit",
+    "OptimizedExecutorUnit",
 ]

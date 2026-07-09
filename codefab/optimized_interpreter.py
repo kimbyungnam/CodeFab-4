@@ -1,9 +1,8 @@
 from codefab.assembler.function_assembler import FunctionAssembler
-from codefab.checker import FunctionChecker
-from codefab.executor import FunctionExecutorUnit
+from codefab.checker import FunctionChecker, Resolver
+from codefab.executor import FunctionExecutorUnit, OptimizedExecutorUnit
 from codefab.interpreter import Interpreter
 from codefab.optimizer import Optimizer
-from codefab.resolver import OptimizedExecutorUnit, Resolver
 
 
 class OptimizingChecker(Resolver, FunctionChecker):
