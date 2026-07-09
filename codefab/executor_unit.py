@@ -45,8 +45,6 @@ from codefab.error import (
 from codefab.module_loader import ModuleLoader
 from codefab.tokens import Token, TokenType
 
-_THIS_KEY = "<this>"
-_SUPER_KEY = "<super>"
 _INIT_METHOD_NAMES = ("init", "생성자")
 
 
@@ -54,6 +52,8 @@ class Environment:
     def __init__(self, enclosing: "Environment | None" = None):
         self.values: dict[str, object] = {}
         self.enclosing = enclosing
+        self._this: "LaughInstance | None" = None
+        self._super: "LaughClass | None" = None
 
     def define(self, lexeme: str, value: object):
         self.values[lexeme] = value
@@ -82,14 +82,29 @@ class Environment:
 
         raise UndefinedVariableError(lexeme, line=name_token.line)
 
-    def get_by_name(self, name: str) -> object:
-        """'this'/'super' 처럼 소스 문법과 무관하게 내부적으로 고정된 이름으로
-        바인딩되는 값을 조회한다. Checker가 이미 유효성을 보장하므로 항상 존재한다."""
-        if name in self.values:
-            return self.values[name]
+    def bind_this(self, instance: "LaughInstance") -> None:
+        """'나'(this) 키워드 바인딩 전용 슬롯. 사용자 변수의 `values` 딕셔너리와
+        완전히 분리되어 있어 이름 충돌 자체가 불가능하다."""
+        self._this = instance
+
+    def get_this(self) -> "LaughInstance":
+        if self._this is not None:
+            return self._this
         if self.enclosing is not None:
-            return self.enclosing.get_by_name(name)
-        raise KeyError(name)
+            return self.enclosing.get_this()
+        raise KeyError("this")
+
+    def bind_super(self, superclass: "LaughClass") -> None:
+        """'부모'(super) 키워드 바인딩 전용 슬롯. bind_this와 동일한 이유로
+        `values` 딕셔너리와 분리되어 있다."""
+        self._super = superclass
+
+    def get_super(self) -> "LaughClass":
+        if self._super is not None:
+            return self._super
+        if self.enclosing is not None:
+            return self.enclosing.get_super()
+        raise KeyError("super")
 
 
 class LaughFunction:
@@ -105,7 +120,7 @@ class LaughFunction:
 
     def bind(self, instance: "LaughInstance") -> "LaughFunction":
         environment = Environment(self.closure)
-        environment.define(_THIS_KEY, instance)
+        environment.bind_this(instance)
         return LaughFunction(self.name, self.params, self.body, environment)
 
 
@@ -271,7 +286,7 @@ class ExecutorUnit:
             if not isinstance(superclass, LaughClass):
                 raise SuperclassMustBeClassError(line=statement.name.line)
             method_environment = Environment(self.environment)
-            method_environment.define(_SUPER_KEY, superclass)
+            method_environment.bind_super(superclass)
 
         methods: dict[str, LaughFunction] = {
             method.name.lexeme: LaughFunction(
@@ -326,7 +341,7 @@ class ExecutorUnit:
             return self._evaluate_binary(expression)
 
         if isinstance(expression, This):
-            return self.environment.get_by_name(_THIS_KEY)
+            return self.environment.get_this()
 
         if isinstance(expression, Super):
             return self._evaluate_super(expression)
@@ -354,8 +369,8 @@ class ExecutorUnit:
         raise UnsupportedExpressionError(type(expression).__name__)
 
     def _evaluate_super(self, expression: Super) -> object:
-        superclass: LaughClass = self.environment.get_by_name(_SUPER_KEY)
-        instance = self.environment.get_by_name(_THIS_KEY)
+        superclass: LaughClass = self.environment.get_super()
+        instance = self.environment.get_this()
 
         method = superclass.find_method(expression.method.lexeme)
         if method is None:

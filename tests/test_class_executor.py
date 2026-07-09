@@ -20,6 +20,7 @@ from codefab.error import (
     OnlyInstancesHaveFieldsError,
     SuperclassMustBeClassError,
     UndefinedPropertyError,
+    UndefinedVariableError,
 )
 from codefab.executor_unit import ExecutorUnit
 from codefab.tokens import Token, TokenType
@@ -287,3 +288,70 @@ def test_instanceof는_관련_없는_클래스에_대해_거짓을_반환한다(
     ]
 
     assert run_and_capture_prints(capsys, statements) == ["거짓"]
+
+
+def test_지역변수_this를_선언해도_나_바인딩은_깨지지_않는다(capsys):
+    # 클래스 Robot { move(dist) { 변수 this = 99; 나.position = 나.position + dist; } }
+    # "this"는 예약어가 아니라 평범한 식별자이므로, 메서드 안에 같은 이름의 지역변수를
+    # 선언해도 실제 키워드인 '나'(This) 바인딩과 이름이 충돌해서는 안 된다.
+    move_body = [
+        make_var_stmt("this", Literal(99.0)),
+        ExpressionStmt(
+            make_set(
+                This(make_identifier_token("나")),
+                "position",
+                Binary(
+                    make_get(This(make_identifier_token("나")), "position"),
+                    Token(TokenType.PLUS, "+", None, 1),
+                    make_variable("dist"),
+                ),
+            )
+        ),
+    ]
+
+    statements = [
+        make_class_stmt("Robot", methods=[make_method("move", ["dist"], move_body)]),
+        make_var_stmt("r", make_call(make_variable("Robot"))),
+        ExpressionStmt(make_set(make_variable("r"), "position", Literal(0.0))),
+        ExpressionStmt(make_call(make_get(make_variable("r"), "move"), [Literal(5.0)])),
+        PrintStmt(make_get(make_variable("r"), "position")),
+    ]
+
+    assert run_and_capture_prints(capsys, statements) == ["5"]
+
+
+def test_메서드_내부에서_소문자_this는_정의되지_않은_변수로_처리된다():
+    # 소문자 "this"는 키워드가 아니므로 This 노드가 아니라 평범한 Variable로 파싱된다.
+    # 선언되지 않았다면 내부 '나' 바인딩을 몰래 읽어오지 말고 정의되지 않은 변수여야 한다.
+    move_body = [PrintStmt(make_variable("this"))]
+    statements = [
+        make_class_stmt("Robot", methods=[make_method("move", [], move_body)]),
+        make_var_stmt("r", make_call(make_variable("Robot"))),
+        ExpressionStmt(make_call(make_get(make_variable("r"), "move"))),
+    ]
+
+    with pytest.raises(UndefinedVariableError):
+        ExecutorUnit().execute(statements)
+
+
+def test_부모클래스가_있어도_소문자_super는_정의되지_않은_변수로_처리된다():
+    # 소문자 "super" 역시 키워드가 아니므로, 부모 클래스가 있는 메서드 안에서도
+    # 내부 '부모' 바인딩을 몰래 읽어오면 안 되고 정의되지 않은 변수로 처리되어야 한다.
+    robot = make_class_stmt(
+        "Robot", methods=[make_method("move", ["dist"], [PrintStmt(Literal("move"))])]
+    )
+    speed_robot = make_class_stmt(
+        "SpeedRobot",
+        superclass=make_variable("Robot"),
+        methods=[make_method("move", ["dist"], [PrintStmt(make_variable("super"))])],
+    )
+
+    instance = make_call(make_variable("SpeedRobot"))
+    statements = [
+        robot,
+        speed_robot,
+        ExpressionStmt(make_call(make_get(instance, "move"), [Literal(3.0)])),
+    ]
+
+    with pytest.raises(UndefinedVariableError):
+        ExecutorUnit().execute(statements)
