@@ -1,3 +1,9 @@
+## 0.29.0 (2026-07-09)
+
+### Feat
+
+- recurse into function/class bodies and call/get/set exprs in Optimizer
+
 ## 0.28.1 (2026-07-09)
 
 ### Fix
