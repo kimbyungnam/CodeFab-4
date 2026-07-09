@@ -1,12 +1,20 @@
 """codefab CLI(`codefab <file>`) 프로세스에 대한 golden 테스트.
 
-`tests/fixtures/cli/{normal,error}/`에 있는 `.laugh` 소스 파일을 실제로
+`tests/integration/fixtures/laugh/{normal,error}/`에 있는 `.laugh` 소스 파일을 실제로
 `python -m codefab.cli <파일>`에 넘겨 실행하고, 같은 이름의 `.out` 파일과 stdout을
 바이트 단위로 비교한다. `normal/`은 종료 코드 0, `error/`는 종료 코드 1을 기대한다.
 
+이 통합 테스트는 서브프로세스를 띄워 전체 파이프라인을 실제로 구동하므로 단위 테스트보다
+느리다 — 그래서 tests/integration/ 밑에 둔다. 평소 개발 중에는
+`pytest tests --ignore=tests/integration`로 빠른 단위 테스트만 돌리고, 이 테스트는
+`pytest tests/integration`으로 따로 돌릴 수 있다.
+
+이 `.laugh` 소스는 repl/debug 통합 테스트와도 공유하는 source of truth다 — 자세한 내용은
+`tests/integration/fixtures/laugh/README.md` 참고.
+
 이 fixture들은 테스트케이스.md에 정리된 예제를 그대로 옮긴 것이다. 새 케이스를 추가하려면
-`tests/fixtures/cli/<normal|error>/<이름>.laugh`와 `<이름>.out` 한 쌍을 추가하면 된다
-(pytest가 자동으로 수집한다).
+`tests/integration/fixtures/laugh/<normal|error>/<이름>.laugh`와 `<이름>.out` 한 쌍을 추가하면
+된다(pytest가 자동으로 수집한다).
 
 일부 케이스는 Assembler/Checker의 미구현·버그(`!=` 연산자가 `_equality`에 배선되지 않음,
 `정의되지 않은 변수` 참조가 Executor의 런타임 에러가 아닌 Checker의 정적 에러로 먼저
@@ -21,8 +29,8 @@ from pathlib import Path
 
 import pytest
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures" / "cli"
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures" / "laugh"
 
 
 def run_cli(script: Path, cwd: Path = REPO_ROOT) -> subprocess.CompletedProcess:
