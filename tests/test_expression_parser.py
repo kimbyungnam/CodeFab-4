@@ -1,5 +1,5 @@
 from codefab.assembler.expression_parser import ExpressionParser
-from codefab.ast_nodes import (
+from codefab.ast import (
     Assign,
     Binary,
     Grouping,

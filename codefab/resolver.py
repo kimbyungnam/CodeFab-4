@@ -1,4 +1,4 @@
-from codefab.ast_nodes import Assign, Variable
+from codefab.ast import Assign, Variable
 from codefab.checker import Checker
 from codefab.executor_unit import Environment, ExecutorUnit
 

@@ -1,5 +1,5 @@
 from codefab.assembler.statement_parser import StatementParser
-from codefab.ast_nodes import Stmt
+from codefab.ast import Stmt
 from codefab.tokenizer import Tokenizer
 
 

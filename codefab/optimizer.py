@@ -2,7 +2,7 @@
 
 `Checker`처럼 예외로 검증하는 게 아니라 트리 자체를 변형해야 해서
 (부모 노드의 필드를 새 값으로 교체) Checker 를 상속하지 않고 독립적인
-Visitor 로 구현한다. codefab/ast_nodes.py, codefab/checker.py,
+Visitor 로 구현한다. codefab/ast/, codefab/checker.py,
 codefab/executor_unit.py 는 전혀 건드리지 않는다.
 
 핵심 규칙: 실행 시 에러가 나야 하는 경우(타입 불일치, 0으로 나누기 등)는
@@ -10,8 +10,8 @@ codefab/executor_unit.py 는 전혀 건드리지 않는다.
 내야 할 에러를 그대로 낸다 — Optimizer 가 에러 여부를 대신 판단하지 않는다.
 """
 
-from codefab.array_nodes import ArrayLiteral, IndexGet, IndexSet
-from codefab.ast_nodes import (
+from codefab.ast import (
+    ArrayLiteral,
     Assign,
     Binary,
     BlockStmt,
@@ -24,6 +24,8 @@ from codefab.ast_nodes import (
     Get,
     Grouping,
     IfStmt,
+    IndexGet,
+    IndexSet,
     Literal,
     Logical,
     PrintStmt,

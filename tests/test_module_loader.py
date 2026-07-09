@@ -1,6 +1,6 @@
 import pytest
 
-from codefab.ast_nodes import ImportStmt, VarStmt
+from codefab.ast import ImportStmt, VarStmt
 from codefab.errors import (
     CircularImportError,
     ImportedFileNotFoundError,

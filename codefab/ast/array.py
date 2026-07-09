@@ -8,7 +8,7 @@ Checker/ExecutorUnit 에 대응하는 visit_array_literal / visit_index_get / vi
 
 from dataclasses import dataclass
 
-from codefab.ast_nodes import Expr
+from codefab.ast.expr import Expr
 
 
 @dataclass

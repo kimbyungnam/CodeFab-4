@@ -1,6 +1,6 @@
 from codefab.assembler.call_expression_parser import CallExpressionParser
 from codefab.assembler.statement_parser import StatementParser
-from codefab.ast_nodes import Expr, FunctionStmt, ReturnStmt, Stmt
+from codefab.ast import Expr, FunctionStmt, ReturnStmt, Stmt
 from codefab.errors import (
     MissingFunctionNameError,
     MissingFunctionParameterNameError,

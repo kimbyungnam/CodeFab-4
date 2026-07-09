@@ -1,8 +1,8 @@
 from collections.abc import Callable
 
-from codefab.array_nodes import ArrayLiteral, IndexGet, IndexSet
 from codefab.assembler.function_assembler import FunctionAssembler
-from codefab.ast_nodes import (
+from codefab.ast import (
+    ArrayLiteral,
     Assign,
     Binary,
     BlockStmt,
@@ -16,6 +16,8 @@ from codefab.ast_nodes import (
     Grouping,
     IfStmt,
     ImportStmt,
+    IndexGet,
+    IndexSet,
     InstanceOf,
     Literal,
     Logical,

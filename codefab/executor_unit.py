@@ -1,5 +1,5 @@
-from codefab.array_nodes import ArrayLiteral, IndexGet, IndexSet
-from codefab.ast_nodes import (
+from codefab.ast import (
+    ArrayLiteral,
     Assign,
     Binary,
     BlockStmt,
@@ -12,6 +12,8 @@ from codefab.ast_nodes import (
     Grouping,
     IfStmt,
     ImportStmt,
+    IndexGet,
+    IndexSet,
     InstanceOf,
     Literal,
     Logical,
@@ -23,6 +25,7 @@ from codefab.ast_nodes import (
     Unary,
     Variable,
     VarStmt,
+    Visitor,
 )
 from codefab.errors import (
     ArrayIndexNotIntegerError,
@@ -46,7 +49,6 @@ from codefab.errors import (
 )
 from codefab.module_loader import ModuleLoader
 from codefab.tokens import Token, TokenType
-from codefab.visitor import Visitor
 
 _INIT_METHOD_NAMES = ("init", "생성자")
 

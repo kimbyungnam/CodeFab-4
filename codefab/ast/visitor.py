@@ -1,4 +1,4 @@
-"""Expr/Stmt(codefab/ast_nodes.py, codefab/array_nodes.py)를 방문하는 모든
+"""Expr/Stmt(codefab/ast/expr.py, codefab/ast/stmt.py, codefab/ast/array.py)를 방문하는 모든
 Visitor가 구현해야 하는 인터페이스.
 
 새 Element(Expr/Stmt 서브클래스)를 추가할 때는 여기에 대응하는 visit_* 를
@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 
 
 class Visitor(ABC):
-    # ---- Expr (codefab/ast_nodes.py) ----
+    # ---- Expr (codefab/ast/expr.py) ----
     @abstractmethod
     def visit_literal(self, expr): ...
 
@@ -49,7 +49,7 @@ class Visitor(ABC):
     @abstractmethod
     def visit_instance_of(self, expr): ...
 
-    # ---- Stmt (codefab/ast_nodes.py) ----
+    # ---- Stmt (codefab/ast/stmt.py) ----
     @abstractmethod
     def visit_expression_stmt(self, stmt): ...
 
@@ -80,7 +80,7 @@ class Visitor(ABC):
     @abstractmethod
     def visit_import_stmt(self, stmt): ...
 
-    # ---- Expr (codefab/array_nodes.py) ----
+    # ---- Expr (codefab/ast/array.py) ----
     @abstractmethod
     def visit_array_literal(self, expr): ...
 

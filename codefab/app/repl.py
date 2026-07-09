@@ -2,7 +2,7 @@ import sys
 from collections.abc import Callable, Iterable
 
 from codefab.assembler.assembler import Assembler
-from codefab.ast_nodes import IfStmt
+from codefab.ast import IfStmt
 from codefab.errors import UnexpectedEndOfInputError
 from codefab.interpreter import Interpreter
 from codefab.optimized_interpreter import create_optimized_interpreter

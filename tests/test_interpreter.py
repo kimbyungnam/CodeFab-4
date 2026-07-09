@@ -1,6 +1,6 @@
 from codefab.assembler.assembler import Assembler
-from codefab.ast_nodes import FunctionStmt, PrintStmt
-from codefab.ast_nodes import Literal as ExprLiteral
+from codefab.ast import FunctionStmt, PrintStmt
+from codefab.ast import Literal as ExprLiteral
 from codefab.checker import Checker
 from codefab.errors import DuplicateVariableError, ExecutorRuntimeError, ParseError
 from codefab.executor_unit import ExecutorUnit

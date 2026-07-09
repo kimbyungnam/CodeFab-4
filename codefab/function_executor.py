@@ -1,4 +1,4 @@
-from codefab.ast_nodes import Call, FunctionStmt, ReturnStmt
+from codefab.ast import Call, FunctionStmt, ReturnStmt
 from codefab.errors import ArgumentCountMismatchError, NotCallableError
 from codefab.executor_unit import Environment, ExecutorUnit, LaughClass, LaughFunction
 
@@ -6,7 +6,7 @@ from codefab.executor_unit import Environment, ExecutorUnit, LaughClass, LaughFu
 class ReturnSignal(Exception):
     """'반환' 실행을 함수 호출 지점까지 되감기 위한 내부 제어 흐름 신호.
 
-    사용자에게 노출되는 에러가 아니므로 codefab.error의 CodeFabError 계열이 아닌
+    사용자에게 노출되는 에러가 아니므로 codefab.errors의 CodeFabError 계열이 아닌
     별도의 예외로 둔다.
     """
 

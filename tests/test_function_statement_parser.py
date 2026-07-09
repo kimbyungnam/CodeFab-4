@@ -1,7 +1,7 @@
 import pytest
 
 from codefab.assembler.function_statement_parser import FunctionStatementParser
-from codefab.ast_nodes import (
+from codefab.ast import (
     Assign,
     Binary,
     Call,

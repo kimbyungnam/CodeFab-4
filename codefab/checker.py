@@ -1,6 +1,6 @@
 from enum import Enum, auto
 
-from codefab.ast_nodes import (
+from codefab.ast import (
     Assign,
     Binary,
     BlockStmt,
@@ -25,6 +25,7 @@ from codefab.ast_nodes import (
     Unary,
     Variable,
     VarStmt,
+    Visitor,
 )
 from codefab.errors import (
     DuplicateImportError,
@@ -38,7 +39,6 @@ from codefab.errors import (
     ThisOutsideClassError,
 )
 from codefab.module_loader import ModuleLoader
-from codefab.visitor import Visitor
 
 _INIT_METHOD_NAMES = ("init", "생성자")
 
