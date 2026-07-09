@@ -38,12 +38,12 @@ from codefab.error import (
     UndefinedPropertyError,
     UndefinedVariableError,
     UnsupportedBinaryOperatorError,
-    UnsupportedExpressionError,
     UnsupportedStatementError,
     UnsupportedUnaryOperatorError,
 )
 from codefab.module_loader import ModuleLoader
 from codefab.tokens import Token, TokenType
+from codefab.visitor import Visitor
 
 _INIT_METHOD_NAMES = ("init", "생성자")
 
@@ -198,7 +198,7 @@ class Module:
             ) from None
 
 
-class ExecutorUnit:
+class ExecutorUnit(Visitor):
     def __init__(self, module_loader: ModuleLoader | None = None):
         self.environment = Environment()
         self._depth = 0
@@ -223,59 +223,54 @@ class ExecutorUnit:
 
         self._depth += 1
         try:
-            self._dispatch_stmt(statement)
+            statement.accept(self)
         finally:
             self._depth -= 1
 
-    def _dispatch_stmt(self, statement: Stmt):
-        if isinstance(statement, PrintStmt):
-            value = self._evaluate_expr(statement.expression)
-            print(self._stringify(value))
-            return
+    def visit_print_stmt(self, stmt: PrintStmt):
+        value = self._evaluate_expr(stmt.expression)
+        print(self._stringify(value))
 
-        if isinstance(statement, ExpressionStmt):
-            self._evaluate_expr(statement.expression)
-            return
+    def visit_expression_stmt(self, stmt: ExpressionStmt):
+        self._evaluate_expr(stmt.expression)
 
-        if isinstance(statement, VarStmt):
-            value = None
-            if statement.initializer is not None:
-                value = self._evaluate_expr(statement.initializer)
-            self.environment.define(statement.name.lexeme, value)
-            return
+    def visit_var_stmt(self, stmt: VarStmt):
+        value = None
+        if stmt.initializer is not None:
+            value = self._evaluate_expr(stmt.initializer)
+        self.environment.define(stmt.name.lexeme, value)
 
-        if isinstance(statement, BlockStmt):
-            self._execute_block(statement.statements, Environment(self.environment))
-            return
+    def visit_block_stmt(self, stmt: BlockStmt):
+        self._execute_block(stmt.statements, Environment(self.environment))
 
-        if isinstance(statement, IfStmt):
-            if self._is_truthy(self._evaluate_expr(statement.condition)):
-                self._execute_stmt(statement.then_branch)
-            elif statement.else_branch is not None:
-                self._execute_stmt(statement.else_branch)
-            return
+    def visit_if_stmt(self, stmt: IfStmt):
+        if self._is_truthy(self._evaluate_expr(stmt.condition)):
+            self._execute_stmt(stmt.then_branch)
+        elif stmt.else_branch is not None:
+            self._execute_stmt(stmt.else_branch)
 
-        if isinstance(statement, ForStmt):
-            if statement.initializer is not None:
-                self._execute_stmt(statement.initializer)
+    def visit_for_stmt(self, stmt: ForStmt):
+        if stmt.initializer is not None:
+            self._execute_stmt(stmt.initializer)
 
-            while statement.condition is None or self._is_truthy(
-                self._evaluate_expr(statement.condition)
-            ):
-                self._execute_stmt(statement.body)
-                if statement.increment is not None:
-                    self._evaluate_expr(statement.increment)
-            return
+        while stmt.condition is None or self._is_truthy(
+            self._evaluate_expr(stmt.condition)
+        ):
+            self._execute_stmt(stmt.body)
+            if stmt.increment is not None:
+                self._evaluate_expr(stmt.increment)
 
-        if isinstance(statement, ClassStmt):
-            self._execute_class_stmt(statement)
-            return
+    def visit_class_stmt(self, stmt: ClassStmt):
+        self._execute_class_stmt(stmt)
 
-        if isinstance(statement, ImportStmt):
-            self._execute_import_stmt(statement)
-            return
+    def visit_import_stmt(self, stmt: ImportStmt):
+        self._execute_import_stmt(stmt)
 
-        raise UnsupportedStatementError(type(statement).__name__)
+    def visit_function_stmt(self, stmt):
+        raise UnsupportedStatementError(type(stmt).__name__)
+
+    def visit_return_stmt(self, stmt):
+        raise UnsupportedStatementError(type(stmt).__name__)
 
     def _execute_class_stmt(self, statement: ClassStmt):
         superclass = None
@@ -319,54 +314,55 @@ class ExecutorUnit:
             self.environment = previous
 
     def _evaluate_expr(self, expression: Expr) -> object:
-        if isinstance(expression, Literal):
-            return expression.value
+        return expression.accept(self)
 
-        if isinstance(expression, Variable):
-            return self._look_up_variable(expression.name)
+    def visit_literal(self, expr: Literal):
+        return expr.value
 
-        if isinstance(expression, Assign):
-            return self._evaluate_assign(expression)
+    def visit_variable(self, expr: Variable):
+        return self._look_up_variable(expr.name)
 
-        if isinstance(expression, Grouping):
-            return self._evaluate_expr(expression.expression)
+    def visit_assign(self, expr: Assign):
+        return self._evaluate_assign(expr)
 
-        if isinstance(expression, Unary):
-            return self._evaluate_unary(expression)
+    def visit_grouping(self, expr: Grouping):
+        return self._evaluate_expr(expr.expression)
 
-        if isinstance(expression, Logical):
-            return self._evaluate_logical(expression)
+    def visit_unary(self, expr: Unary):
+        return self._evaluate_unary(expr)
 
-        if isinstance(expression, Binary):
-            return self._evaluate_binary(expression)
+    def visit_logical(self, expr: Logical):
+        return self._evaluate_logical(expr)
 
-        if isinstance(expression, This):
-            return self.environment.get_this()
+    def visit_binary(self, expr: Binary):
+        return self._evaluate_binary(expr)
 
-        if isinstance(expression, Super):
-            return self._evaluate_super(expression)
+    def visit_this(self, expr: This):
+        return self.environment.get_this()
 
-        if isinstance(expression, Get):
-            return self._evaluate_get(expression)
+    def visit_super(self, expr: Super):
+        return self._evaluate_super(expr)
 
-        if isinstance(expression, Set):
-            return self._evaluate_set(expression)
+    def visit_get(self, expr: Get):
+        return self._evaluate_get(expr)
 
-        if isinstance(expression, Call):
-            return self._evaluate_call(expression)
+    def visit_set(self, expr: Set):
+        return self._evaluate_set(expr)
 
-        if isinstance(expression, InstanceOf):
-            return self._evaluate_instance_of(expression)
-        if isinstance(expression, ArrayLiteral):
-            return self._evaluate_array_literal(expression)
+    def visit_call(self, expr: Call):
+        return self._evaluate_call(expr)
 
-        if isinstance(expression, IndexGet):
-            return self._evaluate_index_get(expression)
+    def visit_instance_of(self, expr: InstanceOf):
+        return self._evaluate_instance_of(expr)
 
-        if isinstance(expression, IndexSet):
-            return self._evaluate_index_set(expression)
+    def visit_array_literal(self, expr: ArrayLiteral):
+        return self._evaluate_array_literal(expr)
 
-        raise UnsupportedExpressionError(type(expression).__name__)
+    def visit_index_get(self, expr: IndexGet):
+        return self._evaluate_index_get(expr)
+
+    def visit_index_set(self, expr: IndexSet):
+        return self._evaluate_index_set(expr)
 
     def _evaluate_super(self, expression: Super) -> object:
         superclass: LaughClass = self.environment.get_super()

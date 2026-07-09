@@ -1,10 +1,11 @@
 from codefab.assembler.assembler import Assembler
+from codefab.ast_nodes import FunctionStmt, PrintStmt
 from codefab.ast_nodes import Literal as ExprLiteral
-from codefab.ast_nodes import PrintStmt
 from codefab.checker import Checker
 from codefab.error import DuplicateVariableError, ExecutorRuntimeError, ParseError
 from codefab.executor_unit import ExecutorUnit
 from codefab.interpreter import Interpreter
+from codefab.tokens import Token, TokenType
 
 
 def test_알수없는_예외가_발생해도_전파되지_않고_에러메시지로_반환된다(mocker):
@@ -136,8 +137,14 @@ def test_print_statement_실행결과가_output으로_반환된다(capsys, mocke
 
 
 def test_실행_중_예외가_발생해도_그_전에_출력된_내용은_반환된다(mocker):
+    unsupported_stmt = FunctionStmt(
+        name=Token(TokenType.IDENTIFIER, "함수", None, 1), params=[], body=[]
+    )
     assembler = mocker.Mock(spec=Assembler)
-    assembler.assemble.return_value = [PrintStmt(expression=ExprLiteral(1.0)), object()]
+    assembler.assemble.return_value = [
+        PrintStmt(expression=ExprLiteral(1.0)),
+        unsupported_stmt,
+    ]
     interpreter = Interpreter(assembler=assembler, checker=mocker.Mock(spec=Checker))
 
     result = interpreter.interpret("출력 1; 잘못된문장")
