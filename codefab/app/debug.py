@@ -32,7 +32,7 @@ from codefab.ast import (
     VarStmt,
 )
 from codefab.executor import Environment
-from codefab.optimized_interpreter import (
+from codefab.pipeline import (
     OptimizedFunctionExecutorUnit,
     OptimizingChecker,
 )

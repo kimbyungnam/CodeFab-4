@@ -1,4 +1,4 @@
-from codefab.function_interpreter import create_function_interpreter
+from codefab.pipeline import create_function_interpreter
 
 
 def interpret(source: str):

@@ -1,7 +1,7 @@
 from codefab.assembler.function_assembler import FunctionAssembler
 from codefab.checker import FunctionChecker
 from codefab.executor import FunctionExecutorUnit
-from codefab.interpreter import Interpreter
+from codefab.pipeline.interpreter import Interpreter
 
 
 def create_function_interpreter() -> Interpreter:

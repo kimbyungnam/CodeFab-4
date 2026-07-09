@@ -4,8 +4,7 @@ from collections.abc import Callable
 
 from codefab.app.debug import DebugRunner
 from codefab.app.repl import main as repl_main
-from codefab.interpreter import Interpreter, InterpretResult
-from codefab.optimized_interpreter import create_optimized_interpreter
+from codefab.pipeline import Interpreter, InterpretResult, create_optimized_interpreter
 
 DEFAULT_ENCODING = "utf-8"
 

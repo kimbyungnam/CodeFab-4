@@ -1,4 +1,4 @@
-from codefab.optimized_interpreter import create_optimized_interpreter
+from codefab.pipeline import create_optimized_interpreter
 
 
 def interpret(source: str):
