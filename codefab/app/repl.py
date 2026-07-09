@@ -4,6 +4,7 @@ from collections.abc import Callable, Iterable
 from codefab.assembler.assembler import Assembler
 from codefab.ast_nodes import IfStmt
 from codefab.error import UnexpectedEndOfInputError
+from codefab.function_interpreter import create_function_interpreter
 from codefab.interpreter import Interpreter
 from codefab.tokenizer import Tokenizer
 from codefab.tokens import TokenType
@@ -146,7 +147,9 @@ class Repl:
 
 def main() -> int:
     try:
-        Repl(interpreter=Interpreter()).run(line.rstrip("\n") for line in sys.stdin)
+        Repl(interpreter=create_function_interpreter()).run(
+            line.rstrip("\n") for line in sys.stdin
+        )
     except KeyboardInterrupt:
         pass
     return 0

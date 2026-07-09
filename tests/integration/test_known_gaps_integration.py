@@ -5,39 +5,26 @@
 최종 동작을 assert한다 — 지금은 실패해야 정상이고, 관련 기능이 고쳐지는 날 XPASS로
 뒤집혀 실제 golden 테스트로 교체하라는 신호가 된다.
 
-## Function (Ch.2) 파이프라인 미배선
+## Function (Ch.2) 파이프라인 배선 — ✅ 해결 (`feature/wire-function-pipeline`)
 
-`함수`/`Func` 기능은 `codefab.function_interpreter.create_function_interpreter()`에만
-구현되어 있고, 실제 `codefab.cli`/`codefab/app/repl.py`/`codefab/app/debug.py`가 쓰는
-파이프라인(`codefab.interpreter.Interpreter`)에는 배선되어 있지 않다. `함수` 키워드는 base
-`ExpressionParser._primary`까지 흘러가 줄 번호 없는 `NotImplementedError`로 실패한다
-(`docs/미구현기능_및_버그_TODO.md` B1 참고).
+`함수`/`Func` 기능이 `codefab.cli`/`codefab/app/repl.py`/`codefab/app/debug.py`가 쓰는
+파이프라인에 배선되어(`docs/미구현기능_및_버그_TODO.md` B1 참고) 아래 테스트들은 더 이상
+xfail이 아니라 일반 golden 테스트로 동작한다.
 
-## 클래스 메서드 내부 return (base 파이프라인 버그)
+## 클래스 메서드 내부 return의 ReturnSignal 누수 — ✅ 해결
 
-클래스(Ch.3)는 base 파이프라인에 배선돼 있지만, `init`이 아닌 일반 메서드 안에서
-`반환 <값>;`을 쓰면 값을 반환하는 대신 크래시한다. `_invoke_function`이 메서드 본문을
-`_execute_block`으로 실행하는데, base `ExecutorUnit._dispatch_stmt`에 `ReturnStmt` 케이스가
-없어 `UnsupportedStatementError: 지원하지 않는 Statement입니다: 'ReturnStmt'`가 발생한다.
-Chapter 3 자체 예제는 메서드에서 값을 반환하지 않아 이 버그를 밟지 않으므로,
-`fixtures/laugh/normal/`의 정상 클래스 golden fixture에서는 드러나지 않는다.
+클래스(Ch.3)는 base 파이프라인에 배선돼 있었지만, `init`이 아닌 일반 메서드 안에서
+`반환 <값>;`을 쓰면 `FunctionExecutorUnit._execute_stmt`가 던지는 내부 제어흐름 신호
+`ReturnSignal`이 base `ExecutorUnit._call`/`_invoke_function` 경로(클래스 메서드 호출)에서는
+잡히지 않고 `Interpreter.interpret()`까지 새어나가 반환값이 에러로 오인 처리됐다
+(우연히 `str(ReturnSignal)`이 반환값과 같아 화면에는 값처럼 보였지만, 이후 문장이 전혀
+실행되지 않고 종료 코드도 1이었음). `FunctionExecutorUnit`이 `_invoke_function`도
+오버라이드해 `ReturnSignal`을 잡도록 수정해 해결.
 """
-
-import pytest
 
 from tests.integration.test_cli_integration import run_cli
 
-_FUNCTION_XFAIL_REASON = (
-    "함수 기능이 codefab.cli가 쓰는 base Interpreter에 배선되지 않음"
-    " — docs/미구현기능_및_버그_TODO.md B1 참고"
-)
-_METHOD_RETURN_XFAIL_REASON = (
-    "일반 메서드 내부의 '반환 <값>;'이 base ExecutorUnit._dispatch_stmt에"
-    " ReturnStmt 케이스가 없어 UnsupportedStatementError로 크래시함"
-)
 
-
-@pytest.mark.xfail(strict=True, reason=_FUNCTION_XFAIL_REASON)
 def test_함수_선언과_호출_매개변수_전달(tmp_path):
     script = tmp_path / "main.laugh"
     script.write_text(
@@ -51,7 +38,6 @@ def test_함수_선언과_호출_매개변수_전달(tmp_path):
     assert result.returncode == 0
 
 
-@pytest.mark.xfail(strict=True, reason=_FUNCTION_XFAIL_REASON)
 def test_반환값_없는_return은_null을_반환한다(tmp_path):
     script = tmp_path / "main.laugh"
     script.write_text(
@@ -65,7 +51,6 @@ def test_반환값_없는_return은_null을_반환한다(tmp_path):
     assert result.returncode == 0
 
 
-@pytest.mark.xfail(strict=True, reason=_FUNCTION_XFAIL_REASON)
 def test_재귀_호출로_팩토리얼을_계산한다(tmp_path):
     script = tmp_path / "main.laugh"
     script.write_text(
@@ -84,7 +69,6 @@ def test_재귀_호출로_팩토리얼을_계산한다(tmp_path):
     assert result.returncode == 0
 
 
-@pytest.mark.xfail(strict=True, reason=_METHOD_RETURN_XFAIL_REASON)
 def test_클래스_메서드_내부에서_반환값을_돌려준다(tmp_path):
     script = tmp_path / "main.laugh"
     script.write_text(

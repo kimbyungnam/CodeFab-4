@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
 from codefab.array_nodes import ArrayLiteral, IndexGet, IndexSet
-from codefab.assembler.assembler import Assembler
+from codefab.assembler.function_assembler import FunctionAssembler
 from codefab.ast_nodes import (
     Assign,
     Binary,
@@ -19,8 +19,9 @@ from codefab.ast_nodes import (
     Variable,
     VarStmt,
 )
-from codefab.checker import Checker
-from codefab.executor_unit import Environment, ExecutorUnit
+from codefab.executor_unit import Environment
+from codefab.function_checker import FunctionChecker
+from codefab.function_executor import FunctionExecutorUnit
 
 DEFAULT_ENCODING = "utf-8"
 _UNSET = object()
@@ -216,7 +217,7 @@ class Debugger:
             env = env.enclosing
 
 
-class DebugExecutor(ExecutorUnit):
+class DebugExecutor(FunctionExecutorUnit):
     def __init__(self, debugger: Debugger):
         super().__init__()
         self._debugger = debugger
@@ -247,8 +248,8 @@ class DebugRunner:
         self._output(f"[DEBUG] 소스코드 로딩 : {path}")
 
         try:
-            statements = Assembler().assemble(source)
-            Checker().resolve(statements)
+            statements = FunctionAssembler().assemble(source)
+            FunctionChecker().resolve(statements)
         except Exception as exc:  # noqa: BLE001 — 파이프라인 각 단계의 예외 타입이 제각각이라 광범위하게 잡음
             self._output(str(exc))
             return 1

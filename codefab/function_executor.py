@@ -1,6 +1,6 @@
 from codefab.ast_nodes import Call, Expr, FunctionStmt, ReturnStmt, Stmt
 from codefab.error import ArgumentCountMismatchError, NotCallableError
-from codefab.executor_unit import Environment, ExecutorUnit
+from codefab.executor_unit import Environment, ExecutorUnit, LaughClass, LaughFunction
 
 
 class ReturnSignal(Exception):
@@ -47,9 +47,13 @@ class FunctionExecutorUnit(ExecutorUnit):
     """ExecutorUnit에 함수 선언 실행, 함수 호출, '반환' 처리를 추가한다.
 
     ExecutorUnit.execute()/`_execute_block()`은 전부 `self._execute_stmt(...)`,
-    `self._evaluate_expr(...)`를 통해 서로를 호출하므로, 여기서 이 두 메서드만
+    `self._evaluate_expr(...)`를 통해 서로를 호출하므로, 이 두 메서드만
     오버라이드하면(처리 못 하는 노드는 `super()`로 위임) 기존 executor_unit.py는
-    전혀 건드리지 않고 함수 지원을 끼워 넣을 수 있다.
+    전혀 건드리지 않고 함수 지원을 끼워 넣을 수 있다. 다만 클래스 메서드 호출은
+    base `ExecutorUnit._call`/`_invoke_function` 경로(생성자 포함)를 그대로
+    타므로, `_invoke_function`도 오버라이드해서 `ReturnSignal`이 이 경로에서도
+    잡히도록 한다 — 그렇지 않으면 메서드 안의 '반환'이 값으로 변환되지 못하고
+    호출 스택 최상단까지 새어나가 `Interpreter.interpret()`에 에러로 오인 처리된다.
     """
 
     def _execute_stmt(self, statement: Stmt):
@@ -72,16 +76,28 @@ class FunctionExecutorUnit(ExecutorUnit):
 
         return super()._evaluate_expr(expression)
 
+    def _invoke_function(
+        self, function: LaughFunction, arguments: list[object]
+    ) -> object:
+        try:
+            return super()._invoke_function(function, arguments)
+        except ReturnSignal as signal:
+            return signal.value
+
     def _evaluate_call(self, expression: Call) -> object:
         callee = self._evaluate_expr(expression.callee)
         arguments = [self._evaluate_expr(argument) for argument in expression.arguments]
 
-        if not isinstance(callee, UserFunction):
-            raise NotCallableError(line=expression.paren.line)
+        if isinstance(callee, UserFunction):
+            if len(arguments) != callee.arity:
+                raise ArgumentCountMismatchError(
+                    expected=callee.arity,
+                    actual=len(arguments),
+                    line=expression.paren.line,
+                )
+            return callee.call(arguments)
 
-        if len(arguments) != callee.arity:
-            raise ArgumentCountMismatchError(
-                expected=callee.arity, actual=len(arguments), line=expression.paren.line
-            )
+        if isinstance(callee, (LaughClass, LaughFunction)):
+            return self._call(callee, arguments)
 
-        return callee.call(arguments)
+        raise NotCallableError(line=expression.paren.line)

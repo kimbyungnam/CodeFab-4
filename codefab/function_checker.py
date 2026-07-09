@@ -47,11 +47,17 @@ class FunctionChecker(Checker):
         finally:
             self.scopes.pop()
 
+    def _visit_method_body(self, method) -> None:
+        self.function_depth += 1
+        try:
+            super()._visit_method_body(method)
+        finally:
+            self.function_depth -= 1
+
     def visit_return_stmt(self, stmt: ReturnStmt):
         if self.function_depth == 0:
             raise ReturnOutsideFunctionError(stmt.keyword.line)
-        if stmt.value is not None:
-            stmt.value.accept(self)
+        super().visit_return_stmt(stmt)
 
     def visit_call(self, expr: Call):
         expr.callee.accept(self)
