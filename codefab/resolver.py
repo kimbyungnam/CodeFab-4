@@ -1,4 +1,4 @@
-from codefab.ast_nodes import Assign, Expr, Variable
+from codefab.ast_nodes import Assign, Variable
 from codefab.checker import Checker
 from codefab.executor_unit import Environment, ExecutorUnit
 
@@ -40,34 +40,31 @@ class Resolver(Checker):
 class OptimizedExecutorUnit(ExecutorUnit):
     """Resolver 가 부착한 distance 를 이용해 변수 조회를 O(1)로 처리하는 Executor.
 
-    ExecutorUnit._evaluate_expr 는 Variable/Assign 을 만나면
-    self._look_up_variable(expression.name) / self._evaluate_assign(expression)
-    로 넘기는데, 그 호출부는 Token 만 넘겨서(Expr 노드 자체를 안 넘겨서) distance
+    ExecutorUnit이 Variable/Assign 을 만나면 visit_variable/visit_assign 을
+    통해 self._look_up_variable(expr.name) / self._evaluate_assign(expr) 로
+    넘기는데, 그 호출부는 Token 만 넘겨서(Expr 노드 자체를 안 넘겨서) distance
     를 조회할 수 없다. 그래서 executor_unit.py 를 고치는 대신, 이 서브클래스가
-    _evaluate_expr 자체를 오버라이드해서 Variable/Assign 을 먼저 가로채고,
-    나머지는 전부 super() 로 위임한다 (codefab/function_executor.py 의
+    visit_variable/visit_assign 두 메서드만 오버라이드해서 distance 가 붙어있는
+    경우를 먼저 처리하고, 없으면 super() 로 위임한다 (codefab/function_executor.py 의
     FunctionExecutorUnit 과 동일한 패턴).
 
     Environment.values / .enclosing 이 이미 public 이라 Environment 클래스도
     건드릴 필요 없이 여기서 직접 몇 단계 위로 올라갈지 계산해서 접근한다.
     """
 
-    def _evaluate_expr(self, expression: Expr) -> object:
-        if isinstance(expression, Variable):
-            distance = getattr(expression, "distance", None)
-            if distance is not None:
-                return self._ancestor(distance).values[expression.name.lexeme]
-            return super()._evaluate_expr(expression)
+    def visit_variable(self, expr: Variable):
+        distance = getattr(expr, "distance", None)
+        if distance is not None:
+            return self._ancestor(distance).values[expr.name.lexeme]
+        return super().visit_variable(expr)
 
-        if isinstance(expression, Assign):
-            distance = getattr(expression, "distance", None)
-            if distance is not None:
-                value = self._evaluate_expr(expression.value)
-                self._ancestor(distance).values[expression.name.lexeme] = value
-                return value
-            return super()._evaluate_expr(expression)
-
-        return super()._evaluate_expr(expression)
+    def visit_assign(self, expr: Assign):
+        distance = getattr(expr, "distance", None)
+        if distance is not None:
+            value = self._evaluate_expr(expr.value)
+            self._ancestor(distance).values[expr.name.lexeme] = value
+            return value
+        return super().visit_assign(expr)
 
     def _ancestor(self, distance: int) -> Environment:
         environment = self.environment

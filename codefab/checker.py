@@ -8,6 +8,7 @@ from codefab.ast_nodes import (
     ClassStmt,
     ExpressionStmt,
     ForStmt,
+    FunctionStmt,
     Get,
     Grouping,
     IfStmt,
@@ -37,6 +38,7 @@ from codefab.error import (
     ThisOutsideClassError,
 )
 from codefab.module_loader import ModuleLoader
+from codefab.visitor import Visitor
 
 _INIT_METHOD_NAMES = ("init", "생성자")
 
@@ -47,7 +49,7 @@ class _ClassContext(Enum):
     SUBCLASS = auto()
 
 
-class Checker:
+class Checker(Visitor):
     def __init__(self, module_loader: ModuleLoader | None = None):
         self.scopes: list[set[str]] = [set()]
         self.imported_paths: list[set] = [set()]
@@ -134,6 +136,17 @@ class Checker:
             stmt.body.accept(self)
         finally:
             self.loop_depth -= 1
+
+    def visit_function_stmt(self, stmt: FunctionStmt):
+        self.scopes[-1].add(stmt.name.lexeme)
+        self.scopes.append(set())
+        try:
+            for param in stmt.params:
+                self.scopes[-1].add(param.lexeme)
+            for statement in stmt.body:
+                statement.accept(self)
+        finally:
+            self.scopes.pop()
 
     def visit_import_stmt(self, stmt: ImportStmt):
         if self.loop_depth > 0:

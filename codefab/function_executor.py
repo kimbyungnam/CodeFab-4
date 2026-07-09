@@ -1,4 +1,4 @@
-from codefab.ast_nodes import Call, Expr, FunctionStmt, ReturnStmt, Stmt
+from codefab.ast_nodes import Call, FunctionStmt, ReturnStmt
 from codefab.error import ArgumentCountMismatchError, NotCallableError
 from codefab.executor_unit import Environment, ExecutorUnit, LaughClass, LaughFunction
 
@@ -46,37 +46,27 @@ class UserFunction:
 class FunctionExecutorUnit(ExecutorUnit):
     """ExecutorUnit에 함수 선언 실행, 함수 호출, '반환' 처리를 추가한다.
 
-    ExecutorUnit.execute()/`_execute_block()`은 전부 `self._execute_stmt(...)`,
-    `self._evaluate_expr(...)`를 통해 서로를 호출하므로, 이 두 메서드만
-    오버라이드하면(처리 못 하는 노드는 `super()`로 위임) 기존 executor_unit.py는
-    전혀 건드리지 않고 함수 지원을 끼워 넣을 수 있다. 다만 클래스 메서드 호출은
+    ExecutorUnit이 Visitor 기반 accept() dispatch를 쓰므로, base가 지원하지
+    않는 두 Stmt(`visit_function_stmt`/`visit_return_stmt`)와 호출 방식이
+    달라지는 `visit_call`만 오버라이드하면 된다. 다만 클래스 메서드 호출은
     base `ExecutorUnit._call`/`_invoke_function` 경로(생성자 포함)를 그대로
     타므로, `_invoke_function`도 오버라이드해서 `ReturnSignal`이 이 경로에서도
     잡히도록 한다 — 그렇지 않으면 메서드 안의 '반환'이 값으로 변환되지 못하고
     호출 스택 최상단까지 새어나가 `Interpreter.interpret()`에 에러로 오인 처리된다.
     """
 
-    def _execute_stmt(self, statement: Stmt):
-        if isinstance(statement, FunctionStmt):
-            self._before_stmt(statement, self._depth)
-            function = UserFunction(statement, self.environment, self)
-            self.environment.define(statement.name.lexeme, function)
-            return
+    def visit_function_stmt(self, stmt: FunctionStmt):
+        function = UserFunction(stmt, self.environment, self)
+        self.environment.define(stmt.name.lexeme, function)
 
-        if isinstance(statement, ReturnStmt):
-            self._before_stmt(statement, self._depth)
-            value = None
-            if statement.value is not None:
-                value = self._evaluate_expr(statement.value)
-            raise ReturnSignal(value)
+    def visit_return_stmt(self, stmt: ReturnStmt):
+        value = None
+        if stmt.value is not None:
+            value = self._evaluate_expr(stmt.value)
+        raise ReturnSignal(value)
 
-        super()._execute_stmt(statement)
-
-    def _evaluate_expr(self, expression: Expr) -> object:
-        if isinstance(expression, Call):
-            return self._evaluate_call(expression)
-
-        return super()._evaluate_expr(expression)
+    def visit_call(self, expr: Call):
+        return self._evaluate_call(expr)
 
     def _invoke_function(
         self, function: LaughFunction, arguments: list[object]
