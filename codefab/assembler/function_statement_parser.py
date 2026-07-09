@@ -1,6 +1,14 @@
 from codefab.assembler.call_expression_parser import CallExpressionParser
 from codefab.assembler.statement_parser import StatementParser
 from codefab.ast_nodes import Expr, FunctionStmt, ReturnStmt, Stmt
+from codefab.error import (
+    MissingFunctionNameError,
+    MissingFunctionParameterNameError,
+    MissingLeftBraceForFunctionBodyError,
+    MissingLeftParenAfterFunctionNameError,
+    MissingRightParenAfterFunctionParameterListError,
+    MissingSemicolonAfterReturnError,
+)
 from codefab.tokens import Token, TokenType
 
 
@@ -22,21 +30,25 @@ class FunctionStatementParser(StatementParser):
         return super().parse_statement()
 
     def _function_declaration(self) -> FunctionStmt:
-        name = self._consume(TokenType.IDENTIFIER, "함수 이름이 필요합니다.")
-        self._consume(TokenType.LEFT_PAREN, "함수 이름 뒤에는 '('가 필요합니다.")
+        name = self._consume(TokenType.IDENTIFIER, MissingFunctionNameError)
+        self._consume(TokenType.LEFT_PAREN, MissingLeftParenAfterFunctionNameError)
 
         params: list[Token] = []
         if not self._check(TokenType.RIGHT_PAREN):
             params.append(
-                self._consume(TokenType.IDENTIFIER, "파라미터 이름이 필요합니다.")
+                self._consume(TokenType.IDENTIFIER, MissingFunctionParameterNameError)
             )
             while self._match(TokenType.COMMA):
                 params.append(
-                    self._consume(TokenType.IDENTIFIER, "파라미터 이름이 필요합니다.")
+                    self._consume(
+                        TokenType.IDENTIFIER, MissingFunctionParameterNameError
+                    )
                 )
 
-        self._consume(TokenType.RIGHT_PAREN, "파라미터 목록 뒤에는 ')'가 필요합니다.")
-        self._consume(TokenType.LEFT_BRACE, "함수 본문은 '{'로 시작해야 합니다.")
+        self._consume(
+            TokenType.RIGHT_PAREN, MissingRightParenAfterFunctionParameterListError
+        )
+        self._consume(TokenType.LEFT_BRACE, MissingLeftBraceForFunctionBodyError)
         body = self._block()
 
         return FunctionStmt(name=name, params=params, body=body)
@@ -48,7 +60,7 @@ class FunctionStatementParser(StatementParser):
         if not self._check(TokenType.SEMICOLON):
             value = self._expression()
 
-        self._consume(TokenType.SEMICOLON, "반환 값 뒤에는 ';'가 필요합니다.")
+        self._consume(TokenType.SEMICOLON, MissingSemicolonAfterReturnError)
         return ReturnStmt(keyword=keyword, value=value)
 
     def _expression(self) -> Expr:
