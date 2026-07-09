@@ -1,5 +1,7 @@
 import io
 
+import pytest
+
 from codefab.app.repl import Repl, main
 from codefab.interpreter import Interpreter, InterpretResult
 
@@ -42,26 +44,63 @@ def test_기본_output_사용시_프롬프트_뒤에_줄바꿈이_없다(mocker,
     assert captured.out == "> 1\n> "
 
 
-def test_exit_입력시_반복을_종료하고_실행하지_않는다(mocker):
+@pytest.mark.parametrize("종료_명령", ["exit", "quit"])
+def test_종료_명령_입력시_반복을_종료하고_실행하지_않는다(mocker, 종료_명령):
     interpreter = mocker.Mock(spec=Interpreter)
     calls = []
     repl = Repl(interpreter=interpreter, output=calls.append)
 
-    repl.run(["exit", "출력 1;"])
+    repl.run([종료_명령, "출력 1;"])
 
     assert calls == ["> "]
     interpreter.interpret.assert_not_called()
 
 
-def test_quit_입력시_반복을_종료하고_실행하지_않는다(mocker):
+@pytest.mark.parametrize(
+    "lines, joined_source",
+    [
+        (["{", "출력 1;", "}"], "{\n출력 1;\n}"),
+        (["출력 (1 +", "2);"], "출력 (1 +\n2);"),
+        (["arr[", "0] = 10;"], "arr[\n0] = 10;"),
+        (['출력 "hello', 'world";'], '출력 "hello\nworld";'),
+    ],
+    ids=["중괄호", "소괄호", "대괄호", "문자열"],
+)
+def test_안_닫힌_괄호나_문자열은_다음_줄까지_이어받아서_한번에_interpret한다(
+    mocker, lines, joined_source
+):
     interpreter = mocker.Mock(spec=Interpreter)
+    interpreter.interpret.return_value = InterpretResult(output=[])
+    repl = Repl(interpreter=interpreter, output=lambda _msg: None)
+
+    repl.run(lines)
+
+    interpreter.interpret.assert_called_once_with(joined_source)
+
+
+def test_괄호가_안_닫혀있는_동안은_이어짐_프롬프트가_출력된다(mocker):
+    interpreter = mocker.Mock(spec=Interpreter)
+    interpreter.interpret.return_value = InterpretResult(output=[])
     calls = []
     repl = Repl(interpreter=interpreter, output=calls.append)
 
-    repl.run(["quit", "출력 1;"])
+    repl.run(["{", "출력 1;", "}"])
 
-    assert calls == ["> "]
-    interpreter.interpret.assert_not_called()
+    assert calls == ["> ", "... ", "... ", "> "]
+
+
+def test_EOF에_도달하면_남은_버퍼를_실행해서_에러를_보여준다(mocker):
+    interpreter = mocker.Mock(spec=Interpreter)
+    interpreter.interpret.return_value = InterpretResult(
+        output=[], error="에러: 닫는 괄호가 없습니다"
+    )
+    calls = []
+    repl = Repl(interpreter=interpreter, output=calls.append)
+
+    repl.run(["출력 (1 + 2;"])
+
+    interpreter.interpret.assert_called_once_with("출력 (1 + 2;")
+    assert "에러: 닫는 괄호가 없습니다" in calls
 
 
 def test_각_줄마다_interpret가_한_번씩_호출된다(mocker):
