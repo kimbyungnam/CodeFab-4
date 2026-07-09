@@ -5,13 +5,11 @@
 최종 동작을 assert한다 — 지금은 실패해야 정상이고, 관련 기능이 고쳐지는 날 XPASS로
 뒤집혀 실제 golden 테스트로 교체하라는 신호가 된다.
 
-## Function (Ch.2) 파이프라인 미배선
+## Function (Ch.2) 파이프라인 배선 — ✅ 해결 (`feature/wire-function-pipeline`)
 
-`함수`/`Func` 기능은 `codefab.function_interpreter.create_function_interpreter()`에만
-구현되어 있고, 실제 `codefab.cli`/`codefab/app/repl.py`/`codefab/app/debug.py`가 쓰는
-파이프라인(`codefab.interpreter.Interpreter`)에는 배선되어 있지 않다. `함수` 키워드는 base
-`ExpressionParser._primary`까지 흘러가 줄 번호 없는 `NotImplementedError`로 실패한다
-(`docs/미구현기능_및_버그_TODO.md` B1 참고).
+`함수`/`Func` 기능이 `codefab.cli`/`codefab/app/repl.py`/`codefab/app/debug.py`가 쓰는
+파이프라인에 배선되어(`docs/미구현기능_및_버그_TODO.md` B1 참고) 아래 테스트들은 더 이상
+xfail이 아니라 일반 golden 테스트로 동작한다.
 
 ## 클래스 메서드 내부 return (base 파이프라인 버그)
 
@@ -27,17 +25,12 @@ import pytest
 
 from tests.integration.test_cli_integration import run_cli
 
-_FUNCTION_XFAIL_REASON = (
-    "함수 기능이 codefab.cli가 쓰는 base Interpreter에 배선되지 않음"
-    " — docs/미구현기능_및_버그_TODO.md B1 참고"
-)
 _METHOD_RETURN_XFAIL_REASON = (
     "일반 메서드 내부의 '반환 <값>;'이 base ExecutorUnit._dispatch_stmt에"
     " ReturnStmt 케이스가 없어 UnsupportedStatementError로 크래시함"
 )
 
 
-@pytest.mark.xfail(strict=True, reason=_FUNCTION_XFAIL_REASON)
 def test_함수_선언과_호출_매개변수_전달(tmp_path):
     script = tmp_path / "main.laugh"
     script.write_text(
@@ -51,7 +44,6 @@ def test_함수_선언과_호출_매개변수_전달(tmp_path):
     assert result.returncode == 0
 
 
-@pytest.mark.xfail(strict=True, reason=_FUNCTION_XFAIL_REASON)
 def test_반환값_없는_return은_null을_반환한다(tmp_path):
     script = tmp_path / "main.laugh"
     script.write_text(
@@ -65,7 +57,6 @@ def test_반환값_없는_return은_null을_반환한다(tmp_path):
     assert result.returncode == 0
 
 
-@pytest.mark.xfail(strict=True, reason=_FUNCTION_XFAIL_REASON)
 def test_재귀_호출로_팩토리얼을_계산한다(tmp_path):
     script = tmp_path / "main.laugh"
     script.write_text(
