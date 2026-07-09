@@ -223,7 +223,7 @@ class Checker(Visitor):
         expr.object.accept(self)
         expr.klass.accept(self)
 
-    # ---- 정적 배열 (codefab/array_nodes.py) ----
+    # ---- 정적 배열 (codefab/ast/array.py) ----
 
     def visit_array_literal(self, expr):
         expr.size.accept(self)

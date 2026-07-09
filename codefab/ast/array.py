@@ -1,6 +1,6 @@
 """정적 배열(Array) 관련 Expr 노드.
 
-기존 codefab/ast_nodes.py 는 건드리지 않고, 같은 Expr 베이스와 Visitor 규약
+기존 codefab/ast/expr.py 는 건드리지 않고, 같은 Expr 베이스와 Visitor 규약
 (accept(visitor) -> visitor.visit_xxx(self))을 그대로 따르는 노드를 별도 파일에 추가한다.
 Checker/ExecutorUnit 에 대응하는 visit_array_literal / visit_index_get / visit_index_set
 를 구현해야 실제로 방문할 수 있다.

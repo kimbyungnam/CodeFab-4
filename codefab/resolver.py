@@ -11,7 +11,7 @@ class Resolver(Checker):
     메서드만 오버라이드해서, 기존 검증 뒤에 "몇 단계 위 스코프에 있는지"
     (distance) 를 계산해 해당 Expr 노드에 동적으로 얹어둔다.
 
-    - codefab/ast_nodes.py, codefab/checker.py 는 전혀 건드리지 않는다
+    - codefab/ast/expr.py, codefab/ast/stmt.py, codefab/checker.py 는 전혀 건드리지 않는다
       (distance 는 dataclass 필드가 아니라 side-channel attribute).
     - 전역 변수(self.scopes[0])는 일부러 대상에서 제외한다. REPL 에서 전역
       변수를 나중에 선언/재선언해도 깨지지 않도록, 전역은 항상 기존 동적
