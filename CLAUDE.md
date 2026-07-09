@@ -54,13 +54,14 @@ layout:
   comparison → term → factor → unary → primary`) and builds `Expr` nodes. `StatementParser` (in
   `statement_parser.py`) parses top-level statements and blocks. `Assembler` (in `assembler.py`) drives
   these parsers to produce the final AST.
-- `codefab/checker.py` — Checker Unit. Static pre-execution pass (`Checker.resolve`) that walks the AST
-  via the visitor pattern (`node.accept(self)`) to catch: use of an undeclared variable, duplicate
-  declaration in the same scope, and self-reference during a variable's own initializer
-  (`변수 a = a;`).
-- `codefab/executor_unit.py` — Executor Unit. `ExecutorUnit.execute` walks the AST (statements and
-  expressions) via the visitor pattern, using a flat `dict` environment for variable storage. Runtime
-  failures raise `ExecutorRuntimeError(message, line)` with team-specified Korean error messages
+- `codefab/checker/` — Checker Unit, containing `checker.py` and `function_checker.py`. Static
+  pre-execution pass (`Checker.resolve`) that walks the AST via the visitor pattern
+  (`node.accept(self)`) to catch: use of an undeclared variable, duplicate declaration in the same
+  scope, and self-reference during a variable's own initializer (`변수 a = a;`).
+- `codefab/executor/` — Executor Unit, containing `executor.py` and `function_executor.py`.
+  `ExecutorUnit.execute` (in `executor.py`) walks the AST (statements and expressions) via the
+  visitor pattern, using a flat `dict` environment for variable storage. Runtime failures raise
+  `ExecutorRuntimeError(message, line)` with team-specified Korean error messages
   (e.g. `"0으로 나눈 오류"`, `"피연산자는 반드시 숫자여야 합니다."`) — when adding new runtime checks,
   match this message style and always attach the offending line number.
 - `codefab/app/repl.py` — Interactive REPL. `Repl` class handles multi-line input, incomplete code
@@ -68,17 +69,18 @@ layout:
 
 ### AST node hierarchy
 
-All `Expr` and `Stmt` classes are defined in `codefab/ast_nodes.py` as a single visitor-pattern
-hierarchy: `Expr` and `Stmt` are abstract base classes with an abstract `accept(self, visitor)` method
-(e.g. `Binary.accept` calls `visitor.visit_binary(self)`). Every module in the pipeline
-(`expression_parser.py`, `statement_parser.py`, `checker.py`, `executor_unit.py`) imports from
-`ast_nodes.py` and uses the visitor pattern consistently.
+All `Expr` and `Stmt` classes live in the `codefab/ast/` package as a single visitor-pattern
+hierarchy: `Expr` (in `codefab/ast/expr.py`) and `Stmt` (in `codefab/ast/stmt.py`) are abstract base
+classes with an abstract `accept(self, visitor)` method (e.g. `Binary.accept` calls
+`visitor.visit_binary(self)`). Every module in the pipeline (`expression_parser.py`,
+`statement_parser.py`, `checker.py`, `executor.py`) imports from `codefab/ast/` and uses the visitor
+pattern consistently.
 
 ### Testing conventions
 
 - Tests use `pytest` with `pytest-mock` (`mocker` fixture). `test_checker.py` builds AST nodes as
   `mocker.Mock()` objects with `.accept.side_effect` wired to the real `visit_*` method, rather than
-  instantiating real `ast_nodes` classes — follow this pattern for new Checker tests.
+  instantiating real `codefab/ast/` classes — follow this pattern for new Checker tests.
 - `test_executor_unit.py` and `test_expression_parser.py` construct real node instances directly (no
   tokenizer/parser round-trip) to isolate the unit under test.
 - Test names are Korean, describing the scenario under test (e.g.

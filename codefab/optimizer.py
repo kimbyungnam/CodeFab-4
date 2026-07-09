@@ -2,7 +2,7 @@
 
 `Checker`처럼 예외로 검증하는 게 아니라 트리 자체를 변형해야 해서
 (부모 노드의 필드를 새 값으로 교체) Checker 를 상속하지 않고 독립적인
-Visitor 로 구현한다. codefab/ast/, codefab/checker.py,
+Visitor 로 구현한다. codefab/ast/, codefab/checker/checker.py,
 codefab/executor/executor.py 는 전혀 건드리지 않는다.
 
 핵심 규칙: 실행 시 에러가 나야 하는 경우(타입 불일치, 0으로 나누기 등)는
