@@ -6,7 +6,7 @@ build-backend = "flit_core.buildapi"
 name = "codefab"
 authors = [{name = "Bug Hunters 4", email = "kimbyungnam@ajou.ac.kr"}]
 readme = "README.md"
-requires-python = ">= 3.13"
+requires-python = ">= 3.13,<4.0"
 version = "0.28.1"
 description = "CodeFab Interpreter Project"
 
