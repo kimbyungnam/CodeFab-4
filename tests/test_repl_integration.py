@@ -146,7 +146,7 @@ ERROR_CASES = [
     (
         "표현식_자리에_잘못된_토큰",
         "출력 * 5;",
-        str(UnrecognizedExpressionError()),
+        str(UnrecognizedExpressionError(line=1)),
     ),
     (
         "지역_변수_자기_초기화식에서_읽기",

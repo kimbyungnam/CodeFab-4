@@ -14,7 +14,7 @@ from codefab.ast_nodes import (
     Variable,
     VarStmt,
 )
-from codefab.error import ParseError
+from codefab.error import ParseError, UnexpectedEndOfInputError
 from codefab.tokens import Token, TokenType
 
 
@@ -182,6 +182,8 @@ class StatementParser:
     def _consume(self, token_type: TokenType, message: str) -> Token:
         if self._check(token_type):
             return self._advance()
+        if self.is_at_end():
+            raise UnexpectedEndOfInputError(message, self._peek().line)
         raise ParseError(message, self._peek().line)
 
     def _match(self, *types: TokenType) -> bool:

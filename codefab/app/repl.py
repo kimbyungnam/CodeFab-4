@@ -1,15 +1,13 @@
 import sys
 from collections.abc import Callable, Iterable
 
-from codefab.error import ParseError
+from codefab.assembler.assembler import Assembler
+from codefab.ast_nodes import IfStmt
+from codefab.error import UnexpectedEndOfInputError
 from codefab.interpreter import Interpreter
-from codefab.tokenizer import Tokenizer
-from codefab.tokens import TokenType
 
 EXIT_COMMANDS = {"exit", "quit"}
-_UNTERMINATED_STRING_MESSAGE = "문자열이 닫히지 않았습니다."
-_OPENERS = (TokenType.LEFT_BRACE, TokenType.LEFT_PAREN, TokenType.LEFT_BRACKET)
-_CLOSERS = (TokenType.RIGHT_BRACE, TokenType.RIGHT_PAREN, TokenType.RIGHT_BRACKET)
+ELSE_KEYWORDS = {"아니면", "else"}
 
 
 class Repl:
@@ -28,6 +26,7 @@ class Repl:
     def run(self, input_lines: Iterable[str]) -> None:
         iterator = iter(input_lines)
         buffer: list[str] = []
+        awaiting_else = False
         while True:
             self._show_prompt(self._continuation_prompt if buffer else self._prompt)
             try:
@@ -38,34 +37,68 @@ class Repl:
                 if buffer:
                     self.run_source("\n".join(buffer))
                 break
-            if not buffer and line.strip() in EXIT_COMMANDS:
+
+            if line.strip() in EXIT_COMMANDS:
+                # 여러 줄을 이어받는 중이었어도(아직 안 닫힌 괄호, 아니면 대기 등)
+                # exit/quit이 나오면 그 버퍼는 버리고 바로 종료한다.
                 break
+
+            if awaiting_else:
+                awaiting_else = False
+                if self._starts_with_else(line):
+                    buffer.append(line)
+                    source = "\n".join(buffer)
+                    if self._is_incomplete(source):
+                        continue
+                    self.run_source(source)
+                    buffer = []
+                    continue
+                # 아니면이 안 왔으니, 보류해뒀던 (아니면 없는) 만약을 먼저 실행하고
+                # 이번에 읽은 줄은 새 명령으로 이어서 처리한다.
+                self.run_source("\n".join(buffer))
+                buffer = []
 
             buffer.append(line)
             source = "\n".join(buffer)
             if self._is_incomplete(source):
                 continue
 
+            if self._is_bare_if_without_else(source):
+                # `}`까지는 완전한 문장이지만, 다음 줄에 '아니면'이 붙을 수도 있으니
+                # 한 줄 더 보고 확정한다.
+                awaiting_else = True
+                continue
+
             self.run_source(source)
             buffer = []
 
-    def _is_incomplete(self, source: str) -> bool:
-        # { }, ( ) 가 아직 안 닫혔거나 문자열이 안 끝났으면(여러 줄에 걸쳐 있으면)
-        # 계속 다음 줄까지 입력을 이어받는다.
-        try:
-            tokens = Tokenizer(source).scan_tokens()
-        except ParseError as exc:
-            return _UNTERMINATED_STRING_MESSAGE in str(exc)
-        except Exception:  # noqa: BLE001 — 그 외 토큰화 실패는 그대로 실행해서 에러를 보여준다
-            return False
+    def _starts_with_else(self, line: str) -> bool:
+        stripped = line.strip()
+        first_word = stripped.split(maxsplit=1)[0] if stripped else ""
+        return first_word in ELSE_KEYWORDS
 
-        depth = 0
-        for token in tokens:
-            if token.type in _OPENERS:
-                depth += 1
-            elif token.type in _CLOSERS:
-                depth -= 1
-        return depth > 0
+    def _is_incomplete(self, source: str) -> bool:
+        # 실제로 파싱을 시도해봐서, "토큰이 모자라서 못 끝난 것"(UnexpectedEndOfInputError)
+        # 이면 다음 줄까지 입력을 이어받는다. 그 외 진짜 문법 오류는 기다리지 않고
+        # 그대로 실행해서 에러를 보여준다.
+        try:
+            Assembler().assemble(source)
+        except UnexpectedEndOfInputError:
+            return True
+        except Exception:  # noqa: BLE001 — 파이프라인 각 단계의 예외 타입이 제각각이라 광범위하게 잡음
+            return False
+        return False
+
+    def _is_bare_if_without_else(self, source: str) -> bool:
+        try:
+            statements = Assembler().assemble(source)
+        except Exception:  # noqa: BLE001
+            return False
+        return (
+            len(statements) == 1
+            and isinstance(statements[0], IfStmt)
+            and statements[0].else_branch is None
+        )
 
     def _show_prompt(self, prompt: str) -> None:
         # 기본 출력(print)일 때는 줄바꿈 없이 찍어서 입력이 프롬프트와 같은 줄에 오게 한다.

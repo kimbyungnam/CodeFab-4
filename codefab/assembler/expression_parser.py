@@ -17,7 +17,11 @@ from codefab.ast_nodes import (
     Unary,
     Variable,
 )
-from codefab.error import ParseError
+from codefab.error import (
+    ParseError,
+    UnexpectedEndOfInputError,
+    UnrecognizedExpressionError,
+)
 from codefab.tokens import Token, TokenType
 
 
@@ -158,7 +162,11 @@ class ExpressionParser:
             expression = self.parse()
             self._consume(TokenType.RIGHT_PAREN, "표현식 뒤에는 ')'가 필요합니다.")
             return Grouping(expression)
-        raise NotImplementedError("아직 처리하지 않는 표현식 종류입니다.")
+        if self._is_at_end():
+            raise UnexpectedEndOfInputError(
+                "아직 처리하지 않는 표현식 종류입니다.", self._peek().line
+            )
+        raise UnrecognizedExpressionError(self._peek().line)
 
     def _array_literal(self) -> Expr:
         array_token = self._previous()  # "Array"/"배열" 토큰 (이미 소비됨)
@@ -172,6 +180,8 @@ class ExpressionParser:
     def _consume(self, token_type: TokenType, message: str) -> Token:
         if self._check(token_type):
             return self._advance()
+        if self._is_at_end():
+            raise UnexpectedEndOfInputError(message, self._peek().line)
         raise ParseError(message, self._peek().line)
 
     def _match(self, *types: TokenType) -> bool:
