@@ -1,0 +1,6 @@
+클래스 Robot { }
+변수 r = Robot();
+r.speed = 10;
+출력 r.speed;
+r.speed = r.speed + 5;
+출력 r.speed;

@@ -1,0 +1,11 @@
+클래스 Robot {
+    init(name) { 나.name = name; }
+}
+
+클래스 SpeedRobot : Robot {
+    init(name) { 부모.init(name); }
+}
+
+변수 w = SpeedRobot("Sam");
+출력 (w 타입확인 SpeedRobot);
+출력 (w 타입확인 Robot);

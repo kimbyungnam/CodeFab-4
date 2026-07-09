@@ -1,0 +1,13 @@
+클래스 Robot {
+    move(dist) { 출력 "move"; }
+}
+
+클래스 SpeedRobot : Robot {
+    move(dist) {
+        부모.move(dist);
+        출력 "Speeeed!";
+    }
+}
+
+변수 r = SpeedRobot();
+r.move(3);

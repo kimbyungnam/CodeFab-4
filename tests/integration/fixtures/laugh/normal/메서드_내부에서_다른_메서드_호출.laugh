@@ -1,0 +1,16 @@
+클래스 Robot {
+    move(dist) {
+        나.position = 나.position + dist;
+    }
+    report() {
+        출력 나.position;
+    }
+    move_and_report(dist) {
+        나.move(dist);
+        나.report();
+    }
+}
+
+변수 r = Robot();
+r.position = 0;
+r.move_and_report(5);

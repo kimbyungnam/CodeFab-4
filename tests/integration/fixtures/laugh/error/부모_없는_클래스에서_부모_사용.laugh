@@ -1,0 +1,6 @@
+클래스 Robot {
+    move() { 부모.move(); }
+}
+
+변수 r = Robot();
+r.move();
