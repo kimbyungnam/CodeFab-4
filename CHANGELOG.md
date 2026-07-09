@@ -1,3 +1,13 @@
+## 0.30.0 (2026-07-09)
+
+### Feat
+
+- array parameter 및 index error 조건 추가
+
+### Fix
+
+- ruff format chg2
+
 ## 0.29.0 (2026-07-09)
 
 ### Feat
