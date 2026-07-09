@@ -90,6 +90,6 @@ class FunctionExecutorUnit(ExecutorUnit):
             return callee.call(arguments)
 
         if isinstance(callee, (LaughClass, LaughFunction)):
-            return self._call(callee, arguments)
+            return self._call(callee, arguments, line=expression.paren.line)
 
         raise NotCallableError(line=expression.paren.line)

@@ -4,6 +4,7 @@ from codefab.ast_nodes import (
     Assign,
     Binary,
     BlockStmt,
+    Call,
     ExpressionStmt,
     ForStmt,
     Get,
@@ -21,6 +22,7 @@ from codefab.error import (
     DivisionByZeroError,
     InvalidOperandTypeError,
     MismatchedPlusOperandTypeError,
+    NotCallableError,
     OnlyInstancesHaveFieldsError,
     UndefinedModuleMemberError,
     UndefinedVariableError,
@@ -565,6 +567,28 @@ def test_모듈_멤버를_점_표기로_읽어_출력한다(capsys, stub_module_
     executor.execute([import_stmt, print_stmt])
 
     assert capsys.readouterr().out.splitlines() == ["3.14"]
+
+
+def make_call(callee, arguments, line: int = 1) -> Call:
+    paren = Token(type=TokenType.RIGHT_PAREN, lexeme=")", literal=None, line=line)
+    return Call(callee=callee, paren=paren, arguments=arguments)
+
+
+def test_호출_불가능한_대상을_호출하면_에러():
+    # 변수 x = "hello"; x();
+    statements = [
+        VarStmt(name=make_identifier_token("x"), initializer=Literal("hello")),
+    ]
+    executor = ExecutorUnit()
+    executor.execute(statements)
+
+    with pytest.raises(NotCallableError) as exc_info:
+        executor._evaluate_call(
+            make_call(Variable(name=make_identifier_token("x")), [], line=5)
+        )
+
+    assert exc_info.value.message == "호출 가능한 대상(함수)이 아닙니다."
+    assert exc_info.value.line == 5
 
 
 def test_모듈_실행은_호출자_스코프를_보지_못한다(stub_module_loader):
