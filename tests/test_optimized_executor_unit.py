@@ -8,7 +8,7 @@ from codefab.ast import (
     Variable,
     VarStmt,
 )
-from codefab.executor_unit import Environment, ExecutorUnit
+from codefab.executor import Environment, ExecutorUnit
 from codefab.resolver import OptimizedExecutorUnit, Resolver
 from codefab.tokens import Token, TokenType
 

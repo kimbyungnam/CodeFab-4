@@ -14,7 +14,7 @@ from codefab.errors import (
     ParseError,
     SelfReferenceInInitializerError,
 )
-from codefab.executor_unit import ExecutorUnit
+from codefab.executor import ExecutorUnit
 from codefab.tokens import Token, TokenType
 
 

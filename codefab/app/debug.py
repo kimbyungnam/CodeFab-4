@@ -31,7 +31,7 @@ from codefab.ast import (
     Variable,
     VarStmt,
 )
-from codefab.executor_unit import Environment
+from codefab.executor import Environment
 from codefab.optimized_interpreter import (
     OptimizedFunctionExecutorUnit,
     OptimizingChecker,

@@ -13,7 +13,11 @@ from codefab.ast import (
     VarStmt,
 )
 from codefab.errors import ArgumentCountMismatchError, NotCallableError
-from codefab.function_executor import FunctionExecutorUnit, ReturnSignal, UserFunction
+from codefab.executor.function_executor import (
+    FunctionExecutorUnit,
+    ReturnSignal,
+    UserFunction,
+)
 from codefab.tokens import Token, TokenType
 
 

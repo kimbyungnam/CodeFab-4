@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 
 from codefab.assembler.assembler import Assembler
 from codefab.checker import Checker
-from codefab.executor_unit import ExecutorUnit
+from codefab.executor import ExecutorUnit
 
 
 @dataclass(frozen=True)

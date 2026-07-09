@@ -1,6 +1,6 @@
 from codefab.ast import Assign, Variable
 from codefab.checker import Checker
-from codefab.executor_unit import Environment, ExecutorUnit
+from codefab.executor import Environment, ExecutorUnit
 
 
 class Resolver(Checker):
@@ -43,9 +43,9 @@ class OptimizedExecutorUnit(ExecutorUnit):
     ExecutorUnit이 Variable/Assign 을 만나면 visit_variable/visit_assign 을
     통해 self._look_up_variable(expr.name) / self._evaluate_assign(expr) 로
     넘기는데, 그 호출부는 Token 만 넘겨서(Expr 노드 자체를 안 넘겨서) distance
-    를 조회할 수 없다. 그래서 executor_unit.py 를 고치는 대신, 이 서브클래스가
+    를 조회할 수 없다. 그래서 executor/executor.py 를 고치는 대신, 이 서브클래스가
     visit_variable/visit_assign 두 메서드만 오버라이드해서 distance 가 붙어있는
-    경우를 먼저 처리하고, 없으면 super() 로 위임한다 (codefab/function_executor.py 의
+    경우를 먼저 처리하고, 없으면 super() 로 위임한다 (codefab/executor/function_executor.py 의
     FunctionExecutorUnit 과 동일한 패턴).
 
     Environment.values / .enclosing 이 이미 public 이라 Environment 클래스도

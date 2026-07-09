@@ -1,6 +1,11 @@
 from codefab.ast import Call, FunctionStmt, ReturnStmt
 from codefab.errors import ArgumentCountMismatchError, NotCallableError
-from codefab.executor_unit import Environment, ExecutorUnit, LaughClass, LaughFunction
+from codefab.executor.executor import (
+    Environment,
+    ExecutorUnit,
+    LaughClass,
+    LaughFunction,
+)
 
 
 class ReturnSignal(Exception):
