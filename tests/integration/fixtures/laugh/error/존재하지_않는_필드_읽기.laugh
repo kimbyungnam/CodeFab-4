@@ -1,0 +1,3 @@
+클래스 Robot { }
+변수 r = Robot();
+출력 r.power;

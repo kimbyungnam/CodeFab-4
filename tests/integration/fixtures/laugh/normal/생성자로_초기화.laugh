@@ -1,0 +1,10 @@
+클래스 Robot {
+    init(name, speed) {
+        나.name = name;
+        나.speed = speed;
+    }
+}
+
+변수 r = Robot("AndOr", 10);
+출력 r.name;
+출력 r.speed;

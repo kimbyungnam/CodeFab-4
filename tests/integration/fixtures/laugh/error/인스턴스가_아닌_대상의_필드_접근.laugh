@@ -1,0 +1,2 @@
+변수 x = "hello";
+x.field = 1;
