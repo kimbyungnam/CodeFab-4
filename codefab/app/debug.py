@@ -20,7 +20,10 @@ from codefab.ast_nodes import (
     VarStmt,
 )
 from codefab.executor_unit import Environment
-from codefab.optimized_interpreter import OptimizedFunctionExecutorUnit, OptimizingChecker
+from codefab.optimized_interpreter import (
+    OptimizedFunctionExecutorUnit,
+    OptimizingChecker,
+)
 
 DEFAULT_ENCODING = "utf-8"
 _UNSET = object()
