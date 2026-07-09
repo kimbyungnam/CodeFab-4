@@ -45,8 +45,8 @@ from codefab.error import (
 from codefab.module_loader import ModuleLoader
 from codefab.tokens import Token, TokenType
 
-_THIS_KEY = "this"
-_SUPER_KEY = "super"
+_THIS_KEY = "<this>"
+_SUPER_KEY = "<super>"
 _INIT_METHOD_NAMES = ("init", "생성자")
 
 
