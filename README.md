@@ -252,6 +252,67 @@ arr[2] = 30;
 | 존재하지 않는 필드/메서드 접근 | `정의되지 않은 필드/메서드 'x'입니다.` |
 | 호출할 수 없는 대상 호출 (`"hi"()`) | `호출 가능한 대상(함수)이 아닙니다.` |
 
+## 3일차 추가기능 구현 체크리스트
+
+`3일차_CodeFab Interpreter.pdf` 요구사항 대비 구현 현황입니다.
+
+### function
+
+- [x] 함수 선언/호출, 매개변수 전달 (`codefab/function_executor.py`)
+- [x] `반환` 처리 (값 없는 반환 → `None`, `반환 값;` → 호출식에 반환)
+- [x] 재귀 호출
+- [x] 함수 외부에서 `반환` 사용 시 에러 (`ReturnOutsideFunctionError`, `codefab/function_checker.py`)
+- [x] 파라미터 이름 중복 에러 (`DuplicateParameterError`)
+- [x] 함수가 아닌 대상 호출 에러 (`NotCallableError`)
+- [x] 인자 개수 불일치 에러 (`ArgumentCountMismatchError`)
+
+### class
+
+- [x] 클래스 선언, 인스턴스 생성 (`클래스 Robot { ... }`, `Robot()`)
+- [x] 필드 동적 읽기/쓰기, 존재하지 않는 필드 읽기 시 런타임 에러 (`UndefinedPropertyError`)
+- [x] 메서드 선언/호출, `나`(this)로 필드 접근
+- [x] 생성자(`생성자`)와 인자 전달, 생성자에서 `반환` 사용 시 에러 (`ReturnInInitializerError`)
+- [x] 상속(`:`)과 `부모`(super) 호출, 메서드 오버라이딩
+- [x] `타입확인`(instanceof) — 부모 클래스에 대해서도 `참`
+- [x] 클래스 외부 `나` 사용 에러 (`ThisOutsideClassError`)
+- [x] 자기 자신 상속 에러 (`SelfInheritanceError`)
+- [x] 클래스가 아닌 대상 상속 에러 (`SuperclassMustBeClassError`)
+- [x] 클래스 외부 `부모` 사용 / 부모 없는 클래스에서 `부모` 사용 에러 (`SuperOutsideClassError`, `SuperWithoutSuperclassError`)
+- [x] 인스턴스가 아닌 대상의 필드 접근 에러 (`OnlyInstancesHaveFieldsError`)
+
+### 정적 배열 (`배열`)
+
+- [x] 고정 크기 배열 생성, 인덱스 읽기/쓰기
+- [x] 범위를 벗어난 인덱스 접근 에러 (`ArrayIndexOutOfRangeError`)
+- [x] 인덱스가 숫자가 아닌 경우 에러 (`ArrayIndexNotNumberError`)
+- [x] 배열이 아닌 대상에 `[]` 사용 시 에러 (`NotIndexableError`)
+- [x] 배열 생성 시 크기가 숫자가 아닌 경우 에러 (`ArraySizeNotNumberError`)
+
+### 실행 전 최적화
+
+- [x] 지역 변수 정적 바인딩 (Checker Unit에서 distance 계산 → `codefab/resolver.py` `Resolver`, `OptimizedExecutorUnit`)
+- [x] 상수 연산 최적화(수식 합치기) — 런타임 이전에 100% 확정되는 표현식만 리터럴로 폴딩 (`codefab/optimizer.py` `Optimizer`)
+- [x] Test Double을 이용한 최적화 검증 테스트 (`tests/test_resolver.py`, `tests/test_optimizer.py`)
+
+### import (`가져오기`, `별칭`)
+
+- [x] `가져오기 "파일" 별칭 이름;` 문법
+- [x] import 대상 파일은 변수 선언/다른 파일 import만 허용, 그 외 구문은 에러 (`InvalidModuleContentError`)
+- [x] 순환 import 에러 (`CircularImportError`)
+- [x] 같은 스코프 내 중복 import 에러 (`DuplicateImportError`) / 형제·상위 스코프에서는 재 import 정상 동작
+- [x] alias 이름 충돌 에러 (`DuplicateVariableError`)
+- [x] 반복문 내부 import 금지 (`ImportInsideLoopError`)
+- [x] import 대상 파일 없음 에러 (`ImportedFileNotFoundError`)
+
+### 공장 제어 쉘
+
+- [x] 프롬프트 모드 (REPL, `codefab` 인자 없이 실행)
+- [x] 파일 모드 (`codefab run <파일경로>`, 파일 없음/런타임 에러 시 줄 번호와 함께 즉시 종료)
+- [x] 디버그 모드 (`codefab debug <파일경로>`)
+  - [x] `step` / `next` — Stmt 단위 stepping
+  - [x] `break <줄번호>` / `breakpoints` / `remove <줄번호>` / `continue`
+  - [x] `watch <변수명>` / `unwatch <변수명>` / `watches` / `inspect`
+
 ## Development
 
 ### Test
