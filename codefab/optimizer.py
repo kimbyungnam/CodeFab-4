@@ -15,14 +15,20 @@ from codefab.ast_nodes import (
     Assign,
     Binary,
     BlockStmt,
+    Call,
+    ClassStmt,
     Expr,
     ExpressionStmt,
     ForStmt,
+    FunctionStmt,
+    Get,
     Grouping,
     IfStmt,
     Literal,
     Logical,
     PrintStmt,
+    ReturnStmt,
+    Set,
     Stmt,
     Unary,
     VarStmt,
@@ -73,7 +79,23 @@ class Optimizer:
             self._optimize_stmt(stmt.body)
             return
 
-        # 그 외(다른 팀 브랜치의 함수/클래스/import Stmt 등)는 이번 범위 밖이라
+        if isinstance(stmt, FunctionStmt):
+            for inner in stmt.body:
+                self._optimize_stmt(inner)
+            return
+
+        if isinstance(stmt, ReturnStmt):
+            if stmt.value is not None:
+                stmt.value = self._optimize_expr(stmt.value)
+            return
+
+        if isinstance(stmt, ClassStmt):
+            for method in stmt.methods:
+                for inner in method.body:
+                    self._optimize_stmt(inner)
+            return
+
+        # 그 외(다른 팀 브랜치의 import Stmt 등)는 이번 범위 밖이라
         # 손대지 않고 그대로 둔다.
 
     # ---------------- Expr ----------------
@@ -115,6 +137,22 @@ class Optimizer:
         if isinstance(expr, IndexSet):
             expr.target = self._optimize_expr(expr.target)
             expr.index = self._optimize_expr(expr.index)
+            expr.value = self._optimize_expr(expr.value)
+            return expr
+
+        if isinstance(expr, Call):
+            expr.callee = self._optimize_expr(expr.callee)
+            expr.arguments = [
+                self._optimize_expr(argument) for argument in expr.arguments
+            ]
+            return expr
+
+        if isinstance(expr, Get):
+            expr.object = self._optimize_expr(expr.object)
+            return expr
+
+        if isinstance(expr, Set):
+            expr.object = self._optimize_expr(expr.object)
             expr.value = self._optimize_expr(expr.value)
             return expr
 

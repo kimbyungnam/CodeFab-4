@@ -3,12 +3,18 @@ import pytest
 from codefab.array_nodes import ArrayLiteral, IndexGet
 from codefab.ast_nodes import (
     Binary,
+    Call,
+    ClassStmt,
     ExpressionStmt,
+    FunctionStmt,
+    Get,
     Grouping,
     IfStmt,
     Literal,
     Logical,
+    MethodDecl,
     PrintStmt,
+    ReturnStmt,
     Unary,
     Variable,
     VarStmt,
@@ -410,3 +416,97 @@ def test_array_리터럴의_size와_인덱스_표현식도_접힌다(mocker):
 
     assert array_literal.size == Literal(3.0)
     assert index_get.index == Literal(1.0)
+
+
+def test_함수_본문_안의_상수식도_접힌다(mocker):
+    # 함수 f() { 출력 1 + 2; }
+    left = mocker.Mock(spec=Literal, value=1.0)
+    right = mocker.Mock(spec=Literal, value=2.0)
+    expr = mocker.Mock(
+        spec=Binary,
+        left=left,
+        operator=make_operator_token(TokenType.PLUS, "+"),
+        right=right,
+    )
+    print_stmt = mocker.Mock(spec=PrintStmt, expression=expr)
+    function_stmt = mocker.Mock(spec=FunctionStmt, body=[print_stmt])
+
+    Optimizer().optimize([function_stmt])
+
+    assert print_stmt.expression == Literal(3.0)
+
+
+def test_반환값의_상수식도_접힌다(mocker):
+    # 반환 1 + 2;
+    left = mocker.Mock(spec=Literal, value=1.0)
+    right = mocker.Mock(spec=Literal, value=2.0)
+    expr = mocker.Mock(
+        spec=Binary,
+        left=left,
+        operator=make_operator_token(TokenType.PLUS, "+"),
+        right=right,
+    )
+    return_stmt = mocker.Mock(spec=ReturnStmt, value=expr)
+
+    Optimizer().optimize([return_stmt])
+
+    assert return_stmt.value == Literal(3.0)
+
+
+def test_클래스_메서드_본문_안의_상수식도_접힌다(mocker):
+    # 클래스 C { m() { 출력 1 + 2; } }
+    left = mocker.Mock(spec=Literal, value=1.0)
+    right = mocker.Mock(spec=Literal, value=2.0)
+    expr = mocker.Mock(
+        spec=Binary,
+        left=left,
+        operator=make_operator_token(TokenType.PLUS, "+"),
+        right=right,
+    )
+    print_stmt = mocker.Mock(spec=PrintStmt, expression=expr)
+    method = mocker.Mock(spec=MethodDecl, body=[print_stmt])
+    class_stmt = mocker.Mock(spec=ClassStmt, methods=[method])
+
+    Optimizer().optimize([class_stmt])
+
+    assert print_stmt.expression == Literal(3.0)
+
+
+def test_호출식의_인자도_접힌다(mocker):
+    # f(1 + 2)
+    left = mocker.Mock(spec=Literal, value=1.0)
+    right = mocker.Mock(spec=Literal, value=2.0)
+    arg = mocker.Mock(
+        spec=Binary,
+        left=left,
+        operator=make_operator_token(TokenType.PLUS, "+"),
+        right=right,
+    )
+    callee = mocker.Mock(spec=Variable)
+    call = mocker.Mock(spec=Call, callee=callee, arguments=[arg])
+    stmt = mocker.Mock(spec=ExpressionStmt, expression=call)
+
+    Optimizer().optimize([stmt])
+
+    assert stmt.expression.arguments == [Literal(3.0)]
+
+
+def test_Get식의_객체도_접힌다(mocker):
+    # (1+2).필드  -- 실제로는 나오지 않는 조합이지만 재귀 자체를 검증
+    left = mocker.Mock(spec=Literal, value=1.0)
+    right = mocker.Mock(spec=Literal, value=2.0)
+    grouping_target = mocker.Mock(
+        spec=Grouping,
+        expression=mocker.Mock(
+            spec=Binary,
+            left=left,
+            operator=make_operator_token(TokenType.PLUS, "+"),
+            right=right,
+        ),
+    )
+    get_expr = mocker.Mock(spec=Get, object=grouping_target)
+    stmt = mocker.Mock(spec=ExpressionStmt, expression=get_expr)
+
+    Optimizer().optimize([stmt])
+
+    assert stmt.expression.object == Literal(3.0)
