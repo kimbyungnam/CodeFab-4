@@ -11,7 +11,7 @@ from codefab.ast_nodes import (
     Variable,
     VarStmt,
 )
-from codefab.error import DuplicateVariableError, SelfReferenceInInitializerError
+from codefab.errors import DuplicateVariableError, SelfReferenceInInitializerError
 from codefab.resolver import Resolver
 from codefab.tokens import Token, TokenType
 

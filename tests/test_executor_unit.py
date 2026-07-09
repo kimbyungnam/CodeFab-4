@@ -17,7 +17,7 @@ from codefab.ast_nodes import (
     Variable,
     VarStmt,
 )
-from codefab.error import (
+from codefab.errors import (
     DivisionByZeroError,
     InvalidOperandTypeError,
     MismatchedPlusOperandTypeError,

@@ -2,7 +2,7 @@ import pytest
 
 from codefab.assembler.assembler import Assembler
 from codefab.checker import Checker
-from codefab.error import (
+from codefab.errors import (
     ReturnInInitializerError,
     SelfInheritanceError,
     SuperOutsideClassError,

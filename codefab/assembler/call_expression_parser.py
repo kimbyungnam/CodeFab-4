@@ -1,6 +1,6 @@
 from codefab.assembler.expression_parser import ExpressionParser
 from codefab.ast_nodes import Call, Expr
-from codefab.error import MissingRightParenAfterArgumentsError
+from codefab.errors import MissingRightParenAfterArgumentsError
 from codefab.tokens import TokenType
 
 

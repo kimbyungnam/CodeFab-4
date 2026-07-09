@@ -20,7 +20,7 @@ from pathlib import Path
 
 import pytest
 
-from codefab.error import (
+from codefab.errors import (
     DuplicateVariableError,
     InvalidAssignmentTargetError,
     InvalidOperandTypeError,

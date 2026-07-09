@@ -2,7 +2,7 @@ import pytest
 
 from codefab.assembler.call_expression_parser import CallExpressionParser
 from codefab.ast_nodes import Binary, Call, Literal, Variable
-from codefab.error import ParseError
+from codefab.errors import ParseError
 from codefab.tokens import Token, TokenType
 
 

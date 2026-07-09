@@ -1,7 +1,7 @@
 import pytest
 
 from codefab.assembler.function_assembler import FunctionAssembler
-from codefab.error import (
+from codefab.errors import (
     DuplicateParameterError,
     DuplicateVariableError,
     ReturnInInitializerError,

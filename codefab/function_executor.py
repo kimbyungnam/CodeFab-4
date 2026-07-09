@@ -1,5 +1,5 @@
 from codefab.ast_nodes import Call, FunctionStmt, ReturnStmt
-from codefab.error import ArgumentCountMismatchError, NotCallableError
+from codefab.errors import ArgumentCountMismatchError, NotCallableError
 from codefab.executor_unit import Environment, ExecutorUnit, LaughClass, LaughFunction
 
 

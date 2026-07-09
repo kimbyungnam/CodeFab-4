@@ -1,6 +1,6 @@
 from codefab.ast_nodes import Call, FunctionStmt, ReturnStmt
 from codefab.checker import Checker
-from codefab.error import (
+from codefab.errors import (
     DuplicateParameterError,
     DuplicateVariableError,
     ReturnOutsideFunctionError,

@@ -8,7 +8,7 @@ from codefab.ast_nodes import (
     Unary,
     Variable,
 )
-from codefab.error import ParseError
+from codefab.errors import ParseError
 from codefab.tokens import Token, TokenType
 
 

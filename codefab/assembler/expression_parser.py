@@ -17,7 +17,7 @@ from codefab.ast_nodes import (
     Unary,
     Variable,
 )
-from codefab.error import (
+from codefab.errors import (
     InvalidAssignmentTargetError,
     MissingClassNameAfterInstanceOfError,
     MissingClosingParenAfterExpressionError,
