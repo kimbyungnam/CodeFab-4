@@ -5,8 +5,11 @@ from codefab.assembler.expression_parser import ExpressionParser
 from codefab.ast_nodes import Literal, Variable, VarStmt
 from codefab.checker import Checker
 from codefab.error import (
+    ArrayIndexNotIntegerError,
     ArrayIndexNotNumberError,
     ArrayIndexOutOfRangeError,
+    ArraySizeNegativeError,
+    ArraySizeNotIntegerError,
     ArraySizeNotNumberError,
     NotIndexableError,
     ParseError,
@@ -178,6 +181,16 @@ def test_array_크기가_숫자가_아니면_런타임_오류(executor):
         evaluate(executor, ArrayLiteral(Literal("hi"), line=1))
 
 
+def test_array_크기가_음수이면_런타임_오류(executor):
+    with pytest.raises(ArraySizeNegativeError):
+        evaluate(executor, ArrayLiteral(Literal(-1.0), line=1))
+
+
+def test_array_크기가_정수가_아니면_런타임_오류(executor):
+    with pytest.raises(ArraySizeNotIntegerError):
+        evaluate(executor, ArrayLiteral(Literal(1.5), line=1))
+
+
 def test_인덱스로_읽고_쓸_수_있다(executor):
     array = evaluate(executor, ArrayLiteral(Literal(3.0), line=1))
     executor.environment.define("arr", array)
@@ -220,6 +233,18 @@ def test_인덱스가_숫자가_아니면_런타임_오류(executor):
             IndexGet(
                 target=ArrayLiteral(Literal(3.0), line=1),
                 index=Literal("hello"),
+                line=1,
+            ),
+        )
+
+
+def test_인덱스가_정수가_아니면_런타임_오류(executor):
+    with pytest.raises(ArrayIndexNotIntegerError):
+        evaluate(
+            executor,
+            IndexGet(
+                target=ArrayLiteral(Literal(3.0), line=1),
+                index=Literal(1.5),
                 line=1,
             ),
         )
