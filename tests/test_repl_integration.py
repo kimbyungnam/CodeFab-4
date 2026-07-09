@@ -34,6 +34,7 @@ from codefab.error import (
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 PROMPT_LINE = "> "
+CONTINUATION_PROMPT_LINE = "... "
 
 
 def run_repl(source: str) -> list[str]:
@@ -49,7 +50,9 @@ def run_repl(source: str) -> list[str]:
     )
     # 프롬프트는 줄바꿈 없이 다음 출력과 같은 줄에 이어붙어 나오므로(REPL 모드 스펙),
     # 프롬프트 문자열을 전부 제거한 뒤 실제 출력 줄만 남긴다.
-    output = result.stdout.replace(PROMPT_LINE, "")
+    output = result.stdout.replace(PROMPT_LINE, "").replace(
+        CONTINUATION_PROMPT_LINE, ""
+    )
     return [line for line in output.splitlines() if line]
 
 
