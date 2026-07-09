@@ -18,6 +18,15 @@ from codefab.ast_nodes import (
     Variable,
 )
 from codefab.error import (
+    InvalidAssignmentTargetError,
+    MissingClassNameAfterInstanceOfError,
+    MissingClosingParenAfterExpressionError,
+    MissingDotAfterSuperError,
+    MissingLeftParenAfterArrayError,
+    MissingMethodNameAfterSuperError,
+    MissingPropertyNameAfterDotError,
+    MissingRightBracketAfterIndexError,
+    MissingRightParenAfterArgumentsError,
     ParseError,
     UnexpectedEndOfInputError,
     UnrecognizedExpressionError,
@@ -46,7 +55,7 @@ class ExpressionParser:
                 return IndexSet(
                     expression.target, expression.index, value, expression.line
                 )
-            raise ParseError("잘못된 대입 대상입니다.", equals.line)
+            raise InvalidAssignmentTargetError(equals.line)
         return expression
 
     def _logic_or(self) -> Expr:
@@ -64,7 +73,7 @@ class ExpressionParser:
         expression = self._comparison()
         while self._match(TokenType.INSTANCEOF):
             class_name = self._consume(
-                TokenType.IDENTIFIER, "'타입확인' 뒤에는 클래스 이름이 필요합니다."
+                TokenType.IDENTIFIER, MissingClassNameAfterInstanceOfError
             )
             expression = InstanceOf(expression, Variable(class_name))
         return expression
@@ -112,14 +121,14 @@ class ExpressionParser:
                 expression = self._finish_call(expression)
             elif self._match(TokenType.DOT):
                 name = self._consume(
-                    TokenType.IDENTIFIER, "'.' 뒤에는 속성 이름이 필요합니다."
+                    TokenType.IDENTIFIER, MissingPropertyNameAfterDotError
                 )
                 expression = Get(expression, name)
             elif self._match(TokenType.LEFT_BRACKET):
                 bracket_line = self._previous().line
                 index = self.parse()
                 self._consume(
-                    TokenType.RIGHT_BRACKET, "인덱스 뒤에는 ']'가 필요합니다."
+                    TokenType.RIGHT_BRACKET, MissingRightBracketAfterIndexError
                 )
                 expression = IndexGet(expression, index, bracket_line)
             else:
@@ -133,7 +142,7 @@ class ExpressionParser:
             while self._match(TokenType.COMMA):
                 arguments.append(self._assignment())
         paren = self._consume(
-            TokenType.RIGHT_PAREN, "인자 목록 뒤에는 ')'가 필요합니다."
+            TokenType.RIGHT_PAREN, MissingRightParenAfterArgumentsError
         )
         return Call(callee, paren, arguments)
 
@@ -149,9 +158,9 @@ class ExpressionParser:
             return This(self._previous())
         if self._match(TokenType.SUPER):
             keyword = self._previous()
-            self._consume(TokenType.DOT, "'부모' 뒤에는 '.'이 필요합니다.")
+            self._consume(TokenType.DOT, MissingDotAfterSuperError)
             method = self._consume(
-                TokenType.IDENTIFIER, "'부모.' 뒤에는 메서드 이름이 필요합니다."
+                TokenType.IDENTIFIER, MissingMethodNameAfterSuperError
             )
             return Super(keyword, method)
         if self._match(TokenType.ARRAY):
@@ -160,29 +169,34 @@ class ExpressionParser:
             return Variable(self._previous())
         if self._match(TokenType.LEFT_PAREN):
             expression = self.parse()
-            self._consume(TokenType.RIGHT_PAREN, "표현식 뒤에는 ')'가 필요합니다.")
+            self._consume(
+                TokenType.RIGHT_PAREN, MissingClosingParenAfterExpressionError
+            )
             return Grouping(expression)
         if self._is_at_end():
             raise UnexpectedEndOfInputError(
-                "아직 처리하지 않는 표현식 종류입니다.", self._peek().line
+                UnrecognizedExpressionError(self._peek().line).message,
+                self._peek().line,
             )
         raise UnrecognizedExpressionError(self._peek().line)
 
     def _array_literal(self) -> Expr:
         array_token = self._previous()  # "Array"/"배열" 토큰 (이미 소비됨)
-        self._consume(TokenType.LEFT_PAREN, "'배열' 뒤에는 '('가 필요합니다.")
+        self._consume(TokenType.LEFT_PAREN, MissingLeftParenAfterArrayError)
         size = self.parse()
-        self._consume(TokenType.RIGHT_PAREN, "표현식 뒤에는 ')'가 필요합니다.")
+        self._consume(TokenType.RIGHT_PAREN, MissingClosingParenAfterExpressionError)
         return ArrayLiteral(size, array_token.line)
 
     # ---------------- helpers ----------------
 
-    def _consume(self, token_type: TokenType, message: str) -> Token:
+    def _consume(self, token_type: TokenType, error_type: type[ParseError]) -> Token:
         if self._check(token_type):
             return self._advance()
         if self._is_at_end():
-            raise UnexpectedEndOfInputError(message, self._peek().line)
-        raise ParseError(message, self._peek().line)
+            raise UnexpectedEndOfInputError(
+                error_type(self._peek().line).message, self._peek().line
+            )
+        raise error_type(self._peek().line)
 
     def _match(self, *types: TokenType) -> bool:
         for token_type in types:

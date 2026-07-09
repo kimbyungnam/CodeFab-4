@@ -1,5 +1,6 @@
 from codefab.assembler.expression_parser import ExpressionParser
 from codefab.ast_nodes import Call, Expr
+from codefab.error import MissingRightParenAfterArgumentsError
 from codefab.tokens import TokenType
 
 
@@ -29,6 +30,6 @@ class CallExpressionParser(ExpressionParser):
                 arguments.append(self._assignment())
 
         paren = self._consume(
-            TokenType.RIGHT_PAREN, "인자 목록 뒤에는 ')'가 필요합니다."
+            TokenType.RIGHT_PAREN, MissingRightParenAfterArgumentsError
         )
         return Call(callee=callee, paren=paren, arguments=arguments)

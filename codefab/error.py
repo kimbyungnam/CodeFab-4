@@ -225,6 +225,114 @@ class MissingRightParenAfterIfConditionError(ParseError):
         super().__init__("조건식 뒤에는 ')'가 필요합니다.", line)
 
 
+class MissingClassNameAfterInstanceOfError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("'타입확인' 뒤에는 클래스 이름이 필요합니다.", line)
+
+
+class MissingPropertyNameAfterDotError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("'.' 뒤에는 속성 이름이 필요합니다.", line)
+
+
+class MissingRightParenAfterArgumentsError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("인자 목록 뒤에는 ')'가 필요합니다.", line)
+
+
+class MissingDotAfterSuperError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("'부모' 뒤에는 '.'이 필요합니다.", line)
+
+
+class MissingMethodNameAfterSuperError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("'부모.' 뒤에는 메서드 이름이 필요합니다.", line)
+
+
+class MissingLeftParenAfterArrayError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("'배열' 뒤에는 '('가 필요합니다.", line)
+
+
+class MissingSemicolonAfterReturnError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("반환 값 뒤에는 ';'가 필요합니다.", line)
+
+
+class MissingClassNameError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("클래스 이름이 필요합니다.", line)
+
+
+class MissingSuperclassNameError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("상속할 클래스 이름이 필요합니다.", line)
+
+
+class MissingLeftBraceForClassBodyError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("클래스 본문은 '{'로 시작해야 합니다.", line)
+
+
+class MissingRightBraceForClassBodyError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("클래스 본문은 '}'로 닫아야 합니다.", line)
+
+
+class MissingMethodNameError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("메서드 이름이 필요합니다.", line)
+
+
+class MissingLeftParenAfterMethodNameError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("메서드 이름 뒤에는 '('가 필요합니다.", line)
+
+
+class MissingParameterNameError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("매개변수 이름이 필요합니다.", line)
+
+
+class MissingRightParenAfterParameterListError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("매개변수 목록 뒤에는 ')'가 필요합니다.", line)
+
+
+class MissingLeftBraceForMethodBodyError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("메서드 본문은 '{'로 시작해야 합니다.", line)
+
+
+# ---------------- Assembler Unit (함수 관련 추가) ----------------
+
+
+class MissingFunctionNameError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("함수 이름이 필요합니다.", line)
+
+
+class MissingLeftParenAfterFunctionNameError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("함수 이름 뒤에는 '('가 필요합니다.", line)
+
+
+class MissingFunctionParameterNameError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("파라미터 이름이 필요합니다.", line)
+
+
+class MissingRightParenAfterFunctionParameterListError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("파라미터 목록 뒤에는 ')'가 필요합니다.", line)
+
+
+class MissingLeftBraceForFunctionBodyError(ParseError):
+    def __init__(self, line: int | None = None):
+        super().__init__("함수 본문은 '{'로 시작해야 합니다.", line)
+
+
 # ---------------- Checker Unit (함수 관련 추가) ----------------
 
 
