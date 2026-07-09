@@ -11,11 +11,14 @@
 
 ## 요약
 
-기능 자체(함수, 클래스, 배열, 정적 바인딩, 상수 폴딩)는 각각 구현되어 있으나
-**세 개의 서로 다른 파이프라인**(`Interpreter`(base) / `create_function_interpreter()` /
-`create_optimized_interpreter()`)으로 나뉘어 있고, 정작 CLI·REPL·debug 셸이 사용하는
-파이프라인은 base뿐이라 **함수 기능이 실제 사용자 경로에서는 동작하지 않는다.** 이 부분이
-가장 우선순위 높은 작업이다.
+기능 자체(함수, 클래스, 배열, 정적 바인딩, 상수 폴딩)는 각각 구현되어 있고, **세 개의 서로
+다른 파이프라인**(`Interpreter`(base) / `create_function_interpreter()` /
+`create_optimized_interpreter()`)으로 나뉘어 있다. `create_optimized_interpreter()`가
+`feature/optimizing_connect`에서 함수/클래스/배열/import를 모두 지원하는 단일 파이프라인으로
+통합되었고, CLI·REPL·debug 셸은 모두 이 파이프라인을 기본값으로 사용하도록 배선되어 있어
+**함수·클래스·배열·import·정적 바인딩/상수 폴딩 모두 실제 사용자 경로(REPL/`run`/`debug`)에서
+정상 동작한다.** 이번 PR에서는 `Optimizer`의 상수 폴딩이 함수/메서드 본문과 호출식 인자까지
+재귀하도록 확장해 마지막 남은 gap(B2)을 닫았다.
 
 ---
 
@@ -60,18 +63,19 @@
   않고 조기 반환해 `_before_stmt` 훅(`executor_unit.py` `_execute_stmt`, 206~207행)을 거치지
   않기 때문. 실행 결과 자체는 정확하며, 별도 후속 작업으로 남겨둠.
 
-### B2. 정적 바인딩(static binding) / 상수 폴딩 최적화가 CLI/REPL/debug에서 사용 불가
-- **근거**: `create_optimized_interpreter()`(`codefab/optimized_interpreter.py`)도 B1과 동일하게
-  어디에도 배선되어 있지 않음. 게다가 이 파이프라인의 assembler는 base `Assembler()`이지
-  `FunctionAssembler`가 아니어서, **최적화와 함수 기능은 애초에 동시 사용이 불가능한 구조**.
-- **작업**: B1과 함께 해결 — 함수/클래스/배열/최적화를 모두 포함하는 단일
-  Interpreter 조합을 만들고 그것을 CLI/REPL/debug의 기본 경로로 사용.
+### B2. 정적 바인딩(static binding) / 상수 폴딩 최적화가 CLI/REPL/debug에서 사용 불가 — ✅ 해결
+- **확인 (2026-07-09)**: `feature/optimizing_connect`에서 `create_optimized_interpreter()`가
+  `OptimizingChecker(Resolver, FunctionChecker)` + `OptimizedFunctionExecutorUnit
+  (OptimizedExecutorUnit, FunctionExecutorUnit)` + `FunctionAssembler`로 함수/클래스/배열/
+  import까지 모두 지원하는 단일 파이프라인이 되었고, `cli.py`/`repl.py`/`debug.py`가 이
+  파이프라인을 기본값으로 사용하도록 배선됨. 이 PR에서는 `Optimizer`가 함수/메서드 본문과
+  호출식 인자까지 상수 폴딩을 재귀하도록 확장해 마지막 남은 gap을 닫았다.
 
-### B3. CLI에 파이프라인 선택 옵션이 없음
-- **근거**: `--optimize`/`--functions` 같은 플래그나 모드가 전혀 존재하지 않아 사용자가
-  구현된 기능(함수, 최적화)에 접근할 방법 자체가 없음.
-- **작업**: B1/B2를 단일 파이프라인으로 통합한다면 별도 플래그는 불필요할 수 있음 —
-  통합 방향에 따라 이 항목은 B1에 흡수될 수 있음.
+### B3. CLI에 파이프라인 선택 옵션이 없음 — ✅ 해결 (B2에 흡수)
+- **확인 (2026-07-09)**: B2 해결로 `create_optimized_interpreter()`가 함수/클래스/배열/
+  최적화를 모두 포함하는 단일 파이프라인이자 CLI/REPL/debug의 기본 경로가 되어, 별도
+  `--optimize`/`--functions` 플래그 없이도 구현된 모든 기능에 접근 가능해졌다. 통합 방향이
+  "단일 기본 파이프라인"이었으므로 이 항목은 B2에 흡수되어 별도 작업이 필요 없다.
 
 ### B4. 생성자(`init`)에서 `return` 사용 금지 검사 미구현
 - **근거**: 3일차 문서 Chapter 3 "클래스 관련 오류검사" — `init() { return 5; }` 에러 케이스.
