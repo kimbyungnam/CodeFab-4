@@ -5,9 +5,14 @@ from codefab.assembler.assembler import Assembler
 from codefab.ast_nodes import IfStmt
 from codefab.error import UnexpectedEndOfInputError
 from codefab.interpreter import Interpreter
+from codefab.tokenizer import Tokenizer
+from codefab.tokens import TokenType
 
 EXIT_COMMANDS = {"exit", "quit"}
 ELSE_KEYWORDS = {"아니면", "else"}
+_BODY_LEADING_KEYWORDS = (TokenType.IF, TokenType.FOR)
+_OPENERS = (TokenType.LEFT_BRACE, TokenType.LEFT_PAREN, TokenType.LEFT_BRACKET)
+_CLOSERS = (TokenType.RIGHT_BRACE, TokenType.RIGHT_PAREN, TokenType.RIGHT_BRACKET)
 
 
 class Repl:
@@ -78,16 +83,39 @@ class Repl:
         return first_word in ELSE_KEYWORDS
 
     def _is_incomplete(self, source: str) -> bool:
-        # 실제로 파싱을 시도해봐서, "토큰이 모자라서 못 끝난 것"(UnexpectedEndOfInputError)
-        # 이면 다음 줄까지 입력을 이어받는다. 그 외 진짜 문법 오류는 기다리지 않고
-        # 그대로 실행해서 에러를 보여준다.
+        # { }, ( ), [ ] 가 안 닫혔거나 문자열이 안 끝났으면(어떤 문장이든 공통으로
+        # 애매함 없이 미완성이 확정) 다음 줄까지 기다린다.
         try:
-            Assembler().assemble(source)
+            tokens = Tokenizer(source).scan_tokens()
         except UnexpectedEndOfInputError:
             return True
-        except Exception:  # noqa: BLE001 — 파이프라인 각 단계의 예외 타입이 제각각이라 광범위하게 잡음
+        except Exception:  # noqa: BLE001 — 그 외 토큰화 실패는 그대로 실행해서 에러를 보여준다
             return False
+
+        if self._bracket_depth(tokens) > 0:
+            return True
+
+        # 세미콜론/대입값 누락처럼 "그냥 안 쓴 것"과 구분이 안 되는 경우는 기다리지
+        # 않는다. 다만 '만약'/'반복'은 조건까지만 쓰고 몸통이 아예 없을 수 있어서
+        # (중괄호 없는 형태), 이 경우만 실제로 파싱해봐서 확인한다.
+        if tokens and tokens[0].type in _BODY_LEADING_KEYWORDS:
+            try:
+                Assembler().assemble(source)
+            except UnexpectedEndOfInputError:
+                return True
+            except Exception:  # noqa: BLE001
+                return False
+
         return False
+
+    def _bracket_depth(self, tokens: list) -> int:
+        depth = 0
+        for token in tokens:
+            if token.type in _OPENERS:
+                depth += 1
+            elif token.type in _CLOSERS:
+                depth -= 1
+        return depth
 
     def _is_bare_if_without_else(self, source: str) -> bool:
         try:
