@@ -58,11 +58,13 @@ class FunctionExecutorUnit(ExecutorUnit):
 
     def _execute_stmt(self, statement: Stmt):
         if isinstance(statement, FunctionStmt):
+            self._before_stmt(statement, self._depth)
             function = UserFunction(statement, self.environment, self)
             self.environment.define(statement.name.lexeme, function)
             return
 
         if isinstance(statement, ReturnStmt):
+            self._before_stmt(statement, self._depth)
             value = None
             if statement.value is not None:
                 value = self._evaluate_expr(statement.value)

@@ -6,15 +6,25 @@ from codefab.ast_nodes import (
     Assign,
     Binary,
     BlockStmt,
+    Call,
+    ClassStmt,
     Expr,
     ExpressionStmt,
     ForStmt,
+    FunctionStmt,
+    Get,
     Grouping,
     IfStmt,
+    ImportStmt,
+    InstanceOf,
     Literal,
     Logical,
     PrintStmt,
+    ReturnStmt,
+    Set,
     Stmt,
+    Super,
+    This,
     Unary,
     Variable,
     VarStmt,
@@ -45,6 +55,14 @@ def line_of_expr(expr: Expr) -> int:
         return line_of_expr(expr.expression)
     if isinstance(expr, (ArrayLiteral, IndexGet, IndexSet)):
         return expr.line
+    if isinstance(expr, Call):
+        return expr.paren.line
+    if isinstance(expr, (This, Super)):
+        return expr.keyword.line
+    if isinstance(expr, (Get, Set)):
+        return expr.name.line
+    if isinstance(expr, InstanceOf):
+        return line_of_expr(expr.object)
     return 1
 
 
@@ -61,6 +79,12 @@ def line_of_stmt(stmt: Stmt) -> int:
         if stmt.condition is not None:
             return line_of_expr(stmt.condition)
         return 1
+    if isinstance(stmt, (ClassStmt, FunctionStmt)):
+        return stmt.name.line
+    if isinstance(stmt, ReturnStmt):
+        return stmt.keyword.line
+    if isinstance(stmt, ImportStmt):
+        return stmt.path.line
     return 1
 
 
