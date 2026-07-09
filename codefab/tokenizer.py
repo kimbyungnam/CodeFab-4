@@ -1,4 +1,4 @@
-from codefab.error import ParseError
+from codefab.error import UnexpectedEndOfInputError
 from codefab.tokens import Token, TokenType
 
 SINGLE_CHAR_TOKENS: dict[str, TokenType] = {
@@ -140,7 +140,7 @@ class Tokenizer:
             self.current += 1
 
         if self._is_at_end():
-            raise ParseError("문자열이 닫히지 않았습니다.", self.line)
+            raise UnexpectedEndOfInputError("문자열이 닫히지 않았습니다.", self.line)
 
         self.current += 1  # 닫는 '"' 소비
         value = self.source[self.start + 1 : self.current - 1]

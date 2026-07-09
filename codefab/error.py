@@ -20,6 +20,12 @@ class ParseError(CodeFabError):
     """Assembler Unit(파싱 단계)에서 문법 규칙을 어겼을 때 발생하는 오류의 기반 클래스."""
 
 
+class UnexpectedEndOfInputError(ParseError):
+    """토큰이 모자라서(EOF) 파싱을 못 끝낸 경우. 어떻게든 못 고치는 진짜 문법
+    오류(ParseError)와 달리, 입력이 더 오면 해결될 수 있는 상태를 가리킨다
+    (REPL이 이 예외만 보고 "다음 줄까지 기다릴지"를 판단한다)."""
+
+
 class CheckerError(CodeFabError):
     """Checker Unit의 정적 검사 규칙을 어겼을 때 발생하는 오류의 기반 클래스."""
 
