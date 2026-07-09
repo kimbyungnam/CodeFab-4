@@ -1,3 +1,9 @@
+## 0.28.1 (2026-07-09)
+
+### Fix
+
+- isolate imported_paths per class method scope, like block scopes
+
 ## 0.28.0 (2026-07-09)
 
 ### Feat
