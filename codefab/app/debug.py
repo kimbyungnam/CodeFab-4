@@ -20,8 +20,7 @@ from codefab.ast_nodes import (
     VarStmt,
 )
 from codefab.executor_unit import Environment
-from codefab.function_checker import FunctionChecker
-from codefab.function_executor import FunctionExecutorUnit
+from codefab.optimized_interpreter import OptimizedFunctionExecutorUnit, OptimizingChecker
 
 DEFAULT_ENCODING = "utf-8"
 _UNSET = object()
@@ -217,7 +216,7 @@ class Debugger:
             env = env.enclosing
 
 
-class DebugExecutor(FunctionExecutorUnit):
+class DebugExecutor(OptimizedFunctionExecutorUnit):
     def __init__(self, debugger: Debugger):
         super().__init__()
         self._debugger = debugger
@@ -249,7 +248,7 @@ class DebugRunner:
 
         try:
             statements = FunctionAssembler().assemble(source)
-            FunctionChecker().resolve(statements)
+            OptimizingChecker().resolve(statements)
         except Exception as exc:  # noqa: BLE001 — 파이프라인 각 단계의 예외 타입이 제각각이라 광범위하게 잡음
             self._output(str(exc))
             return 1
