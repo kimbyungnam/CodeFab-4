@@ -1,13 +1,13 @@
 import pytest
 
 from codefab.assembler.function_assembler import FunctionAssembler
+from codefab.checker import FunctionChecker
 from codefab.errors import (
     DuplicateParameterError,
     DuplicateVariableError,
     ReturnInInitializerError,
     ReturnOutsideFunctionError,
 )
-from codefab.function_checker import FunctionChecker
 from codefab.tokens import Token, TokenType
 
 

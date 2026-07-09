@@ -1,5 +1,5 @@
 from codefab.ast import Call, FunctionStmt, ReturnStmt
-from codefab.checker import Checker
+from codefab.checker.checker import Checker
 from codefab.errors import (
     DuplicateParameterError,
     DuplicateVariableError,

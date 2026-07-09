@@ -1,5 +1,5 @@
 from codefab.assembler.function_assembler import FunctionAssembler
-from codefab.function_checker import FunctionChecker
+from codefab.checker import FunctionChecker
 from codefab.function_executor import FunctionExecutorUnit
 from codefab.interpreter import Interpreter
 from codefab.optimizer import Optimizer
