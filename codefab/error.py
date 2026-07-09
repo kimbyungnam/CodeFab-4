@@ -375,9 +375,24 @@ class ArraySizeNotNumberError(ExecutorRuntimeError):
         super().__init__("배열의 크기는 반드시 숫자여야 합니다.", line)
 
 
+class ArraySizeNegativeError(ExecutorRuntimeError):
+    def __init__(self, line: int = 1):
+        super().__init__("배열의 크기는 음수일 수 없습니다.", line)
+
+
+class ArraySizeNotIntegerError(ExecutorRuntimeError):
+    def __init__(self, line: int = 1):
+        super().__init__("배열의 크기는 정수여야 합니다.", line)
+
+
 class ArrayIndexNotNumberError(ExecutorRuntimeError):
     def __init__(self, line: int = 1):
         super().__init__("배열의 인덱스는 반드시 숫자여야 합니다.", line)
+
+
+class ArrayIndexNotIntegerError(ExecutorRuntimeError):
+    def __init__(self, line: int = 1):
+        super().__init__("배열의 인덱스는 정수여야 합니다.", line)
 
 
 class ArrayIndexOutOfRangeError(ExecutorRuntimeError):

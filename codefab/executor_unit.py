@@ -25,8 +25,11 @@ from codefab.ast_nodes import (
     VarStmt,
 )
 from codefab.error import (
+    ArrayIndexNotIntegerError,
     ArrayIndexNotNumberError,
     ArrayIndexOutOfRangeError,
+    ArraySizeNegativeError,
+    ArraySizeNotIntegerError,
     ArraySizeNotNumberError,
     DivisionByZeroError,
     InvalidOperandTypeError,
@@ -532,6 +535,10 @@ class ExecutorUnit(Visitor):
         size = self._evaluate_expr(expression.size)
         if not isinstance(size, float):
             raise ArraySizeNotNumberError(line=expression.line)
+        if size < 0:
+            raise ArraySizeNegativeError(line=expression.line)
+        if not size.is_integer():
+            raise ArraySizeNotIntegerError(line=expression.line)
         return [None] * int(size)
 
     def _evaluate_index_get(self, expression: IndexGet) -> object:
@@ -553,6 +560,8 @@ class ExecutorUnit(Visitor):
         index_value = self._evaluate_expr(index_expr)
         if not isinstance(index_value, float):
             raise ArrayIndexNotNumberError(line=line)
+        if not index_value.is_integer():
+            raise ArrayIndexNotIntegerError(line=line)
 
         index = int(index_value)
         if index < 0 or index >= len(target):
