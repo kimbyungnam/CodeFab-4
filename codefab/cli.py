@@ -4,8 +4,8 @@ from collections.abc import Callable
 
 from codefab.app.debug import DebugRunner
 from codefab.app.repl import main as repl_main
-from codefab.function_interpreter import create_function_interpreter
 from codefab.interpreter import Interpreter, InterpretResult
+from codefab.optimized_interpreter import create_optimized_interpreter
 
 DEFAULT_ENCODING = "utf-8"
 
@@ -17,7 +17,7 @@ class FileRunner:
         output: Callable[[str], None] | None = None,
     ):
         self._interpreter = (
-            interpreter if interpreter is not None else create_function_interpreter()
+            interpreter if interpreter is not None else create_optimized_interpreter()
         )
         self._output = output if output is not None else print
 
