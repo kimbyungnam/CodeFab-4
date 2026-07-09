@@ -1,0 +1,11 @@
+watch a
+step
+step
+break 5
+continue
+breakpoints
+remove 5
+watches
+inspect
+unwatch a
+continue

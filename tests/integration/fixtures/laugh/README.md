@@ -21,7 +21,8 @@
 repl 통합 테스트(`<이름>.repl.out`)는 아직 추가되지 않았다 — 추후 커밋에서 다룬다.
 
 - `normal/` — 테스트케이스.md 1번 섹션(표현식/연산자/진리값, 변수/스코프, 제어 흐름) 24개 예제 +
-  3일차 문서 Chapter 3(class) 7개 예제
+  3일차 문서 Chapter 3(class) 7개 예제 + Chapter 7(디버그 모드
+  `watch`/`unwatch`/`watches`/`inspect`/`breakpoints`/`remove` 명령어) 1개 예제
 - `error/` — 테스트케이스.md 2번 섹션(구문 에러, Checker 정적 에러, 런타임 에러) 9개 예제 +
   3일차 문서 Chapter 3(class) 8개 예제
 
