@@ -35,7 +35,7 @@ from codefab.ast import (
     Unary,
     VarStmt,
 )
-from codefab.tokens import TokenType
+from codefab.common.tokens import TokenType
 
 
 class Optimizer:

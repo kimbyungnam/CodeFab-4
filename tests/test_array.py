@@ -3,6 +3,7 @@ import pytest
 from codefab.assembler.expression_parser import ExpressionParser
 from codefab.ast import ArrayLiteral, IndexGet, IndexSet, Literal, Variable, VarStmt
 from codefab.checker import Checker
+from codefab.common.tokens import Token, TokenType
 from codefab.errors import (
     ArrayIndexNotIntegerError,
     ArrayIndexNotNumberError,
@@ -15,7 +16,6 @@ from codefab.errors import (
     SelfReferenceInInitializerError,
 )
 from codefab.executor import ExecutorUnit
-from codefab.tokens import Token, TokenType
 
 
 def make_identifier_token(lexeme: str, line: int = 1) -> Token:

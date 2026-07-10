@@ -2,13 +2,13 @@ import pytest
 
 from codefab.assembler.function_assembler import FunctionAssembler
 from codefab.checker import FunctionChecker
+from codefab.common.tokens import Token, TokenType
 from codefab.errors import (
     DuplicateParameterError,
     DuplicateVariableError,
     ReturnInInitializerError,
     ReturnOutsideFunctionError,
 )
-from codefab.tokens import Token, TokenType
 
 
 def make_token(lexeme, line=1):

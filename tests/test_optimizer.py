@@ -20,8 +20,8 @@ from codefab.ast import (
     Variable,
     VarStmt,
 )
-from codefab.optimizer import Optimizer
-from codefab.tokens import Token, TokenType
+from codefab.common.optimizer import Optimizer
+from codefab.common.tokens import Token, TokenType
 
 
 def make_identifier_token(lexeme: str, line: int = 1) -> Token:

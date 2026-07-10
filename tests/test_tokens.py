@@ -1,6 +1,6 @@
 import pytest
 
-from codefab.tokens import Token, TokenType
+from codefab.common.tokens import Token, TokenType
 
 
 def test_토큰_필드가_정확히_저장된다():

@@ -2,6 +2,8 @@ import pytest
 
 from codefab.assembler.assembler import Assembler
 from codefab.checker import Checker
+from codefab.common.module_loader import ModuleLoader
+from codefab.common.tokens import Token, TokenType
 from codefab.errors import (
     DuplicateImportError,
     DuplicateVariableError,
@@ -10,8 +12,6 @@ from codefab.errors import (
     InvalidModuleContentError,
     SelfReferenceInInitializerError,
 )
-from codefab.module_loader import ModuleLoader
-from codefab.tokens import Token, TokenType
 
 
 def make_token(lexeme, line=1):

@@ -1,6 +1,7 @@
 from codefab.assembler.call_expression_parser import CallExpressionParser
 from codefab.assembler.statement_parser import StatementParser
 from codefab.ast import Expr, FunctionStmt, ReturnStmt, Stmt
+from codefab.common.tokens import Token, TokenType
 from codefab.errors import (
     MissingFunctionNameError,
     MissingFunctionParameterNameError,
@@ -9,7 +10,6 @@ from codefab.errors import (
     MissingRightParenAfterFunctionParameterListError,
     MissingSemicolonAfterReturnError,
 )
-from codefab.tokens import Token, TokenType
 
 
 class FunctionStatementParser(StatementParser):

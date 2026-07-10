@@ -12,8 +12,8 @@ from codefab.ast import (
     VarStmt,
 )
 from codefab.checker import Resolver
+from codefab.common.tokens import Token, TokenType
 from codefab.errors import DuplicateVariableError, SelfReferenceInInitializerError
-from codefab.tokens import Token, TokenType
 
 
 def make_identifier_token(lexeme: str, line: int = 1) -> Token:

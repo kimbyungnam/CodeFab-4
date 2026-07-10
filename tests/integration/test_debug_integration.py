@@ -1,4 +1,4 @@
-"""codefab debug(`python -m codefab.cli debug <file>`) golden 테스트.
+"""codefab debug(`python -m codefab.common.cli debug <file>`) golden 테스트.
 
 `tests/integration/fixtures/laugh/{normal,error}/`의 공유 `.laugh` 소스 중
 `<이름>.debug.cmds`가 있는 케이스만 골라, 그 안의 명령을 한 줄씩 `DebugRunner`에 입력하며

@@ -1,12 +1,12 @@
 import pytest
 
 from codefab.ast import ImportStmt, VarStmt
+from codefab.common.module_loader import ModuleLoader
 from codefab.errors import (
     CircularImportError,
     ImportedFileNotFoundError,
     InvalidModuleContentError,
 )
-from codefab.module_loader import ModuleLoader
 
 
 @pytest.fixture

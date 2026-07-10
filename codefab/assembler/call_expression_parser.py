@@ -1,7 +1,7 @@
 from codefab.assembler.expression_parser import ExpressionParser
 from codefab.ast import Call, Expr
+from codefab.common.tokens import TokenType
 from codefab.errors import MissingRightParenAfterArgumentsError
-from codefab.tokens import TokenType
 
 
 class CallExpressionParser(ExpressionParser):

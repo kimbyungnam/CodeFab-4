@@ -1,7 +1,7 @@
 import pytest
 
-from codefab.tokenizer import Tokenizer
-from codefab.tokens import Token, TokenType
+from codefab.common.tokenizer import Tokenizer
+from codefab.common.tokens import Token, TokenType
 
 
 @pytest.mark.parametrize(

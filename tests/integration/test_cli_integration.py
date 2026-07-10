@@ -1,7 +1,7 @@
 """codefab CLI(`codefab <file>`) 프로세스에 대한 golden 테스트.
 
 `tests/integration/fixtures/laugh/{normal,error}/`에 있는 `.laugh` 소스 파일을 실제로
-`python -m codefab.cli <파일>`에 넘겨 실행하고, 같은 이름의 `.out` 파일과 stdout을
+`codefab run <파일>`에 넘겨 실행하고, 같은 이름의 `.out` 파일과 stdout을
 바이트 단위로 비교한다. `normal/`은 종료 코드 0, `error/`는 종료 코드 1을 기대한다.
 
 이 통합 테스트는 서브프로세스를 띄워 전체 파이프라인을 실제로 구동하므로 단위 테스트보다
@@ -35,7 +35,7 @@ FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures" / "laugh"
 
 def run_cli(script: Path, cwd: Path = REPO_ROOT) -> subprocess.CompletedProcess:
     return subprocess.run(
-        [sys.executable, "-m", "codefab.cli", "run", str(script)],
+        [sys.executable, "-m", "codefab.common.cli", "run", str(script)],
         capture_output=True,
         text=True,
         encoding="utf-8",

@@ -17,6 +17,7 @@ from codefab.ast import (
     Variable,
     VarStmt,
 )
+from codefab.common.tokens import Token, TokenType
 from codefab.errors import (
     DivisionByZeroError,
     InvalidOperandTypeError,
@@ -26,7 +27,6 @@ from codefab.errors import (
     UndefinedVariableError,
 )
 from codefab.executor import ExecutorUnit, Module
-from codefab.tokens import Token, TokenType
 
 OPERATOR_TOKEN_TYPES = {
     "+": TokenType.PLUS,

@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
 from codefab.ast.expr import Expr, Variable
-from codefab.tokens import Token
+from codefab.common.tokens import Token
 
 
 class Stmt(ABC):

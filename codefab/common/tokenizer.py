@@ -1,5 +1,5 @@
+from codefab.common.tokens import Token, TokenType
 from codefab.errors import UnexpectedEndOfInputError
-from codefab.tokens import Token, TokenType
 
 SINGLE_CHAR_TOKENS: dict[str, TokenType] = {
     "(": TokenType.LEFT_PAREN,
