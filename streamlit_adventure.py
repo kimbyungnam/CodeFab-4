@@ -196,58 +196,61 @@ _THEME_SCOPE = f".st-key-{ADVENTURE_THEME_KEY}"
 
 def inject_css() -> None:
     """스타일을 .stApp 전체가 아니라 ADVENTURE_THEME_KEY 컨테이너 안으로 한정한다 —
-    이 테마가 미니 게임 데모 탭에만 적용되고 다른 탭에는 새어나가지 않게 하기 위함."""
+    이 테마가 미니 게임 데모 탭에만 적용되고 다른 탭에는 새어나가지 않게 하기 위함.
+    색 팔레트는 .streamlit/config.toml의 앱 전역 라이트 테마와 맞춰서, 탭을 넘나들 때
+    배경이 갑자기 확 바뀌어 보이지 않게 했다."""
     st.markdown(
         """
         <style>
         __SCOPE__ {
-            background: radial-gradient(circle at 20% 0%, #2b1b4d 0%, #120c24 55%, #05030d 100%);
+            background: #F5F4EE;
+            border: 1px solid #DDD8C4;
             padding: 20px;
             border-radius: 16px;
         }
         __SCOPE__, __SCOPE__ p, __SCOPE__ li, __SCOPE__ label,
         __SCOPE__ .stMarkdown, __SCOPE__ .stMarkdown p {
-            color: #eaeaea !important;
+            color: #3D3929 !important;
         }
-        __SCOPE__ h1, __SCOPE__ h2, __SCOPE__ h3 { color: #f4c95d !important; text-shadow: 0 0 10px rgba(244,201,93,0.35); }
+        __SCOPE__ h1, __SCOPE__ h2, __SCOPE__ h3 { color: #D97757 !important; }
         .team-header {
             font-size: 1.1rem;
             font-weight: 800;
-            color: #f4c95d !important;
+            color: #D97757 !important;
             margin: 4px 0 10px 0;
         }
         __SCOPE__ .stExpander, __SCOPE__ .stCodeBlock, __SCOPE__ pre, __SCOPE__ code {
-            background: rgba(0,0,0,0.55) !important;
-            color: #eaeaea !important;
+            background: #EDE9DC !important;
+            color: #3D3929 !important;
         }
-        __SCOPE__ .stExpander summary { color: #f4c95d !important; font-weight: 700; }
+        __SCOPE__ .stExpander summary { color: #D97757 !important; font-weight: 700; }
         .char-card {
-            background: linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-            border: 1px solid rgba(244,201,93,0.35);
+            background: #FFFFFF;
+            border: 1px solid #DDD8C4;
             border-radius: 14px;
             padding: 12px 14px;
             margin-bottom: 10px;
         }
-        .char-card.active { border-color: #f4c95d; box-shadow: 0 0 14px rgba(244,201,93,0.45); }
-        .char-name { font-size: 1.05rem; font-weight: 700; color: #f5f5f5; }
+        .char-card.active { border-color: #D97757; box-shadow: 0 0 0 2px rgba(217,119,87,0.25); }
+        .char-name { font-size: 1.05rem; font-weight: 700; color: #3D3929; }
         .stat-row { margin-top: 6px; }
-        .stat-label { font-size: 0.78rem; color: #cfcfcf; margin-bottom: 2px; }
+        .stat-label { font-size: 0.78rem; color: #7a7562; margin-bottom: 2px; }
         .bar-bg {
-            background: rgba(255,255,255,0.12);
+            background: #EDE9DC;
             border-radius: 999px;
             height: 10px;
             overflow: hidden;
         }
         .bar-fill { height: 100%; border-radius: 999px; transition: width 0.4s ease; }
         .log-box {
-            background: rgba(0,0,0,0.55);
-            border: 1px solid rgba(244,201,93,0.25);
+            background: #EDE9DC;
+            border: 1px solid #DDD8C4;
             border-radius: 12px;
             padding: 16px 18px;
             font-family: 'Consolas', 'D2Coding', monospace;
             font-size: 0.92rem;
             line-height: 1.7;
-            color: #eaeaea;
+            color: #3D3929;
             white-space: pre-wrap;
             min-height: 90px;
         }
@@ -257,9 +260,9 @@ def inject_css() -> None:
             font-weight: 800;
             padding: 18px;
             border-radius: 14px;
-            background: linear-gradient(120deg, rgba(244,201,93,0.18), rgba(244,201,93,0.04));
-            border: 1px solid rgba(244,201,93,0.5);
-            color: #f4c95d;
+            background: rgba(217,119,87,0.12);
+            border: 1px solid #D97757;
+            color: #D97757;
         }
         .fx-banner {
             text-align: center;
@@ -270,7 +273,7 @@ def inject_css() -> None:
         .fx-caption {
             text-align: center;
             font-size: 0.9rem;
-            color: #cfcfcf;
+            color: #7a7562;
             margin-top: -6px;
             margin-bottom: 10px;
         }
@@ -298,10 +301,10 @@ def inject_css() -> None:
             50% { opacity: 1; transform: scale(1.3); }
             100% { opacity: 1; transform: scale(1); }
         }
-        .fx-hit { animation: fx-shake 0.6s ease; filter: drop-shadow(0 0 10px rgba(255,95,109,0.7)); }
-        .fx-crit { animation: fx-flash 0.7s ease; filter: drop-shadow(0 0 16px rgba(244,201,93,0.85)); }
-        .fx-magic { animation: fx-spin 0.9s ease; filter: drop-shadow(0 0 14px rgba(95,198,255,0.75)); }
-        .fx-heal { animation: fx-pulse 0.9s ease; filter: drop-shadow(0 0 14px rgba(124,252,152,0.75)); }
+        .fx-hit { animation: fx-shake 0.6s ease; filter: drop-shadow(0 0 10px rgba(255,95,109,0.6)); }
+        .fx-crit { animation: fx-flash 0.7s ease; filter: drop-shadow(0 0 16px rgba(217,119,87,0.85)); }
+        .fx-magic { animation: fx-spin 0.9s ease; filter: drop-shadow(0 0 14px rgba(95,198,255,0.7)); }
+        .fx-heal { animation: fx-pulse 0.9s ease; filter: drop-shadow(0 0 14px rgba(124,252,152,0.7)); }
         </style>
         """.replace("__SCOPE__", _THEME_SCOPE),
         unsafe_allow_html=True,
@@ -354,7 +357,7 @@ def render_character_card(name: str, klass: str, step: dict, *, active: bool) ->
     parts = [
         f'<div class="{card_class}">',
         f'<div class="char-name">{icon} {html.escape(name)} '
-        f'<span style="font-size:0.8rem;color:#9d9d9d;">({html.escape(klass)})</span></div>',
+        f'<span style="font-size:0.8rem;color:#7a7562;">({html.escape(klass)})</span></div>',
         '<div class="stat-row">',
         bar_html(hp, hp_max, "linear-gradient(90deg,#ff5f6d,#7c1e2b)"),
         "</div>",
