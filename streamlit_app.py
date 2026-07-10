@@ -29,7 +29,7 @@ SLIDES: list[dict] = [
     {
         "kicker": "5일차 발표",
         "title": "CodeFab Interpreter\n프로젝트 발표",
-        "page": "1 / 14",
+        "page": "1 / 15",
         "body": """
 1일차 Assembler · Checker · Executor 3단 구조 설계부터,
 3~4일차 함수·클래스·배열·모듈·최적화 기능 확장까지 — **Bug Hunters**
@@ -45,7 +45,7 @@ SLIDES: list[dict] = [
     {
         "kicker": "00 · 목차 (Agenda)",
         "title": "목차",
-        "page": "2 / 14",
+        "page": "2 / 15",
         "body": """
 | 섹션 | 내용 |
 | --- | --- |
@@ -60,7 +60,7 @@ SLIDES: list[dict] = [
     {
         "kicker": "01 · Team & Roles",
         "title": "조원 소개 및 역할",
-        "page": "3 / 14",
+        "page": "3 / 15",
         "body": """
 팀명: **Bug Hunters**
 
@@ -76,7 +76,7 @@ SLIDES: list[dict] = [
     {
         "kicker": "02 · Day 1 · Foundation",
         "title": "구조 설계",
-        "page": "4 / 14",
+        "page": "4 / 15",
         "body": """
 Assembler · Checker · Executor Unit 구조 설계
 
@@ -91,7 +91,7 @@ Assembler · Checker · Executor Unit 구조 설계
     {
         "kicker": "03 · Architecture",
         "title": "인터프리터 파이프라인 구조 (완성형)",
-        "page": "5 / 14",
+        "page": "5 / 15",
         "body": """
 1일차의 3단 구조가 3~4일차를 거치며, 소스 코드 한 줄이 결과가 되기까지 이렇게 4단을 통과하게 됐습니다.
 
@@ -106,7 +106,7 @@ Assembler · Checker · Executor Unit 구조 설계
     {
         "kicker": "03 · Feature Map",
         "title": "Chapter별 기능 구현 요약 (3~4일차 확장)",
-        "page": "6 / 14",
+        "page": "6 / 15",
         "body": """
 | Chapter | 구현 기능 (핵심 파일) |
 | --- | --- |
@@ -122,7 +122,7 @@ Assembler · Checker · Executor Unit 구조 설계
     {
         "kicker": "BP 1/6 · TDD 전략",
         "title": '알려진 결함을 "실패하는 테스트"로 못박는다',
-        "page": "7 / 14",
+        "page": "7 / 15",
         "body": """
 PR #91: 고치지 않은 버그를 방치하는 대신, xfail(strict=True)로 실패 자체를 스펙으로 남긴다.
 
@@ -147,7 +147,7 @@ def test_함수_선언과_호출_매개변수_전달(tmp_path):
     {
         "kicker": "BP 2/6 · 리뷰 문화",
         "title": '리뷰는 "읽기"가 아니라 "실행"으로 끝낸다',
-        "page": "8 / 14",
+        "page": "8 / 15",
         "body": """
 PR #65: 파서 결과만 보지 않고 실제로 인터프리터를 돌려봐야 파이프라인 전체가 동작하는지 알 수 있다.
 
@@ -169,7 +169,7 @@ PR #65 · 가져오기(import) 통합 누락(wiring gap) 발견
     {
         "kicker": "BP 3/6 · 리뷰 코멘트",
         "title": "무엇이 왜 틀렸는지, 재현 예시로 짚는다",
-        "page": "9 / 14",
+        "page": "9 / 15",
         "body": """
 PR #69: "무엇이 왜 틀렸는지 + 재현 예시"가 있는 코멘트는 왕복 없이 한 번에 수정으로 이어진다.
 
@@ -191,7 +191,7 @@ PR #69 · 배열 인덱스 표현식 버그
     {
         "kicker": "BP 4/6 · 설계 문서화",
         "title": '설계 결정에는 "왜"를 코멘트로 남긴다',
-        "page": "10 / 14",
+        "page": "10 / 15",
         "body": """
 PR #64: 대안을 검토했지만 채택하지 않은 이유까지 남기면, 같은 질문이 반복되지 않는다.
 
@@ -213,7 +213,7 @@ PR #64 · CLI 진입점 통합
     {
         "kicker": "BP 5/6 · 리팩토링",
         "title": "공통 로직은 그대로, 달라지는 지점만 훅으로 연다",
-        "page": "11 / 14",
+        "page": "11 / 15",
         "body": """
 베이스 클래스를 고치지 않고, 딱 한 지점을 훅으로 뽑아 서브클래스가 오버라이드하게 만든다.
 
@@ -244,7 +244,7 @@ def _visit_method_body(self, method) -> None:
     {
         "kicker": "BP 6/6 · 언어 설계",
         "title": "다국어 표기는 렉서 한 층에서 끝낸다",
-        "page": "12 / 14",
+        "page": "12 / 15",
         "body": """
 한글·영어 표기는 토크나이저에서만 구분하고, 그 아래 계층은 표기 언어를 몰라도 되게 만든다.
 
@@ -271,7 +271,7 @@ KEYWORDS = {
         "id": "demo_scenario",
         "kicker": "05 · Live Demo",
         "title": "프로젝트 시연 시나리오",
-        "page": "13 / 14",
+        "page": "13 / 15",
         "body": (
             "파일 모드 → REPL → 디버그 모드 순서로, "
             "Chapter 1~7 기능이 실제로 맞물려 동작하는 모습을 보여줍니다.\n\n"
@@ -306,9 +306,21 @@ KEYWORDS = {
         ],
     },
     {
+        "id": "adventure_demo",
+        "kicker": "05-1 · Mini Game Demo",
+        "title": "미니 게임 데모 — 모험가 vs 몬스터",
+        "page": "14 / 15",
+        "body": (
+            "Chapter 3(클래스·상속)과 Chapter 5(최적화)가 실제로 맞물려 동작하는 모습을, "
+            "간단한 텍스트 RPG 전투로 보여줍니다.\n\n"
+            "`scripts/adventure.laugh` — 검사·마법사 파티 vs 고블린·슬라임. "
+            "'다음 ▶'을 누르면 캐릭터 한 명의 턴씩 진행됩니다."
+        ),
+    },
+    {
         "kicker": "06 · Retrospective",
         "title": "소감",
-        "page": "14 / 14",
+        "page": "15 / 15",
         "body": """
 | 이름 | 소감 (초안 — 발표 전 자유롭게 수정) |
 | --- | --- |
@@ -358,6 +370,17 @@ def _render_presentation() -> None:
 
         if slide.get("id") == "demo_scenario":
             _render_demo_scenario_panel(slide["steps"])
+        elif slide.get("id") == "adventure_demo":
+            _render_adventure_demo_panel()
+
+
+def _render_adventure_demo_panel() -> None:
+    """streamlit_adventure.py를 그대로 재사용한다 — 이 슬라이드 전용 로직/스타일은
+    전부 그 파일에 있고, 여기서는 소스를 읽어 넘겨주기만 한다."""
+    from streamlit_adventure import render_adventure_panel
+
+    script_path = Path(__file__).resolve().parent / "scripts" / "adventure.laugh"
+    render_adventure_panel(script_path.read_text(encoding="utf-8"))
 
 
 _DEMO_SCENARIO_RENDERERS = {

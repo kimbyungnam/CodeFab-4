@@ -423,22 +423,10 @@ def render_step(step: dict, characters: list[dict]) -> None:
             st.snow()
 
 
-def main() -> None:
-    st.set_page_config(
-        page_title="CodeFab Laugh Language 데모", page_icon="⚔️", layout="wide"
-    )
+def render_adventure_panel(source: str) -> None:
+    """단독 실행이든(streamlit_app.py) 다른 앱에 얹든(streamlit_app.py) 재사용 가능한
+    전투 패널 본체. 페이지 설정/타이틀 같은 앱 단위 설정은 호출하는 쪽 책임으로 둔다."""
     inject_css()
-    st.title("⚔️ CodeFab — Laugh Language 모험 데모")
-
-    script_paths = sorted(SCRIPTS_DIR.glob("*.laugh"))
-    script_names = [p.name for p in script_paths]
-    default_index = (
-        script_names.index("adventure.laugh")
-        if "adventure.laugh" in script_names
-        else 0
-    )
-    selected_name = st.selectbox("실행할 스크립트", script_names, index=default_index)
-    source = (SCRIPTS_DIR / selected_name).read_text(encoding="utf-8")
 
     with st.expander("소스 코드 보기"):
         st.code(source, language="rust")
@@ -485,4 +473,24 @@ def main() -> None:
     render_step(steps[st.session_state.step_idx], st.session_state.characters)
 
 
-main()
+def main() -> None:
+    st.set_page_config(
+        page_title="CodeFab Laugh Language 데모", page_icon="⚔️", layout="wide"
+    )
+    st.title("⚔️ CodeFab — Laugh Language 모험 데모")
+
+    script_paths = sorted(SCRIPTS_DIR.glob("*.laugh"))
+    script_names = [p.name for p in script_paths]
+    default_index = (
+        script_names.index("adventure.laugh")
+        if "adventure.laugh" in script_names
+        else 0
+    )
+    selected_name = st.selectbox("실행할 스크립트", script_names, index=default_index)
+    source = (SCRIPTS_DIR / selected_name).read_text(encoding="utf-8")
+
+    render_adventure_panel(source)
+
+
+if __name__ == "__main__":
+    main()
