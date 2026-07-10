@@ -1,3 +1,17 @@
+## 0.30.1 (2026-07-10)
+
+### Refactor
+
+- split app/debug.py into app/debug/{formatting,debugger,runner}.py by responsibility
+- move interpreter.py/function_interpreter.py/optimized_interpreter.py into codefab/pipeline/
+- split resolver.py into checker/resolver.py (Resolver) and executor/optimized_executor.py (OptimizedExecutorUnit)
+- move executor_unit.py/function_executor.py into codefab/executor/ (rename executor_unit.py -> executor.py)
+- move checker.py/function_checker.py into codefab/checker/
+- fix stale ast_nodes.py/array_nodes.py path references in comments
+- split ast_nodes.py/array_nodes.py/visitor.py into codefab/ast/
+- split codefab/error.py into codefab/errors/ by pipeline stage
+- correct CLAUDE.md architecture section to match current AST/parser/repl state
+
 ## 0.30.0 (2026-07-09)
 
 ### Feat
