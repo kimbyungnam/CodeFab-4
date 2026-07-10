@@ -1,6 +1,6 @@
 from enum import Enum, auto
 
-from codefab.ast_nodes import (
+from codefab.ast import (
     Assign,
     Binary,
     BlockStmt,
@@ -25,8 +25,9 @@ from codefab.ast_nodes import (
     Unary,
     Variable,
     VarStmt,
+    Visitor,
 )
-from codefab.error import (
+from codefab.errors import (
     DuplicateImportError,
     DuplicateVariableError,
     ImportInsideLoopError,
@@ -38,7 +39,6 @@ from codefab.error import (
     ThisOutsideClassError,
 )
 from codefab.module_loader import ModuleLoader
-from codefab.visitor import Visitor
 
 _INIT_METHOD_NAMES = ("init", "생성자")
 
@@ -223,7 +223,7 @@ class Checker(Visitor):
         expr.object.accept(self)
         expr.klass.accept(self)
 
-    # ---- 정적 배열 (codefab/array_nodes.py) ----
+    # ---- 정적 배열 (codefab/ast/array.py) ----
 
     def visit_array_literal(self, expr):
         expr.size.accept(self)

@@ -1,7 +1,7 @@
 """docs/함수_클래스_배열_가져오기_테스트.md 의 클래스 관련 시나리오(2~7번)를
 전체 파이프라인(Assembler -> Checker -> Executor)으로 실행해 검증한다."""
 
-from codefab.interpreter import Interpreter
+from codefab.pipeline import Interpreter
 
 
 def run(source: str):

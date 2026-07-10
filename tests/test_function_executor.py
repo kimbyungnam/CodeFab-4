@@ -1,6 +1,6 @@
 import pytest
 
-from codefab.ast_nodes import (
+from codefab.ast import (
     Binary,
     Call,
     ExpressionStmt,
@@ -12,8 +12,12 @@ from codefab.ast_nodes import (
     Variable,
     VarStmt,
 )
-from codefab.error import ArgumentCountMismatchError, NotCallableError
-from codefab.function_executor import FunctionExecutorUnit, ReturnSignal, UserFunction
+from codefab.errors import ArgumentCountMismatchError, NotCallableError
+from codefab.executor.function_executor import (
+    FunctionExecutorUnit,
+    ReturnSignal,
+    UserFunction,
+)
 from codefab.tokens import Token, TokenType
 
 

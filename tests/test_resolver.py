@@ -1,6 +1,6 @@
 import pytest
 
-from codefab.ast_nodes import (
+from codefab.ast import (
     Assign,
     Binary,
     BlockStmt,
@@ -11,8 +11,8 @@ from codefab.ast_nodes import (
     Variable,
     VarStmt,
 )
-from codefab.error import DuplicateVariableError, SelfReferenceInInitializerError
-from codefab.resolver import Resolver
+from codefab.checker import Resolver
+from codefab.errors import DuplicateVariableError, SelfReferenceInInitializerError
 from codefab.tokens import Token, TokenType
 
 

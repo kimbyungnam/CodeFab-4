@@ -2,7 +2,7 @@ import pytest
 
 from codefab.app.debug import DebugRunner
 from codefab.cli import FileRunner, main
-from codefab.interpreter import Interpreter, InterpretResult
+from codefab.pipeline import Interpreter, InterpretResult
 
 
 def test_파일을_읽어_interpreter에_source로_전달한다(mocker, tmp_path):

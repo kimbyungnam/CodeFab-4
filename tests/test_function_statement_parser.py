@@ -1,7 +1,7 @@
 import pytest
 
 from codefab.assembler.function_statement_parser import FunctionStatementParser
-from codefab.ast_nodes import (
+from codefab.ast import (
     Assign,
     Binary,
     Call,
@@ -12,7 +12,7 @@ from codefab.ast_nodes import (
     ReturnStmt,
     Variable,
 )
-from codefab.error import ParseError
+from codefab.errors import ParseError
 from codefab.tokens import Token, TokenType
 
 

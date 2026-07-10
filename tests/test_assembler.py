@@ -1,8 +1,8 @@
 import pytest
 
 from codefab.assembler.assembler import Assembler
-from codefab.ast_nodes import IfStmt, ImportStmt, Literal, PrintStmt, VarStmt
-from codefab.error import ParseError
+from codefab.ast import IfStmt, ImportStmt, Literal, PrintStmt, VarStmt
+from codefab.errors import ParseError
 
 # Assembler 는 stateless 하므로 테스트 전체에서 인스턴스 하나를 재사용한다.
 assembler = Assembler()

@@ -1,10 +1,9 @@
 import pytest
 
-from codefab.array_nodes import ArrayLiteral, IndexGet, IndexSet
 from codefab.assembler.expression_parser import ExpressionParser
-from codefab.ast_nodes import Literal, Variable, VarStmt
+from codefab.ast import ArrayLiteral, IndexGet, IndexSet, Literal, Variable, VarStmt
 from codefab.checker import Checker
-from codefab.error import (
+from codefab.errors import (
     ArrayIndexNotIntegerError,
     ArrayIndexNotNumberError,
     ArrayIndexOutOfRangeError,
@@ -15,7 +14,7 @@ from codefab.error import (
     ParseError,
     SelfReferenceInInitializerError,
 )
-from codefab.executor_unit import ExecutorUnit
+from codefab.executor import ExecutorUnit
 from codefab.tokens import Token, TokenType
 
 

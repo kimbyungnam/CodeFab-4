@@ -1,6 +1,6 @@
 import pytest
 
-from codefab.error import ParseError
+from codefab.errors import ParseError
 from codefab.tokenizer import Tokenizer
 from codefab.tokens import Token, TokenType
 

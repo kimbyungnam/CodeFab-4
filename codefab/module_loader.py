@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from codefab.assembler.assembler import Assembler
-from codefab.ast_nodes import ImportStmt, Stmt, VarStmt
-from codefab.error import (
+from codefab.ast import ImportStmt, Stmt, VarStmt
+from codefab.errors import (
     CircularImportError,
     ImportedFileNotFoundError,
     InvalidModuleContentError,

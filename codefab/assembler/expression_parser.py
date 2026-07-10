@@ -1,13 +1,15 @@
 from typing import Callable
 
-from codefab.array_nodes import ArrayLiteral, IndexGet, IndexSet
-from codefab.ast_nodes import (
+from codefab.ast import (
+    ArrayLiteral,
     Assign,
     Binary,
     Call,
     Expr,
     Get,
     Grouping,
+    IndexGet,
+    IndexSet,
     InstanceOf,
     Literal,
     Logical,
@@ -17,7 +19,7 @@ from codefab.ast_nodes import (
     Unary,
     Variable,
 )
-from codefab.error import (
+from codefab.errors import (
     InvalidAssignmentTargetError,
     MissingClassNameAfterInstanceOfError,
     MissingClosingParenAfterExpressionError,

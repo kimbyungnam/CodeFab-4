@@ -1,5 +1,5 @@
 from codefab.assembler.expression_parser import ExpressionParser
-from codefab.ast_nodes import (
+from codefab.ast import (
     BlockStmt,
     ClassStmt,
     Expr,
@@ -14,7 +14,7 @@ from codefab.ast_nodes import (
     Variable,
     VarStmt,
 )
-from codefab.error import (
+from codefab.errors import (
     MissingAliasKeywordError,
     MissingAliasNameError,
     MissingClassNameError,

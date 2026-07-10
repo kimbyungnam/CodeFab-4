@@ -1,4 +1,4 @@
-from codefab.error import UnexpectedEndOfInputError
+from codefab.errors import UnexpectedEndOfInputError
 from codefab.tokens import Token, TokenType
 
 SINGLE_CHAR_TOKENS: dict[str, TokenType] = {

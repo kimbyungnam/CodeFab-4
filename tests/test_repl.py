@@ -3,7 +3,7 @@ import io
 import pytest
 
 from codefab.app.repl import Repl, main
-from codefab.interpreter import Interpreter, InterpretResult
+from codefab.pipeline import Interpreter, InterpretResult
 
 
 def test_빈_입력_목록이어도_프롬프트는_한_번_출력된다(mocker):

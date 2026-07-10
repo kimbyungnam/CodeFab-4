@@ -1,6 +1,6 @@
 import pytest
 
-from codefab.ast_nodes import (
+from codefab.ast import (
     Assign,
     Binary,
     BlockStmt,
@@ -17,7 +17,7 @@ from codefab.ast_nodes import (
     Variable,
     VarStmt,
 )
-from codefab.error import (
+from codefab.errors import (
     DivisionByZeroError,
     InvalidOperandTypeError,
     MismatchedPlusOperandTypeError,
@@ -25,7 +25,7 @@ from codefab.error import (
     UndefinedModuleMemberError,
     UndefinedVariableError,
 )
-from codefab.executor_unit import ExecutorUnit, Module
+from codefab.executor import ExecutorUnit, Module
 from codefab.tokens import Token, TokenType
 
 OPERATOR_TOKEN_TYPES = {

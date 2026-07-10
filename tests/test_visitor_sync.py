@@ -2,8 +2,7 @@ import importlib
 import inspect
 import re
 
-from codefab.ast_nodes import Expr, Stmt
-from codefab.visitor import Visitor
+from codefab.ast import Expr, Stmt, Visitor
 
 
 def _to_snake(name: str) -> str:
@@ -11,7 +10,7 @@ def _to_snake(name: str) -> str:
 
 
 def _all_concrete_subclasses(base: type) -> set[type]:
-    for module_name in ("codefab.ast_nodes", "codefab.array_nodes"):
+    for module_name in ("codefab.ast.expr", "codefab.ast.stmt", "codefab.ast.array"):
         importlib.import_module(module_name)
 
     found: set[type] = set()

@@ -1,6 +1,6 @@
 import pytest
 
-from codefab.ast_nodes import (
+from codefab.ast import (
     Binary,
     Call,
     ClassStmt,
@@ -16,13 +16,13 @@ from codefab.ast_nodes import (
     Variable,
     VarStmt,
 )
-from codefab.error import (
+from codefab.errors import (
     OnlyInstancesHaveFieldsError,
     SuperclassMustBeClassError,
     UndefinedPropertyError,
     UndefinedVariableError,
 )
-from codefab.executor_unit import ExecutorUnit
+from codefab.executor import ExecutorUnit
 from codefab.tokens import Token, TokenType
 
 

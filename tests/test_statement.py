@@ -1,5 +1,5 @@
 from codefab.assembler.statement_parser import StatementParser
-from codefab.ast_nodes import (
+from codefab.ast import (
     Assign,
     Binary,
     BlockStmt,

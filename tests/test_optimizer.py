@@ -1,7 +1,7 @@
 import pytest
 
-from codefab.array_nodes import ArrayLiteral, IndexGet
-from codefab.ast_nodes import (
+from codefab.ast import (
+    ArrayLiteral,
     Binary,
     Call,
     ClassStmt,
@@ -10,6 +10,7 @@ from codefab.ast_nodes import (
     Get,
     Grouping,
     IfStmt,
+    IndexGet,
     Literal,
     Logical,
     MethodDecl,
