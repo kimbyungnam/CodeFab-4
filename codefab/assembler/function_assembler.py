@@ -1,7 +1,7 @@
 from codefab.assembler.assembler import Assembler
 from codefab.assembler.function_statement_parser import FunctionStatementParser
 from codefab.ast import Stmt
-from codefab.tokenizer import Tokenizer
+from codefab.common.tokenizer import Tokenizer
 
 
 class FunctionAssembler(Assembler):

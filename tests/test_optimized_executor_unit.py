@@ -9,8 +9,8 @@ from codefab.ast import (
     VarStmt,
 )
 from codefab.checker import Resolver
+from codefab.common.tokens import Token, TokenType
 from codefab.executor import Environment, ExecutorUnit, OptimizedExecutorUnit
-from codefab.tokens import Token, TokenType
 
 NESTING_DEPTH = 10  # PDF 예시(13중 중첩 블록)를 축소한 깊이
 

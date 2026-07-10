@@ -13,8 +13,8 @@ from codefab.ast import (
     This,
     Variable,
 )
-from codefab.tokenizer import Tokenizer
-from codefab.tokens import Token, TokenType
+from codefab.common.tokenizer import Tokenizer
+from codefab.common.tokens import Token, TokenType
 
 
 def tokenize(source: str) -> list[Token]:

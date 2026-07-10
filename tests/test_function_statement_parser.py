@@ -12,8 +12,8 @@ from codefab.ast import (
     ReturnStmt,
     Variable,
 )
+from codefab.common.tokens import Token, TokenType
 from codefab.errors import ParseError
-from codefab.tokens import Token, TokenType
 
 
 def _tok(token_type, lexeme, literal=None, line=1):

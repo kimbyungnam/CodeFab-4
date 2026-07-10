@@ -19,6 +19,7 @@ from codefab.ast import (
     Unary,
     Variable,
 )
+from codefab.common.tokens import Token, TokenType
 from codefab.errors import (
     InvalidAssignmentTargetError,
     MissingClassNameAfterInstanceOfError,
@@ -33,7 +34,6 @@ from codefab.errors import (
     UnexpectedEndOfInputError,
     UnrecognizedExpressionError,
 )
-from codefab.tokens import Token, TokenType
 
 
 class ExpressionParser:

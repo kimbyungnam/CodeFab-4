@@ -1,8 +1,8 @@
 import pytest
 
+from codefab.common.tokenizer import Tokenizer
+from codefab.common.tokens import Token, TokenType
 from codefab.errors import ParseError
-from codefab.tokenizer import Tokenizer
-from codefab.tokens import Token, TokenType
 
 
 def test_빈_소스는_EOF_토큰만_반환한다():

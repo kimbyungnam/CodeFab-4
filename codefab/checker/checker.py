@@ -27,6 +27,7 @@ from codefab.ast import (
     VarStmt,
     Visitor,
 )
+from codefab.common.module_loader import ModuleLoader
 from codefab.errors import (
     DuplicateImportError,
     DuplicateVariableError,
@@ -38,7 +39,6 @@ from codefab.errors import (
     SuperWithoutSuperclassError,
     ThisOutsideClassError,
 )
-from codefab.module_loader import ModuleLoader
 
 _INIT_METHOD_NAMES = ("init", "생성자")
 

@@ -2,7 +2,7 @@
 
 `normal/`, `error/`의 `<이름>.laugh` + `<이름>.out` 쌍은 저장소 루트 `테스트케이스.md`에 정리된
 예제를 1:1로 옮긴 것이다. `tests/integration/test_cli_integration.py`가 이 디렉터리를 glob으로
-찾아 `python -m codefab.cli <이름>.laugh`를 실행하고, stdout을 `<이름>.out`과 바이트 단위로
+찾아 `python -m codefab.common.cli <이름>.laugh`를 실행하고, stdout을 `<이름>.out`과 바이트 단위로
 비교한다. `normal/`은 종료 코드 0, `error/`는 종료 코드 1을 기대한다.
 
 이 디렉터리는 `cli`가 아니라 `laugh`로 이름 붙였다 — 같은 `.laugh` 소스를 repl/debug 통합

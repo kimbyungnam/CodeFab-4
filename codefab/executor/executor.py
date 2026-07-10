@@ -27,6 +27,8 @@ from codefab.ast import (
     VarStmt,
     Visitor,
 )
+from codefab.common.module_loader import ModuleLoader
+from codefab.common.tokens import Token, TokenType
 from codefab.errors import (
     ArrayIndexNotIntegerError,
     ArrayIndexNotNumberError,
@@ -47,8 +49,6 @@ from codefab.errors import (
     UnsupportedStatementError,
     UnsupportedUnaryOperatorError,
 )
-from codefab.module_loader import ModuleLoader
-from codefab.tokens import Token, TokenType
 
 _INIT_METHOD_NAMES = ("init", "생성자")
 

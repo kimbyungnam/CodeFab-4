@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-from codefab.tokens import Token
+from codefab.common.tokens import Token
 
 
 class Expr(ABC):

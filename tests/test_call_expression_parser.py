@@ -2,8 +2,8 @@ import pytest
 
 from codefab.assembler.call_expression_parser import CallExpressionParser
 from codefab.ast import Binary, Call, Literal, Variable
+from codefab.common.tokens import Token, TokenType
 from codefab.errors import ParseError
-from codefab.tokens import Token, TokenType
 
 
 def _tok(token_type, lexeme, literal=None, line=1):

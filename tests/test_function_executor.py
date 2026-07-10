@@ -12,13 +12,13 @@ from codefab.ast import (
     Variable,
     VarStmt,
 )
+from codefab.common.tokens import Token, TokenType
 from codefab.errors import ArgumentCountMismatchError, NotCallableError
 from codefab.executor.function_executor import (
     FunctionExecutorUnit,
     ReturnSignal,
     UserFunction,
 )
-from codefab.tokens import Token, TokenType
 
 
 def make_identifier_token(lexeme: str, line: int = 1) -> Token:

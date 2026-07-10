@@ -1,6 +1,6 @@
 from codefab.assembler.statement_parser import StatementParser
 from codefab.ast import Stmt
-from codefab.tokenizer import Tokenizer
+from codefab.common.tokenizer import Tokenizer
 
 
 class Assembler:

@@ -8,8 +8,8 @@ from codefab.ast import (
     Unary,
     Variable,
 )
+from codefab.common.tokens import Token, TokenType
 from codefab.errors import ParseError
-from codefab.tokens import Token, TokenType
 
 
 def test_single_number_literal_is_parsed_as_literal_expr():

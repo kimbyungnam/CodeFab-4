@@ -11,7 +11,7 @@ from codefab.ast import (
     Variable,
     VarStmt,
 )
-from codefab.tokens import Token, TokenType
+from codefab.common.tokens import Token, TokenType
 
 
 def test_if_stmt_without_else_is_parsed_as_if_stmt():

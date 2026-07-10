@@ -14,6 +14,7 @@ from codefab.ast import (
     Variable,
     VarStmt,
 )
+from codefab.common.tokens import Token, TokenType
 from codefab.errors import (
     MissingAliasKeywordError,
     MissingAliasNameError,
@@ -41,7 +42,6 @@ from codefab.errors import (
     ParseError,
     UnexpectedEndOfInputError,
 )
-from codefab.tokens import Token, TokenType
 
 
 class StatementParser:

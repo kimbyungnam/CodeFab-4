@@ -1,7 +1,7 @@
 from codefab.assembler.function_assembler import FunctionAssembler
 from codefab.checker import FunctionChecker, Resolver
+from codefab.common.optimizer import Optimizer
 from codefab.executor import FunctionExecutorUnit, OptimizedExecutorUnit
-from codefab.optimizer import Optimizer
 from codefab.pipeline.interpreter import Interpreter
 
 

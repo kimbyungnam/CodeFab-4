@@ -2,10 +2,10 @@ from codefab.assembler.assembler import Assembler
 from codefab.ast import FunctionStmt, PrintStmt
 from codefab.ast import Literal as ExprLiteral
 from codefab.checker import Checker
+from codefab.common.tokens import Token, TokenType
 from codefab.errors import DuplicateVariableError, ExecutorRuntimeError, ParseError
 from codefab.executor import ExecutorUnit
 from codefab.pipeline import Interpreter
-from codefab.tokens import Token, TokenType
 
 
 def test_알수없는_예외가_발생해도_전파되지_않고_에러메시지로_반환된다(mocker):

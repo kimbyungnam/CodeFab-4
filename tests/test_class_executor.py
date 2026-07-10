@@ -16,6 +16,7 @@ from codefab.ast import (
     Variable,
     VarStmt,
 )
+from codefab.common.tokens import Token, TokenType
 from codefab.errors import (
     OnlyInstancesHaveFieldsError,
     SuperclassMustBeClassError,
@@ -23,7 +24,6 @@ from codefab.errors import (
     UndefinedVariableError,
 )
 from codefab.executor import ExecutorUnit
-from codefab.tokens import Token, TokenType
 
 
 def make_identifier_token(lexeme: str, line: int = 1) -> Token:

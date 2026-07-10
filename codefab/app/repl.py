@@ -3,10 +3,10 @@ from collections.abc import Callable, Iterable
 
 from codefab.assembler.assembler import Assembler
 from codefab.ast import IfStmt
+from codefab.common.tokenizer import Tokenizer
+from codefab.common.tokens import TokenType
 from codefab.errors import UnexpectedEndOfInputError
 from codefab.pipeline import Interpreter, create_optimized_interpreter
-from codefab.tokenizer import Tokenizer
-from codefab.tokens import TokenType
 
 EXIT_COMMANDS = {"exit", "quit"}
 ELSE_KEYWORDS = {"아니면", "else"}
