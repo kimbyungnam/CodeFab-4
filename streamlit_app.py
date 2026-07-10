@@ -11,18 +11,18 @@ from pathlib import Path
 import streamlit as st
 
 from codefab.app.debug import DebugExecutor, DebugExitRequested, Debugger
-from visualize import (
-    build_ast_graph,
-    build_token_graph,
-    render_ast_dot,
-    render_token_dot,
-)
 from codefab.assembler.function_assembler import FunctionAssembler
 from codefab.assembler.function_statement_parser import FunctionStatementParser
 from codefab.common.tokenizer import Tokenizer
 from codefab.pipeline.optimized_interpreter import (
     OptimizingChecker,
     create_optimized_interpreter,
+)
+from visualize import (
+    build_ast_graph,
+    build_token_graph,
+    render_ast_dot,
+    render_token_dot,
 )
 
 DEMO_SCENARIO_INTRO = (
