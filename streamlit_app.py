@@ -452,13 +452,11 @@ def main() -> None:
     st.set_page_config(page_title="CodeFab-4 데모", layout="wide")
     st.title("CodeFab-4 (Laugh Language) 데모")
 
-    scenario_tab, adventure_tab, repl_tab, file_tab, debug_tab, viz_tab = st.tabs(
-        ["시연 시나리오", "미니 게임", "REPL", "파일 실행", "디버거", "AST/토큰 시각화"]
+    scenario_tab, repl_tab, file_tab, debug_tab, viz_tab, adventure_tab = st.tabs(
+        ["시연 시나리오", "REPL", "파일 실행", "디버거", "AST/토큰 시각화", "미니 게임"]
     )
     with scenario_tab:
         _render_demo_scenario_tab()
-    with adventure_tab:
-        _render_adventure_demo_tab()
     with repl_tab:
         _render_repl()
     with file_tab:
@@ -467,6 +465,8 @@ def main() -> None:
         _render_debugger()
     with viz_tab:
         _render_visualizer()
+    with adventure_tab:
+        _render_adventure_demo_tab()
 
 
 if __name__ == "__main__":
