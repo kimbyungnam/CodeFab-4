@@ -18,7 +18,14 @@
   추가했다.
 - `<이름>.debug.out` — debug golden 출력 (`.debug.cmds`가 있는 케이스에만 함께 둔다)
 
-repl 통합 테스트(`<이름>.repl.out`)는 아직 추가되지 않았다 — 추후 커밋에서 다룬다.
+repl은 별도 golden 파일이 없다 — `test_repl_integration.py`가 `<이름>.out`을 그대로 재사용하되,
+CLI와 REPL의 줄 번호 계산 차이를 테스트 코드에서 계산해 보정한다. REPL(`Repl.run`)은 괄호/블록이
+안 닫혔으면 다음 줄까지 버퍼링했다가 한 번에 실행하고, 그 실행 단위(청크)마다 줄 번호를 1부터
+다시 센다. `test_repl_integration.py`의 `_chunk_ranges`가 `Repl`의 청크 판단 로직
+(`_is_incomplete`/`_starts_with_else`/`_is_bare_if_without_else`)을 그대로 재사용해 어떻게
+나뉠지 재현하고, `<이름>.out`의 절대 줄 번호를 그 청크 안에서의 상대 줄 번호로 변환한다. 세미콜론
+누락처럼 파일 끝 개행에 의존하는 에러는 REPL이 그 가상의 줄을 볼 수 없으므로 마지막 청크의 실제
+줄 수로 clamp한다. 이 계산은 `codefab`을 건드리지 않고 테스트 코드 안에서만 이뤄진다.
 
 - `normal/` — 테스트케이스.md 1번 섹션(표현식/연산자/진리값, 변수/스코프, 제어 흐름) 24개 예제 +
   3일차 문서 Chapter 3(class) 7개 예제 + Chapter 4(정적 배열) 2개 예제 + Chapter 7(디버그 모드
@@ -50,6 +57,8 @@ repl 통합 테스트(`<이름>.repl.out`)는 아직 추가되지 않았다 — 
   `test_cli_integration.py`가 자동으로 수집한다.
 - debug: 같은 `<이름>.laugh`에 `<이름>.debug.cmds`와 `<이름>.debug.out`을 추가하면
   `test_debug_integration.py`가 자동으로 수집한다.
+- repl: 새 golden 파일은 필요 없다. `test_repl_integration.py`의 `NORMAL_REPL_CASES`/
+  `ERROR_REPL_CASES` 목록에 이름을 추가하면 같은 `<이름>.laugh`/`<이름>.out`을 재사용한다.
 
 파일은 커밋 시 `end-of-file-fixer` pre-commit 훅이 끝에 개행을 강제로 붙이므로, EOF 위치에
 의존하는 에러(예: 세미콜론 누락)는 그 개행 때문에 줄 번호가 하나 밀릴 수 있다 — golden 파일은
