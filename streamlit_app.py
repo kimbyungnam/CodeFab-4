@@ -11,7 +11,7 @@ from pathlib import Path
 import streamlit as st
 
 from codefab.app.debug import DebugExecutor, DebugExitRequested, Debugger
-from codefab.app.visualize import (
+from visualize import (
     build_ast_graph,
     build_token_graph,
     render_ast_dot,
