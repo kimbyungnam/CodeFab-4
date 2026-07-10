@@ -1,3 +1,9 @@
+## 0.30.2 (2026-07-10)
+
+### Refactor
+
+- Move commonly used modules into common module
+
 ## 0.30.1 (2026-07-10)
 
 ### Refactor
