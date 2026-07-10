@@ -8,13 +8,13 @@ import threading
 from pathlib import Path
 
 import streamlit as st
-
-from codefab.app.debug import DebugExecutor, DebugExitRequested, Debugger
-from codefab.assembler.function_assembler import FunctionAssembler
 from codefab.optimized_interpreter import (
     OptimizingChecker,
     create_optimized_interpreter,
 )
+
+from codefab.app.debug import DebugExecutor, DebugExitRequested, Debugger
+from codefab.assembler.function_assembler import FunctionAssembler
 
 SLIDES: list[dict] = [
     {
