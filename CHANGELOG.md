@@ -1,3 +1,10 @@
+## 0.31.0 (2026-07-10)
+
+### Feat
+
+- 시연 시나리오 추가
+- Add streamlit demo application
+
 ## 0.30.2 (2026-07-10)
 
 ### Refactor
