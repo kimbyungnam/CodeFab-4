@@ -1,6 +1,6 @@
 """scripts/*.laugh 파일을 실행해 RPG 전투 로그처럼 보여주는 Streamlit 데모.
 
-실행: streamlit run codefab/app/streamlit_adventure.py
+실행: streamlit run streamlit_adventure.py
 """
 
 import html
@@ -11,7 +11,18 @@ import streamlit as st
 
 from codefab.pipeline import create_optimized_interpreter
 
-SCRIPTS_DIR = Path(__file__).resolve().parent.parent.parent / "scripts"
+
+def _find_scripts_dir(start: Path) -> Path:
+    """이 파일이 저장소 안에서 옮겨지더라도 scripts/ 폴더를 찾을 수 있도록,
+    고정된 부모 깊이 대신 상위 디렉터리를 훑어 올라간다."""
+    for directory in (start, *start.parents):
+        candidate = directory / "scripts"
+        if candidate.is_dir():
+            return candidate
+    return start / "scripts"
+
+
+SCRIPTS_DIR = _find_scripts_dir(Path(__file__).resolve().parent)
 
 CLASS_ICON = {"검사": "⚔️", "마법사": "🧙"}
 MONSTER_ICON = {"고블린": "👺", "슬라임": "🟢"}
