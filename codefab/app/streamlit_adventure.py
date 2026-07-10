@@ -9,7 +9,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from codefab.optimized_interpreter import create_optimized_interpreter
+from codefab.pipeline import create_optimized_interpreter
 
 SCRIPTS_DIR = Path(__file__).resolve().parent.parent.parent / "scripts"
 
@@ -186,7 +186,21 @@ def inject_css() -> None:
         .stApp {
             background: radial-gradient(circle at 20% 0%, #2b1b4d 0%, #120c24 55%, #05030d 100%);
         }
+        .stApp, .stApp p, .stApp li, .stApp label, .stMarkdown, .stMarkdown p {
+            color: #eaeaea !important;
+        }
         h1, h2, h3 { color: #f4c95d !important; text-shadow: 0 0 10px rgba(244,201,93,0.35); }
+        .team-header {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #f4c95d !important;
+            margin: 4px 0 10px 0;
+        }
+        .stExpander, .stCodeBlock, pre, code {
+            background: rgba(0,0,0,0.55) !important;
+            color: #eaeaea !important;
+        }
+        .stExpander summary { color: #f4c95d !important; font-weight: 700; }
         .char-card {
             background: linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
             border: 1px solid rgba(244,201,93,0.35);
@@ -361,13 +375,15 @@ def render_step(step: dict, characters: list[dict]) -> None:
 
     col_left, col_right = st.columns(2)
     with col_left:
-        st.markdown("**🛡️ 모험가팀**")
+        st.markdown('<div class="team-header">🛡️ 모험가팀</div>', unsafe_allow_html=True)
         for c in advs:
             render_character_card(
                 c["name"], c["klass"], step, active=c["name"] == active_actor
             )
     with col_right:
-        st.markdown("**👹 몬스터팀**")
+        st.markdown(
+            '<div class="team-header">👹 몬스터팀</div>', unsafe_allow_html=True
+        )
         for c in mons:
             render_character_card(
                 c["name"], c["klass"], step, active=c["name"] == active_actor
