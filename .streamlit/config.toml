@@ -1,0 +1,19 @@
+[theme]
+base = "light"
+primaryColor = "#D97757"
+backgroundColor = "#F5F4EE"
+secondaryBackgroundColor = "#EDE9DC"
+textColor = "#3D3929"
+linkColor = "#D97757"
+borderColor = "#DDD8C4"
+codeBackgroundColor = "#EDE9DC"
+codeTextColor = "#3D3929"
+
+# Google Fonts CDN — "<font name>:<url>" 형식. 인터넷 연결이 필요하다.
+font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+headingFont = "'Source Serif 4':https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@500;600;700&display=swap"
+
+baseFontSize = 16
+baseRadius = "large"
+buttonRadius = "large"
+showWidgetBorder = true
