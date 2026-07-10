@@ -5,16 +5,25 @@
 
 import queue
 import threading
+import time
 from pathlib import Path
 
 import streamlit as st
-from codefab.optimized_interpreter import (
+
+from codefab.app.debug import DebugExecutor, DebugExitRequested, Debugger
+from codefab.app.visualize import (
+    build_ast_graph,
+    build_token_graph,
+    render_ast_dot,
+    render_token_dot,
+)
+from codefab.assembler.function_assembler import FunctionAssembler
+from codefab.assembler.function_statement_parser import FunctionStatementParser
+from codefab.common.tokenizer import Tokenizer
+from codefab.pipeline.optimized_interpreter import (
     OptimizingChecker,
     create_optimized_interpreter,
 )
-
-from codefab.app.debug import DebugExecutor, DebugExitRequested, Debugger
-from codefab.assembler.function_assembler import FunctionAssembler
 
 SLIDES: list[dict] = [
     {
@@ -490,7 +499,15 @@ def _render_file_runner(
     source = st.text_area("소스 코드", height=200, key=source_key)
 
     if st.button("실행", key=f"{key_prefix}_run"):
+        started = time.perf_counter()
         result = create_optimized_interpreter().interpret(source)
+        elapsed_ms = (time.perf_counter() - started) * 1000
+
+        status_col, time_col, lines_col = st.columns(3)
+        status_col.metric("상태", "에러" if result.error is not None else "성공")
+        time_col.metric("실행 시간", f"{elapsed_ms:.1f} ms")
+        lines_col.metric("출력 줄 수", len(result.output))
+
         st.code("\n".join(result.output) if result.output else "(출력 없음)")
         if result.error is not None:
             st.error(result.error)
@@ -525,6 +542,50 @@ def _render_import_demo(key_prefix: str = "scn_import") -> None:
                 st.error(result.error)
         finally:
             module_path.unlink(missing_ok=True)
+
+
+def _render_visualizer(key_prefix: str = "viz") -> None:
+    st.subheader("AST / 토큰 시각화")
+
+    source_key = f"{key_prefix}_source"
+    preset_key = f"{key_prefix}_preset"
+    st.session_state.setdefault(source_key, "")
+    st.selectbox(
+        "예제 프리셋",
+        ["(직접 입력)", *PRESETS.keys()],
+        key=preset_key,
+        on_change=_apply_preset,
+        args=(preset_key, source_key),
+    )
+    source = st.text_area("소스 코드", height=150, key=source_key)
+
+    if not source.strip():
+        st.info("소스 코드를 입력하거나 프리셋을 선택하세요.")
+        return
+
+    try:
+        started = time.perf_counter()
+        tokens = Tokenizer(source).scan_tokens()
+        statements = FunctionStatementParser(tokens).parse()
+        elapsed_ms = (time.perf_counter() - started) * 1000
+    except Exception as exc:  # noqa: BLE001 — 토크나이저/파서 예외 타입이 제각각이라 광범위하게 잡음
+        st.error(str(exc))
+        return
+
+    token_nodes, token_edges = build_token_graph(tokens)
+    ast_nodes, ast_edges = build_ast_graph(statements)
+
+    stat_cols = st.columns(4)
+    stat_cols[0].metric("토큰 수", len(tokens))
+    stat_cols[1].metric("최상위 문장 수", len(statements))
+    stat_cols[2].metric("AST 노드 수", len(ast_nodes))
+    stat_cols[3].metric("파싱 시간", f"{elapsed_ms:.2f} ms")
+
+    st.markdown("#### 토큰 스트림")
+    st.graphviz_chart(render_token_dot(token_nodes, token_edges))
+
+    st.markdown("#### AST (구문 트리)")
+    st.graphviz_chart(render_ast_dot(ast_nodes, ast_edges))
 
 
 def _debugger_worker(
@@ -669,13 +730,17 @@ def main() -> None:
         _render_presentation()
 
     with demo_tab:
-        repl_tab, file_tab, debug_tab = st.tabs(["REPL", "파일 실행", "디버거"])
+        repl_tab, file_tab, debug_tab, viz_tab = st.tabs(
+            ["REPL", "파일 실행", "디버거", "AST/토큰 시각화"]
+        )
         with repl_tab:
             _render_repl()
         with file_tab:
             _render_file_runner()
         with debug_tab:
             _render_debugger()
+        with viz_tab:
+            _render_visualizer()
 
 
 if __name__ == "__main__":
