@@ -190,28 +190,37 @@ def build_steps(source: str, lines: list[str]) -> tuple[list[dict], list[dict]]:
     return steps, characters
 
 
+ADVENTURE_THEME_KEY = "adventure_demo_theme"
+_THEME_SCOPE = f".st-key-{ADVENTURE_THEME_KEY}"
+
+
 def inject_css() -> None:
+    """스타일을 .stApp 전체가 아니라 ADVENTURE_THEME_KEY 컨테이너 안으로 한정한다 —
+    이 테마가 미니 게임 데모 탭에만 적용되고 다른 탭에는 새어나가지 않게 하기 위함."""
     st.markdown(
         """
         <style>
-        .stApp {
+        __SCOPE__ {
             background: radial-gradient(circle at 20% 0%, #2b1b4d 0%, #120c24 55%, #05030d 100%);
+            padding: 20px;
+            border-radius: 16px;
         }
-        .stApp, .stApp p, .stApp li, .stApp label, .stMarkdown, .stMarkdown p {
+        __SCOPE__, __SCOPE__ p, __SCOPE__ li, __SCOPE__ label,
+        __SCOPE__ .stMarkdown, __SCOPE__ .stMarkdown p {
             color: #eaeaea !important;
         }
-        h1, h2, h3 { color: #f4c95d !important; text-shadow: 0 0 10px rgba(244,201,93,0.35); }
+        __SCOPE__ h1, __SCOPE__ h2, __SCOPE__ h3 { color: #f4c95d !important; text-shadow: 0 0 10px rgba(244,201,93,0.35); }
         .team-header {
             font-size: 1.1rem;
             font-weight: 800;
             color: #f4c95d !important;
             margin: 4px 0 10px 0;
         }
-        .stExpander, .stCodeBlock, pre, code {
+        __SCOPE__ .stExpander, __SCOPE__ .stCodeBlock, __SCOPE__ pre, __SCOPE__ code {
             background: rgba(0,0,0,0.55) !important;
             color: #eaeaea !important;
         }
-        .stExpander summary { color: #f4c95d !important; font-weight: 700; }
+        __SCOPE__ .stExpander summary { color: #f4c95d !important; font-weight: 700; }
         .char-card {
             background: linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
             border: 1px solid rgba(244,201,93,0.35);
@@ -294,7 +303,7 @@ def inject_css() -> None:
         .fx-magic { animation: fx-spin 0.9s ease; filter: drop-shadow(0 0 14px rgba(95,198,255,0.75)); }
         .fx-heal { animation: fx-pulse 0.9s ease; filter: drop-shadow(0 0 14px rgba(124,252,152,0.75)); }
         </style>
-        """,
+        """.replace("__SCOPE__", _THEME_SCOPE),
         unsafe_allow_html=True,
     )
 
@@ -417,60 +426,70 @@ def render_step(step: dict, characters: list[dict]) -> None:
             f'<div class="result-banner">{html.escape(result_line)}</div>',
             unsafe_allow_html=True,
         )
-        if "모험가팀" in result_line:
-            st.balloons()
-        else:
-            st.snow()
+        # Streamlit은 다른 탭(AST/토큰 시각화 등)에서 위젯을 조작해도 이 탭의 코드를
+        # 매번 다시 실행한다. 축하 애니메이션은 "이번 전투"당 한 번만 터지게, 마지막으로
+        # 축하한 battle_run과 비교해서 이미 축하했으면 다시 재생하지 않는다.
+        battle_run = st.session_state.get("battle_run", 0)
+        if st.session_state.get("_celebrated_run") != battle_run:
+            st.session_state._celebrated_run = battle_run
+            if "모험가팀" in result_line:
+                st.balloons()
+            else:
+                st.snow()
 
 
 def render_adventure_panel(source: str) -> None:
     """단독 실행이든(streamlit_app.py) 다른 앱에 얹든(streamlit_app.py) 재사용 가능한
-    전투 패널 본체. 페이지 설정/타이틀 같은 앱 단위 설정은 호출하는 쪽 책임으로 둔다."""
-    inject_css()
+    전투 패널 본체. 페이지 설정/타이틀 같은 앱 단위 설정은 호출하는 쪽 책임으로 둔다.
+    st.container(key=ADVENTURE_THEME_KEY)로 감싸서 inject_css()의 어두운 테마가
+    이 컨테이너 안에서만 적용되고 다른 탭으로 새어나가지 않게 한다."""
+    with st.container(key=ADVENTURE_THEME_KEY):
+        inject_css()
 
-    with st.expander("소스 코드 보기"):
-        st.code(source, language="rust")
+        with st.expander("소스 코드 보기"):
+            st.code(source, language="rust")
 
-    if "steps" not in st.session_state or st.session_state.get("_source") != source:
-        st.session_state.steps = None
-        st.session_state.step_idx = 0
-        st.session_state._source = source
-
-    if st.button("▶ 전투 시작", type="primary"):
-        result = create_optimized_interpreter().interpret(source)
-        if result.error is not None:
-            st.error(result.error)
+        if "steps" not in st.session_state or st.session_state.get("_source") != source:
             st.session_state.steps = None
-        else:
-            steps, characters = build_steps(source, result.output)
-            st.session_state.steps = steps
-            st.session_state.characters = characters
             st.session_state.step_idx = 0
+            st.session_state._source = source
 
-    steps = st.session_state.get("steps")
-    if not steps:
-        st.info("위 버튼을 눌러 전투를 시작해 보세요.")
-        return
+        if st.button("▶ 전투 시작", type="primary"):
+            result = create_optimized_interpreter().interpret(source)
+            if result.error is not None:
+                st.error(result.error)
+                st.session_state.steps = None
+            else:
+                steps, characters = build_steps(source, result.output)
+                st.session_state.steps = steps
+                st.session_state.characters = characters
+                st.session_state.step_idx = 0
+                st.session_state.battle_run = st.session_state.get("battle_run", 0) + 1
 
-    idx = st.session_state.step_idx
-    nav_prev, nav_slider, nav_next = st.columns([1, 4, 1])
-    with nav_prev:
-        if st.button("◀ 이전", disabled=idx == 0):
-            st.session_state.step_idx = max(0, idx - 1)
-            st.rerun()
-    with nav_next:
-        if st.button("다음 ▶", disabled=idx == len(steps) - 1):
-            st.session_state.step_idx = min(len(steps) - 1, idx + 1)
-            st.rerun()
-    with nav_slider:
-        new_idx = st.slider(
-            "장면 이동", 0, len(steps) - 1, idx, label_visibility="collapsed"
-        )
-        if new_idx != idx:
-            st.session_state.step_idx = new_idx
-            st.rerun()
+        steps = st.session_state.get("steps")
+        if not steps:
+            st.info("위 버튼을 눌러 전투를 시작해 보세요.")
+            return
 
-    render_step(steps[st.session_state.step_idx], st.session_state.characters)
+        idx = st.session_state.step_idx
+        nav_prev, nav_slider, nav_next = st.columns([1, 4, 1])
+        with nav_prev:
+            if st.button("◀ 이전", disabled=idx == 0):
+                st.session_state.step_idx = max(0, idx - 1)
+                st.rerun()
+        with nav_next:
+            if st.button("다음 ▶", disabled=idx == len(steps) - 1):
+                st.session_state.step_idx = min(len(steps) - 1, idx + 1)
+                st.rerun()
+        with nav_slider:
+            new_idx = st.slider(
+                "장면 이동", 0, len(steps) - 1, idx, label_visibility="collapsed"
+            )
+            if new_idx != idx:
+                st.session_state.step_idx = new_idx
+                st.rerun()
+
+        render_step(steps[st.session_state.step_idx], st.session_state.characters)
 
 
 def main() -> None:
