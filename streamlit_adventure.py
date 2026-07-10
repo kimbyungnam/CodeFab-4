@@ -426,10 +426,16 @@ def render_step(step: dict, characters: list[dict]) -> None:
             f'<div class="result-banner">{html.escape(result_line)}</div>',
             unsafe_allow_html=True,
         )
-        if "모험가팀" in result_line:
-            st.balloons()
-        else:
-            st.snow()
+        # Streamlit은 다른 탭(AST/토큰 시각화 등)에서 위젯을 조작해도 이 탭의 코드를
+        # 매번 다시 실행한다. 축하 애니메이션은 "이번 전투"당 한 번만 터지게, 마지막으로
+        # 축하한 battle_run과 비교해서 이미 축하했으면 다시 재생하지 않는다.
+        battle_run = st.session_state.get("battle_run", 0)
+        if st.session_state.get("_celebrated_run") != battle_run:
+            st.session_state._celebrated_run = battle_run
+            if "모험가팀" in result_line:
+                st.balloons()
+            else:
+                st.snow()
 
 
 def render_adventure_panel(source: str) -> None:
@@ -458,6 +464,7 @@ def render_adventure_panel(source: str) -> None:
                 st.session_state.steps = steps
                 st.session_state.characters = characters
                 st.session_state.step_idx = 0
+                st.session_state.battle_run = st.session_state.get("battle_run", 0) + 1
 
         steps = st.session_state.get("steps")
         if not steps:
